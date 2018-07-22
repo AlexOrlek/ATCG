@@ -30,16 +30,16 @@ git clone https://github.com/AlexOrlek/ATCG.git
 
 The simplest way to use the tool is to provide a single multi-fasta file with FASTA headers in the format `unit of analysis|subunit`. The `subunit` is only necessary where there are multiple subdivisions (multiple contigs or multiple genomes of a given metagenome).
 
-If comparing genomes, FASTA headers might be as follows:
-genome1|contig1
-genome1|contig2
+If comparing genomes, FASTA headers might be as follows:<br>
+genome1|contig1<br>
+genome1|contig2<br>
 genome2
 
-If comparing plasmids by isolate, FASTA headers might be as follows:
-isolate1|plasmid1
-isolate1|plasmid2
-isolate2|plasmid1.contig1
-isolate2|plasmid1.contig2
+If comparing plasmids by isolate, FASTA headers might be as follows:<br>
+isolate1|plasmid1<br>
+isolate1|plasmid2<br>
+isolate2|plasmid1.contig1<br>
+isolate2|plasmid1.contig2<br>
 isolate2|plasmid2
 
 
