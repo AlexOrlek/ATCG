@@ -112,6 +112,10 @@ trimalignments<-function(qfinal,sfinal) {
 
 ###iterate through samples, to get initial raw statistics for sample-pairs
 
+#read seqlength file
+seqlenreport<-read.table(gsubfn('%1',list('%1'=args[1]),'%1/seqlengths.tsv'),sep='\t',header=FALSE)
+colnames(seqlenreport)<-c('plasmid','length')
+
 #read samples file
 library('foreach')
 library('doParallel')
@@ -120,14 +124,12 @@ cl<-makeCluster(as.integer(args[2]))
 registerDoParallel(cl)
 
 
-samples<-read.table(gsubfn('%1',list('%1'=args[1]),'%1/samplenames.txt'),sep='\t',header=FALSE)
+samples<-read.table(gsubfn('%1',list('%1'=args[1]),'%1/included.txt'),sep='\t',header=FALSE)
 samples<-as.vector(samples[,1])
-#samples<-samples[1:6]
 allsampledflist<-list()
-#counter=0
+
 allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRanges')) %dopar% {
     sample<-samples[i]
-    #print(sample)
     #read alignmnents file for given sample
     report<-read.table(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/plasmidalignments.tsv'),sep='\t',header=FALSE) #same subject, different queries
     colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
@@ -139,6 +141,18 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     sgr<-GRanges(seqnames = report$qname, ranges = IRanges(start=(report$sstart), end= (report$send)), strand = (report$strand))
     qalnlen<-width(qgr)
     salnlen<-width(sgr)
+    #create sample metaplasmid
+    samplecontigs<-levels(as.factor(report$sname))
+    samplecontiglens<-seqlenreport[seqlenreport$plasmid %in% samplecontigs,2]
+    sampleindices<-as.numeric(as.factor(report$sname))
+    for (j in 1:length(samplecontiglens)) {
+      if (j==1) {
+        next
+      }
+      myindices<-which(sampleindices==j)
+      addlen<-sum(samplecontiglens[c(1:(j-1))])
+      sgr[myindices]<-shift(sgr[myindices],addlen)
+    }
     #query disjoin
     gr2<-disjoin(qgr,with.revmap=TRUE,ignore.strand=TRUE)
     revmap<-gr2$revmap
@@ -164,7 +178,6 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     mystats<-lapply(trimmedalignments,getstats)
     mydf<-as.data.frame(do.call(rbind, mystats)) #convert list of vectors to dataframe                                               
     mydf<-cbind(querysample=rownames(mydf),subjectsample=rep(sample,nrow(mydf)),mydf)
-    #write.table(mydf, file=gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/plasmiddistancestats.tsv'), sep='\t', quote=F, col.names=FALSE, row.names=FALSE)
     print(mydf)
     #rm(list = c('report','reportlist','trimmedalignmnets','mystats','mydf')) #this line causes error in doparallel foreach
 }
@@ -174,12 +187,13 @@ stopCluster(cl)
 
 allsampledf<-as.data.frame(do.call(rbind, allsampledflist))
 colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength')
-
+allsampledf$querysample<-sapply(strsplit(as.vector(allsampledf$querysample),"|",fixed=T),function(x) x=x[1]) #reformat to remove |contig suffix from sample|contig
 
 ###get final stats (distance scores) for each pairwise sample combination
 
-#first get seq lengths
-sampleseqlen<-read.table(gsubfn('%1',list('%1'=args[1]),'%1/seqlengths.tsv'),sep='\t',header=FALSE)
+#aggregate seqlen repot at sample level
+seqlenreport$plasmid<-sapply(strsplit(as.vector(seqlenreport$plasmid),"|",fixed=T),function(x) x=x[1])
+sampleseqlen<-aggregate(seqlenreport$length, by=list(seqlenreport$plasmid), FUN=sum)
 colnames(sampleseqlen)<-c('sample','length')
 
 #get final stats
@@ -205,7 +219,7 @@ for (sample in samples) {
       print(c(sampleb,'no pairwise matches found for this sample'))
       next
     } else if (length(stats1row)==0) {
-      stats<-allsampledf[stats2row,c("hspidpositions","hsplength")]
+      stats<-data.frame(rbind(colSums(allsampledf[stats2row,c("hspidpositions","hsplength")])),row.names = NULL)
       mygenomelen<-sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"]+sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]
       mymingenomelen<-min(sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"],sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"])*2
       if (stats["hsplength"]>mymingenomelen) { #this shouldn't be necessary given that only one genome has alignments
@@ -223,7 +237,7 @@ for (sample in samples) {
       percentid<-as.numeric(stats["hspidpositions"]/stats["hsplength"])
       covbreadthmin<-as.numeric(stats["hsplength"]/mymingenomelen)
     } else if (length(stats2row)==0) {
-      stats<-allsampledf[stats1row,c("hspidpositions","hsplength")]
+      stats<-data.frame(rbind(colSums(allsampledf[stats1row,c("hspidpositions","hsplength")])),row.names = NULL)
       mygenomelen<-sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"]+sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]
       mymingenomelen<-min(sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"],sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"])*2
       if (stats["hsplength"]>mymingenomelen) { #this shouldn't be necessary given that only one genome has alignments
@@ -241,8 +255,8 @@ for (sample in samples) {
       percentid<-as.numeric(stats["hspidpositions"]/stats["hsplength"])
       covbreadthmin<-as.numeric(stats["hsplength"]/mymingenomelen)
     } else { ##combine both
-      stats1<-allsampledf[stats1row,c("hspidpositions","hsplength")]
-      stats2<-allsampledf[stats2row,c("hspidpositions","hsplength")]
+      stats1<-data.frame(rbind(colSums(allsampledf[stats1row,c("hspidpositions","hsplength")])),row.names = NULL)
+      stats2<-data.frame(rbind(colSums(allsampledf[stats2row,c("hspidpositions","hsplength")])),row.names = NULL)
       mergedstats<-stats1+stats2
       mygenomelen<-sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"]+sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]
       mymingenomelen<-min(sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"],sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"])*2
@@ -266,9 +280,9 @@ for (sample in samples) {
   }
   finaldf<-as.data.frame(do.call(rbind,output))
   allsampledflist[[counter1]]<-finaldf
-  samples2<-setdiff(samples2,sample) #this means a non-symmetric matrix of distance scores is created - this is what I want because by using merged stats, I'm averaging over both directions, meaning distance s are symmetric
+  samples2<-setdiff(samples2,sample) #this means non-symmetric matrix of distance scores - this is what I want because by using merged stats, I'm averaging over both directions
 }
 
 finaldf<-as.data.frame(do.call(rbind,allsampledflist))
 colnames(finaldf)<-c('Sample1','Sample2','DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth_mingenome')
-write.table(finaldf, file=gsubfn('%1',list('%1'=args[1]),'%1/output/alldistancestats.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
+write.table(finaldf, file=gsubfn('%1',list('%1'=args[1]),'%1/output/distancestats.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)

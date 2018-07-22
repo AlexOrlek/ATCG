@@ -1,5 +1,7 @@
-from mymod import runblastn,runsubprocess
 import sys
+sys.path.append('./')
+from pythonmods import runblastn,runsubprocess
+
 
 #argv[1] is filepath to pipeline output folder for a given dataset
 #argv[2] is query plasmids
@@ -11,9 +13,9 @@ import sys
 
 #create output directories
 args=['mkdir -p %s/blast'%sys.argv[1]]
-runsubprocess(args,shell=True)
+runsubprocess(args,shell=True,verbose=False)
 args=['mkdir -p %s/output'%sys.argv[1]]
-runsubprocess(args,shell=True)
+runsubprocess(args,shell=True,verbose=False)
 
 
 #blast query plasmids against subject plasmid database
@@ -23,6 +25,9 @@ evalue=sys.argv[4]
 wordsize=sys.argv[5]
 threads=sys.argv[6]
 
+#sort file in place
+args=['bash', 'sortfilepaths.sh', '%s'%databasefiles]
+runsubprocess(args)
 
 with open(databasefiles) as f:
     for line in f:

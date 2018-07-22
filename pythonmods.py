@@ -1,6 +1,6 @@
 #Python modules
 
-def runsubprocess(args,stderrpath=None, stdoutpath=None, writefile=None,shell=False):
+def runsubprocess(args,stderrpath=None, stdoutpath=None, writefile=None,shell=False,verbose=True):
     import subprocess,sys,thread #os
     """takes a subprocess argument list and runs Popen/communicate(); by default, both output and error are printed to screen; stderrpath and stdoutpath for saving output can be optionally set; a redirect can be optionally set (writefile argument); errors are handled at multiple levels i.e. subthread error handling; can set shell=True; the function can be used 'fruitfully' since stdout is returned"""
     if shell==True: #e.g. args=['ls *.txt]
@@ -31,7 +31,8 @@ def runsubprocess(args,stderrpath=None, stdoutpath=None, writefile=None,shell=Fa
         else:
             stdoutpath=stdoutpath[:-(len(stdoutstrip))]
         stdoutpath=stdoutpath+processname+'_'+stdoutstrip+'stdout.txt'
-    print('{} {}'.format(processname, 'processname'))
+    if verbose==True:
+        print('{} {}'.format(processname, 'processname'))
     try:
         if writefile==None:
             if shell==False:
@@ -39,8 +40,9 @@ def runsubprocess(args,stderrpath=None, stdoutpath=None, writefile=None,shell=Fa
             if shell==True:
                 p=subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
             stdout, stderr= p.communicate()
-            print('{} {}'.format(stdout, 'stdout'))
-            print('{} {}'.format(stderr, 'stderr'))
+            if verbose==True:
+                print('{} {}'.format(stdout, 'stdout'))
+                print('{} {}'.format(stderr, 'stderr'))
             if stdoutpath==None:
                 pass
             else:
@@ -58,8 +60,9 @@ def runsubprocess(args,stderrpath=None, stdoutpath=None, writefile=None,shell=Fa
                 if shell==True:
                     p=subprocess.Popen(args,stdout=stdout, stderr=subprocess.PIPE, shell=True)
                 stdout, stderr= p.communicate()
-                print('{} {}'.format(stdout, 'stdout'))
-                print('{} {}'.format(stderr, 'stderr'))
+                if verbose==True:
+                    print('{} {}'.format(stdout, 'stdout'))
+                    print('{} {}'.format(stderr, 'stderr'))
                 #n.b stdout is None - can't write to file
                 if stderrpath==None:
                     pass
@@ -67,10 +70,15 @@ def runsubprocess(args,stderrpath=None, stdoutpath=None, writefile=None,shell=Fa
                     with open(stderrpath,'w') as stderrfile:
                         stderrfile.write(stderr)
         if p.returncode==0:
-            print('{} {}'.format(processname, 'code has run successfully'))
+            if verbose==True:
+                print('{} {}'.format(processname, 'code has run successfully'))
         else:
+            if verbose==False:
+                print('{} {}'.format(processname, 'processname'))
             print('{} {}'.format('source code fail'))
     except:
+        if verbose==False:
+            print('{} {}'.format(processname, 'processname'))
         print('{} {}'.format('runsubprocess code fail'))
         sys.exit()
         
@@ -86,6 +94,15 @@ def runsubprocess(args,stderrpath=None, stdoutpath=None, writefile=None,shell=Fa
 
 
 
+def makeBLASTdb(fastafile, databasename, dbtype, parse_seqids=False): #dbtype can be 'nucl' or 'prot'
+    """takes fastafile filepath, databasename filepath and dbtype args"""
+    import subprocess
+    if parse_seqids==False:
+        cmdArgs=['makeblastdb', '-dbtype', dbtype, '-in', fastafile, '-out', databasename]
+    else:
+        cmdArgs=['makeblastdb', '-dbtype', dbtype, '-in', fastafile, '-out', databasename, '-parse_seqids']
+    subprocess.call(cmdArgs)
+            
 
 
 def runblastn(query, database, blastoutput, evalue=str(10), outfmt='custom qcov', task='blastn', num_threads=str(1), max_target_seqs=str(500), max_hsps=False, perc_identity=False, qcov_hsp_perc=False, culling_limit=False, word_size=False): #default evalue is 10; default wordsize is 11 for blastn - just use -tasks parameter which also changes gap settings; default task with no -task parameter set is megablast; N.b use cutstom qcov as standard for blast-based typing and plasmidpipeline, otherwise use outfmt 6 or specify custom outfmt
