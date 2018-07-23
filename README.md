@@ -16,7 +16,7 @@ As input, ATCG can take sequence assemblies in [FASTA](https://en.wikipedia.org/
 * [SeqKit](https://github.com/shenwei356/seqkit)
 * [bioawk](https://github.com/lh3/bioawk)
 * [BLAST+](https://www.ncbi.nlm.nih.gov/books/NBK279690/) (`blastn`)
-* [R](https://www.r-project.org/) 3.3.1 or later with the following packages installed:<b>
+* [R](https://www.r-project.org/) 3.3.1 or later with the following packages installed:
     * Bioconductor 3.4 and the [GenomicRanges](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html) package
     * [gsubfn](https://cran.r-project.org/web/packages/gsubfn/index.html)
 
