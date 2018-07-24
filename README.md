@@ -28,12 +28,13 @@ git clone https://github.com/AlexOrlek/ATCG.git
 ```
 # Quick start
 
-The simplest way to use the tool is to provide a single multi-FASTA file with FASTA headers in the format `unit of analysis|subunit`. The `subunit` is only necessary where there are multiple subdivisions (multiple contigs or multiple genomes of a given metagenome).
+Information in FASTA headers must be delineated using vetical bar(s) "|" and the headers should be in the format `unit of analysis|subunit`. The `subunit` is only necessary when indicating affiliation of e.g. contigs with genomes, or of bacterial plasmids with bacterial isolates. Additional information can be included in the header by delineating with additional vertical bar(s)
 
 If comparing genomes, FASTA headers might be as follows:<br>
 genome1|contig1<br>
 genome1|contig2<br>
-genome2
+genome2<br>
+genome3|contig1|additional information
 
 If comparing plasmids by isolate, FASTA headers might be as follows:<br>
 isolate1|plasmid1<br>
@@ -43,9 +44,15 @@ isolate2|plasmid1.contig2<br>
 isolate2|plasmid2
 
 
-The tool can be run as follows:
+For all-vs-all comparison, the tool can be run by providing a single multi-FASTA file using the -s flag; distance scores will be recorded and a dendrogram will be generated.
 
-`python runpipeline.py -q genomes.fasta -o output-directory`
+`python runpipeline.py -s genomes.fasta -o output-directory -t 8`
+
+
+Alternatively, the tool can be run by providing 2 input files using flags -s1 and -s2; pairwise comparisons will be conducted between but not amongst sequence(s) in each file; a dendrogram will not be generated.
+
+`python runpipeline.py -s1 query.fasta -s2 genomes.fasta -o output-directory -t 8`
+
 
 
 # Options and usage
@@ -55,7 +62,7 @@ Run `python runpipeline.py --help` to view a summary of all the options
 
 # Output files
 
-The below table shows the most important outputs
+The below table shows the most important outputs from running the pipeline with the -s input flag. Similar outputs are produced using -s1 and -s2 input flags. 
 
 File/Directory                 | Description                                                                                       
 ------------------------------ | -------------------------------------------------------------------------------------------------
@@ -71,9 +78,9 @@ excluded.txt		       | names of any genomes with no detected blast alignnments (
 
 A methods paper will be written shortly. A brief outline is given below, and further information about the general approach can be found in a [paper](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-60) by Meier-Kolthoff et al. describing the genome-genome distance calculator tool.
 
-1. All-vs-all BLAST is conducted.
+1. BLAST is conducted on assembled nucleotide sequences.
 2. Overlapping alignments are trimmed.
-3. For trimmed alignments, distance metrics are calculated; different metrics reflect different distance concepts: resemblance and containment. 
+3. For trimmed alignments, distance metrics are calculated; different metrics reflect different distance concepts: [resemblance and containment](https://www.cs.princeton.edu/courses/archive/spring13/cos598C/broder97resemblance.pdf). 
 4. Using pairwise distances, a dendrogram is generated.
 
 
