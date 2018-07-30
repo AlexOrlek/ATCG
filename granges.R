@@ -6,10 +6,10 @@ reduce<-GenomicRanges::reduce
 simplify<-IRanges::simplify
 
 
-#args[1] is filepath to pipeline output folder; args[2] is threads
+#args[1] is filepath to pipeline output folder; args[2] is threads; args[3] is breakpoint stats
 
 cores=as.integer(args[2])
-
+breakpoint=as.character(args[3])
 
 ###define functions
 #stats functions
@@ -161,8 +161,8 @@ BPfunc<-function(x,y) {  #apply to granges object
 
 #read seqlength file
 seqlenreport<-read.table(gsubfn('%1',list('%1'=args[1]),'%1/seqlengths.tsv'),sep='\t',header=FALSE)
-colnames(seqlenreport)<-c('plasmid','length')
-seqlenreport<-seqlenreport[order(seqlenreport$plasmid),]
+colnames(seqlenreport)<-c('sequence','length')
+seqlenreport<-seqlenreport[order(seqlenreport$sequence),]
 
 #read samples file
 library('foreach')
@@ -176,10 +176,10 @@ samples<-read.table(gsubfn('%1',list('%1'=args[1]),'%1/included.txt'),sep='\t',h
 samples<-as.vector(samples[,1])
 allsampledflist<-list()
 
-allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRanges')) %dopar% {
+allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRanges','purrr')) %dopar% {
     sample<-samples[i]
     #read alignmnents file for given sample
-    report<-read.table(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/plasmidalignments.tsv'),sep='\t',header=FALSE) #same subject, different queries
+    report<-read.table(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),sep='\t',header=FALSE) #same subject, different queries
     colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
     report$qname<-sapply(strsplit(as.vector(report$qname),"|",fixed=T),function(x) x=x[1]) #!!!ADDED
     report$sname<-sapply(strsplit(as.vector(report$sname),"|",fixed=T),function(x) x=x[1])   
@@ -192,9 +192,9 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     sgr<-GRanges(seqnames = report$qname, ranges = IRanges(start=(report$sstart), end= (report$send)), strand = (report$strand))
     qalnlen<-width(qgr)
     salnlen<-width(sgr)
-    #create sample metaplasmid
+    #shift subject ranges where there are multiple contigs
     samplecontigs<-levels(as.factor(report$sname))
-    samplecontiglens<-seqlenreport[seqlenreport$plasmid %in% samplecontigs,2]
+    samplecontiglens<-seqlenreport[seqlenreport$sequence %in% samplecontigs,2]
     sampleindices<-as.numeric(as.factor(report$sname))
     for (j in 1:length(samplecontiglens)) {
       if (j==1) {
@@ -234,22 +234,26 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     mydf<-as.data.frame(do.call(rbind, mystats)) #convert list of vectors to dataframe                                               
     mydf<-cbind(querysample=rownames(mydf),subjectsample=rep(sample,nrow(mydf)),mydf)
     #get breakpoint stats
-    qcontigsplit<-lapply(qtrimmed, function(x) split(x,as.vector(mcols(x)$sname))) 
-    scontigsplit<-lapply(strimmed, function(x) split(x,as.vector(mcols(x)$sname))) #nested lists- need to split by subject contigs before calculating breakpoints; convert mcols()$sname to vector otherwise fator levels are used
-    bpout<-list()
-    for (qname in names(qcontigsplit)) {
-      #sort alignments by position
-      qcontigsplit[[qname]]<-lapply(qcontigsplit[[qname]], function(x) sort(x,ignore.strand=T))
-      scontigsplit[[qname]]<-lapply(scontigsplit[[qname]], function(x) sort(x,ignore.strand=T))
-      out<-mapply(BPfunc,qcontigsplit[[qname]],scontigsplit[[qname]]) #apply breakpoint function to sublists
-      bpcount<-sum(unlist((out["bpcount",]))) #sum across subject contig splits to get count per query
-      alncount<-sum(unlist((out["alncount",])))
-      bpout[[qname]]<-c(bpcount,alncount)
+    if (breakpoint=='True') {
+      qcontigsplit<-lapply(qtrimmed, function(x) split(x,as.vector(mcols(x)$sname))) 
+      scontigsplit<-lapply(strimmed, function(x) split(x,as.vector(mcols(x)$sname))) #nested lists- need to split by subject contigs before calculating breakpoints; convert mcols()$sname to vector otherwise fator levels are used
+      bpout<-list()
+      for (qname in names(qcontigsplit)) {
+        #sort alignments by position
+        qcontigsplit[[qname]]<-lapply(qcontigsplit[[qname]], function(x) sort(x,ignore.strand=T))
+        scontigsplit[[qname]]<-lapply(scontigsplit[[qname]], function(x) sort(x,ignore.strand=T))
+        out<-mapply(BPfunc,qcontigsplit[[qname]],scontigsplit[[qname]]) #apply breakpoint function to sublists
+        bpcount<-sum(unlist((out["bpcount",]))) #sum across subject contig splits to get count per query
+        alncount<-sum(unlist((out["alncount",])))
+        bpout[[qname]]<-c(bpcount,alncount)
+      }
+      mydfbp<-as.data.frame(do.call(rbind, bpout)) 
+      mydfbp<-cbind(querysample=rownames(mydfbp),subjectsample=rep(sample,nrow(mydfbp)),mydfbp)
+      #merge dataframes
+      myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"))
+    } else {
+      myfinaldf<-mydf
     }
-    mydfbp<-as.data.frame(do.call(rbind, bpout)) 
-    mydfbp<-cbind(querysample=rownames(mydfbp),subjectsample=rep(sample,nrow(mydfbp)),mydfbp)
-    #merge dataframes
-    myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"))
     
     print(myfinaldf)
     #rm(list = c('report','reportlist','trimmedalignmnets','mystats','mydf')) #this line causes error in doparallel foreach
@@ -260,14 +264,14 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
 stopCluster(cl)
 
 allsampledf<-as.data.frame(do.call(rbind, allsampledflist))
-colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','bpcount','alncount') #!ADDED breakpoint and alignment count 
+colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments') #!ADDED breakpoint and alignment count 
 #allsampledf$querysample<-sapply(strsplit(as.vector(allsampledf$querysample),"|",fixed=T),function(x) x=x[1]) #reformat to remove |contig suffix from sample|contig #!!!REMOVED -now doing above
 
 ###get final stats (distance scores) for each pairwise sample combination
 
 #aggregate seqlen repot at sample level
-seqlenreport$plasmid<-sapply(strsplit(as.vector(seqlenreport$plasmid),"|",fixed=T),function(x) x=x[1])
-sampleseqlen<-aggregate(seqlenreport$length, by=list(seqlenreport$plasmid), FUN=sum)
+seqlenreport$sequence<-sapply(strsplit(as.vector(seqlenreport$sequence),"|",fixed=T),function(x) x=x[1])
+sampleseqlen<-aggregate(seqlenreport$length, by=list(seqlenreport$sequence), FUN=sum)
 colnames(sampleseqlen)<-c('sample','length')
 
 #get final stats
@@ -310,9 +314,11 @@ for (sample in samples) {
       d9<-as.numeric(-log(stats["hspidpositions"]/mymingenomelen))
       percentid<-as.numeric(stats["hspidpositions"]/stats["hsplength"])
       covbreadthmin<-as.numeric(stats["hsplength"]/mymingenomelen)
-      bpdist<-as.numeric(stats["breakpoints"]/stats["alignments"])
-      breakpoints<-as.numeric(stats["breakpoints"])
-      alignments<-as.numeric(stats["alignments"])
+      if (breakpoint=='True') {
+        bpdist<-as.numeric(stats["breakpoints"]/stats["alignments"])
+      	breakpoints<-as.numeric(stats["breakpoints"])
+      	alignments<-as.numeric(stats["alignments"])
+      }
     } else if (length(stats2row)==0) {
       stats<-data.frame(rbind(colSums(allsampledf[stats1row,c("hspidpositions","hsplength","breakpoints","alignments")])),row.names = NULL)
       mygenomelen<-sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"]+sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]
@@ -331,9 +337,11 @@ for (sample in samples) {
       d9<-as.numeric(-log(stats["hspidpositions"]/mymingenomelen))
       percentid<-as.numeric(stats["hspidpositions"]/stats["hsplength"])
       covbreadthmin<-as.numeric(stats["hsplength"]/mymingenomelen)
-      bpdist<-as.numeric(stats["breakpoints"]/stats["alignments"])
-      breakpoints<-as.numeric(stats["breakpoints"])
-      alignments<-as.numeric(stats["alignments"])
+      if (breakpoint=='True') {
+        bpdist<-as.numeric(stats["breakpoints"]/stats["alignments"])
+        breakpoints<-as.numeric(stats["breakpoints"])
+        alignments<-as.numeric(stats["alignments"])
+      }
     } else { ##combine both
       stats1<-data.frame(rbind(colSums(allsampledf[stats1row,c("hspidpositions","hsplength","breakpoints","alignments")])),row.names = NULL)
       stats2<-data.frame(rbind(colSums(allsampledf[stats2row,c("hspidpositions","hsplength","breakpoints","alignments")])),row.names = NULL)
@@ -354,12 +362,18 @@ for (sample in samples) {
       d9<-as.numeric(-log(mergedstats["hspidpositions"]/mymingenomelen))
       percentid<-as.numeric(mergedstats["hspidpositions"]/mergedstats["hsplength"])
       covbreadthmin<-as.numeric(mergedstats["hsplength"]/mymingenomelen) #this is the coverage breadth realtive to the mininum  genome length
-      bpdist<-as.numeric(mergedstats["breakpoints"]/mergedstats["alignments"])
-      breakpoints<-as.numeric(mergedstats["breakpoints"])
-      alignments<-as.numeric(mergedstats["alignments"])
+      if (breakpoint=='True') {
+        bpdist<-as.numeric(mergedstats["breakpoints"]/mergedstats["alignments"])
+        breakpoints<-as.numeric(mergedstats["breakpoints"])
+        alignments<-as.numeric(mergedstats["alignments"])
+      }
     }
-
-    output[[counter2]]<-c(sample,sampleb,d0,d4,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments)
+    
+    if (breakpoint=='True') {
+      output[[counter2]]<-c(sample,sampleb,d0,d4,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments)
+    else {
+      output[[counter2]]<-c(sample,sampleb,d0,d4,d6,d7,d8,d9,percentid,covbreadthmin)
+    }
   }
   finaldf<-as.data.frame(do.call(rbind,output))
   allsampledflist[[counter1]]<-finaldf
@@ -367,5 +381,9 @@ for (sample in samples) {
 }
 
 finaldf<-as.data.frame(do.call(rbind,allsampledflist))
-colnames(finaldf)<-c('Sample1','Sample2','DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth_mingenome','Breakpoint_distance','Breakpoints','Alignments')
+if (breakpoint=='True') {
+   colnames(finaldf)<-c('Sample1','Sample2','DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth_mingenome','Breakpoint_distance','Breakpoints','Alignments')
+else {
+   colnames(finaldf)<-c('Sample1','Sample2','DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth_mingenome')
+}
 write.table(finaldf, file=gsubfn('%1',list('%1'=args[1]),'%1/output/distancestats.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)

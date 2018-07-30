@@ -8,6 +8,14 @@ As input, ATCG can take sequence assemblies in [FASTA](https://en.wikipedia.org/
 * Complete metagenomes (e.g. sets of bacterial plasmids, where each set comprises plasmids from a single bacterial isolate)
 * Incomplete genome/metagenome sequences (or a combination of complete/incomplete sequences). Incomplete sequences (contigs or scaffolds) must be affiliated to a known genome or metagenome and this affiliation is indicated in the sequence's FASTA header (see [Quick start](#quick-start))
 
+ATCG is appropriate if you want to:
+* Compare sequences in terms of overall relatedness metrics (genome-genome distances, percentage identity, coverage breadth)
+* Compare sequences in terms of their structural similarity (using the breakpoint distance metric; see [Henz et al. 2004](https://www.ncbi.nlm.nih.gov/pubmed/15166018))
+
+ATCG is __not__ appropriate if you want to:
+* Analyse many large genomes - alignment-based approaches are too time-consuming for this (instead, use locus-based typing methods such as [MLST](https://pubmlst.org/general.shtml) OR alignment-free comparative genomic tools such as [FastANI](https://github.com/ParBLiSS/FastANI))
+* Visualise a whole-genome multiple alignment (instead, use [progressiveMauve](http://darlinglab.org/mauve/user-guide/progressivemauve.html) or similar tool)
+
 
 # Requirements
 
@@ -26,18 +34,19 @@ As input, ATCG can take sequence assemblies in [FASTA](https://en.wikipedia.org/
 
 ```bash
 git clone https://github.com/AlexOrlek/ATCG.git
+cd ATCG-master
 ```
 # Quick start
 
 Information in FASTA headers must be delineated using vetical bar(s) "|" and the headers should be in the format `unit of analysis|subunit`. The `subunit` is only necessary when indicating affiliation of e.g. contigs with genomes, or of bacterial plasmids with bacterial isolates. Additional information can be included in the header by delineating with additional vertical bar(s)
 
-If comparing genomes, FASTA headers might be as follows:<br>
+If comparing genomes, FASTA headers could be formatted as follows:<br>
 genome1|contig1<br>
 genome1|contig2<br>
 genome2<br>
 genome3|contig1|additional information
 
-If comparing plasmids by isolate, FASTA headers might be as follows:<br>
+If comparing plasmids by isolate, FASTA headers could be formatted as follows:<br>
 isolate1|plasmid1<br>
 isolate1|plasmid2<br>
 isolate2|plasmid1.contig1<br>
@@ -45,12 +54,12 @@ isolate2|plasmid1.contig2<br>
 isolate2|plasmid2
 
 
-For all-vs-all comparison, the tool can be run by providing a single multi-FASTA file using the -s flag; distance scores will be recorded and a dendrogram will be generated.
+For all-vs-all comparison, the tool can be run by providing a single multi-FASTA file using the `-s` flag; distance scores will be recorded and a dendrogram will be generated.
 
 `python runpipeline.py -s genomes.fasta -o output-directory -t 8`
 
 
-Alternatively, the tool can be run by providing 2 input files using flags -s1 and -s2; pairwise comparisons will be conducted between but not amongst sequence(s) in each file; a dendrogram will not be generated.
+Alternatively, the tool can be run by providing 2 input files using flags `-s1` and `-s2`; pairwise comparisons will be conducted between but not amongst sequence(s) in each file; a dendrogram will not be generated.
 
 `python runpipeline.py -s1 query.fasta -s2 genomes.fasta -o output-directory -t 8`
 
@@ -59,6 +68,8 @@ Alternatively, the tool can be run by providing 2 input files using flags -s1 an
 # Options and usage
 
 Run `python runpipeline.py --help` to view a summary of all the options
+
+By default, breakpoint distance is not calculated, but can be specified using the `--breakpoint` flag
 
 
 # Output files
@@ -81,8 +92,8 @@ A methods paper will be written shortly. A brief outline is given below, and fur
 
 1. BLAST is conducted on assembled nucleotide sequences.
 2. Overlapping alignments are trimmed.
-3. For trimmed alignments, distance metrics are calculated; different metrics reflect different distance concepts: [resemblance and containment](https://www.cs.princeton.edu/courses/archive/spring13/cos598C/broder97resemblance.pdf). 
-4. Using pairwise distances, a dendrogram is generated.
+3. For trimmed alignments, distance metrics are calculated; different metrics reflect different distance concepts: [resemblance and containment](https://www.cs.princeton.edu/courses/archive/spring13/cos598C/broder97resemblance.pdf). Breakpoint distance can optionally be calculated.
+4. If all-vs-all BLAST was run, then a dendrogram is generated using pairwise distance metrics.
 
 
 # License

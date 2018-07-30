@@ -1,6 +1,6 @@
 import sys
 
-f2=open('%s/exclude.txt'%sys.argv[1],'w')
+f2=open('%s/excluded.txt'%sys.argv[1],'w')
 
 sampleswithhits=[]
 with open('%s/included.txt'%sys.argv[1]) as f:

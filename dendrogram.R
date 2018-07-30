@@ -23,11 +23,9 @@ for (distarg in distargs) {
 
   #first make list of samples1:samples2/scores
   colnamesmyreport<-colnames(myreport)
-  #plasmidscorecols<-c(which(colnamesmyreport=='Sample2'),which(colnamesmyreport=='DistanceScore_d6')) #OLD - now using d9 (logarithmic scale, robust to differences in genome size)
-  #plasmidscorecols<-c(which(colnamesmyreport=='Sample2'),which(colnamesmyreport=='DistanceScore_d9'))
-  plasmidscorecols<-c(which(colnamesmyreport=='Sample2'),which(colnamesmyreport==distarg))
+  scorecols<-c(which(colnamesmyreport=='Sample2'),which(colnamesmyreport==distarg))
   for (i in 1:length(samples1))  {
-    myreportlist[[i]]<-myreport[myreport$Sample1==samples1[i],plasmidscorecols]
+    myreportlist[[i]]<-myreport[myreport$Sample1==samples1[i],scorecols]
   }
   names(myreportlist)<-samples1
 
@@ -77,7 +75,7 @@ for (distarg in distargs) {
 
 
   #make ggplot dendrogram / save dendrogram to file
-  clust = hclust(d) #complete linkage used by default (and in plasmidprofiler); not using FastME which is used by M-k.  
+  clust = hclust(d) #complete linkage used by default; not using FastME which is used by M-k.  
   clustdendro<-as.dendrogram(clust)
   dendfilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/dendrogram_%2.rd')
   saveRDS(clustdendro,dendfilepath)
