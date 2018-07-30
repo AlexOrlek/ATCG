@@ -1,10 +1,6 @@
 args = commandArgs(trailingOnly=TRUE)
 library('gsubfn')
 library('GenomicRanges')
-library('purrr')
-reduce<-GenomicRanges::reduce
-simplify<-IRanges::simplify
-
 
 #args[1] is filepath to pipeline output folder; args[2] is threads
 
@@ -71,7 +67,6 @@ addcols<-function(x) {
   myinputhsps<-mcols(x)$inputhsp
   mcols(x)$pid<-pid[myinputhsps]
   mcols(x)$mystrand<-mystrand[myinputhsps]
-  mcols(x)$snames<-snames[myinputhsps] #!!!ADDED
   return(x)
 }
 
@@ -85,8 +80,7 @@ trimalignments<-function(qfinal,sfinal) {
   #order alignments
   qfinal<-qfinal[order(mcols(qfinal)$inputhsp)]
   sfinal<-sfinal[order(mcols(sfinal)$inputhsp)]
-  #trim QUERY alignments
-  copyqfinal<-qfinal
+  #trim alignments
   addstart<-start(sfinal)-finalalignments$sstart
   minusend<-finalalignments$send-end(sfinal)
   mydiff<-addstart+minusend
@@ -113,48 +107,9 @@ trimalignments<-function(qfinal,sfinal) {
       }
     }
   }
-  #trim SUBJECT alignments
-  addstart<-start(copyqfinal)-finalalignments$qstart
-  minusend<-finalalignments$qend-end(copyqfinal)
-  mydiff<-addstart+minusend
-  for (i in 1:length(mydiff)) {
-    if (mydiff[i]>0) {
-      #calculate new start/end positions
-      if (finalalignments$strand[i]=='+') {
-        newstart<-start(sfinal[i])+addstart[i]
-        newend<-end(sfinal[i])-minusend[i]
-      } else {
-        newstart<-start(sfinal[i])+minusend[i]
-        newend<-end(sfinal[i])-addstart[i]
-      }
-      #apply new start/end positions in order to trim alignments
-      if (newstart>=end(sfinal[i])) {
-        start(sfinal[i])<-end(sfinal[i])
-      } else {
-        start(sfinal[i])<-newstart
-      }
-      if (newend<=start(sfinal[i])) {
-        end(sfinal[i])<-start(sfinal[i])
-      } else {
-        end(sfinal[i])<-newend
-      }
-    }
-  }
-  mylist<-list("qfinal"=qfinal,"sfinal"=sfinal)
-  return(mylist)
+  return(qfinal)
 }
 
-
-#breakpoint caluclation functions
-makepairs <- function(x) paste(head(x, -1), tail(x, -1)) 
-BP <- function(x, y) makepairs(x)[!(makepairs(x) %in% makepairs(y) | makepairs(x) %in% makepairs(rev(y*-1)))]
-
-BPfunc<-function(x,y) {  #apply to granges object
-  stopifnot(nrow(x)==nrow(y))
-  alncount<-length(mcols(x)$inputhsp)
-  bpcount<-length(BP(mcols(x)$inputhsp,mcols(y)$inputhsp))
-  return(list("bpcount"=bpcount,"alncount"=alncount))
-}
 
 
 ###iterate through samples, to get initial raw statistics for sample-pairs
@@ -162,7 +117,6 @@ BPfunc<-function(x,y) {  #apply to granges object
 #read seqlength file
 seqlenreport<-read.table(gsubfn('%1',list('%1'=args[1]),'%1/seqlengths.tsv'),sep='\t',header=FALSE)
 colnames(seqlenreport)<-c('plasmid','length')
-seqlenreport<-seqlenreport[order(seqlenreport$plasmid),]
 
 #read samples file
 library('foreach')
@@ -181,11 +135,8 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #read alignmnents file for given sample
     report<-read.table(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/plasmidalignments.tsv'),sep='\t',header=FALSE) #same subject, different queries
     colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
-    report$qname<-sapply(strsplit(as.vector(report$qname),"|",fixed=T),function(x) x=x[1]) #!!!ADDED
-    report$sname<-sapply(strsplit(as.vector(report$sname),"|",fixed=T),function(x) x=x[1])   
     ###disjoin method trimming
     pid<-report$pid
-    snames<-report$sname #!!!ADDDED
     #alnlen<-report$alnlen
     mystrand<-report$strand  #strand info is lost after disjoin - need to retain strand info for toppid
     qgr<-GRanges(seqnames = report$qname, ranges = IRanges(start=(report$qstart), end = (report$qend)), strand=(report$strand))
@@ -224,44 +175,21 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     qfinal<-lapply(qreducedoutput, function(x) x=addcols(x))
     sfinal<-lapply(sreducedoutput, function(x) x=addcols(x))
     #trim query alignments
-    #trimmedalignments<-mapply(trimalignments,qfinal,sfinal)
-    #trimmedalignments<-lapply(split(1:nrow(trimmedalignments), rownames(trimmedalignments)), function(i) trimmedalignments[i,])  #!!!ADDED
-    trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,SIMPLIFY = F)) #!ADDED
-    qtrimmed<-trimmedalignments$qfinal
-    strimmed<-trimmedalignments$sfinal
-    #get hsp id stats
-    mystats<-lapply(qtrimmed,getstats) #!!!CHANGED
+    trimmedalignments<-mapply(trimalignments,qfinal,sfinal)
+    #get stats
+    mystats<-lapply(trimmedalignments,getstats)
     mydf<-as.data.frame(do.call(rbind, mystats)) #convert list of vectors to dataframe                                               
     mydf<-cbind(querysample=rownames(mydf),subjectsample=rep(sample,nrow(mydf)),mydf)
-    #get breakpoint stats
-    qcontigsplit<-lapply(qtrimmed, function(x) split(x,as.vector(mcols(x)$sname))) 
-    scontigsplit<-lapply(strimmed, function(x) split(x,as.vector(mcols(x)$sname))) #nested lists- need to split by subject contigs before calculating breakpoints; convert mcols()$sname to vector otherwise fator levels are used
-    bpout<-list()
-    for (qname in names(qcontigsplit)) {
-      #sort alignments by position
-      qcontigsplit[[qname]]<-lapply(qcontigsplit[[qname]], function(x) sort(x,ignore.strand=T))
-      scontigsplit[[qname]]<-lapply(scontigsplit[[qname]], function(x) sort(x,ignore.strand=T))
-      out<-mapply(BPfunc,qcontigsplit[[qname]],scontigsplit[[qname]]) #apply breakpoint function to sublists
-      bpcount<-sum(unlist((out["bpcount",]))) #sum across subject contig splits to get count per query
-      alncount<-sum(unlist((out["alncount",])))
-      bpout[[qname]]<-c(bpcount,alncount)
-    }
-    mydfbp<-as.data.frame(do.call(rbind, bpout)) 
-    mydfbp<-cbind(querysample=rownames(mydfbp),subjectsample=rep(sample,nrow(mydfbp)),mydfbp)
-    #merge dataframes
-    myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"))
-    
-    print(myfinaldf)
+    print(mydf)
     #rm(list = c('report','reportlist','trimmedalignmnets','mystats','mydf')) #this line causes error in doparallel foreach
 }
-
 
 
 stopCluster(cl)
 
 allsampledf<-as.data.frame(do.call(rbind, allsampledflist))
-colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','bpcount','alncount') #!ADDED breakpoint and alignment count 
-#allsampledf$querysample<-sapply(strsplit(as.vector(allsampledf$querysample),"|",fixed=T),function(x) x=x[1]) #reformat to remove |contig suffix from sample|contig #!!!REMOVED -now doing above
+colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength')
+allsampledf$querysample<-sapply(strsplit(as.vector(allsampledf$querysample),"|",fixed=T),function(x) x=x[1]) #reformat to remove |contig suffix from sample|contig
 
 ###get final stats (distance scores) for each pairwise sample combination
 
@@ -293,7 +221,7 @@ for (sample in samples) {
       print(c(sampleb,'no pairwise matches found for this sample'))
       next
     } else if (length(stats1row)==0) {
-      stats<-data.frame(rbind(colSums(allsampledf[stats2row,c("hspidpositions","hsplength","breakpoints","alignments")])),row.names = NULL)
+      stats<-data.frame(rbind(colSums(allsampledf[stats2row,c("hspidpositions","hsplength")])),row.names = NULL)
       mygenomelen<-sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"]+sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]
       mymingenomelen<-min(sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"],sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"])*2
       if (stats["hsplength"]>mymingenomelen) { #this shouldn't be necessary given that only one genome has alignments
@@ -310,11 +238,8 @@ for (sample in samples) {
       d9<-as.numeric(-log(stats["hspidpositions"]/mymingenomelen))
       percentid<-as.numeric(stats["hspidpositions"]/stats["hsplength"])
       covbreadthmin<-as.numeric(stats["hsplength"]/mymingenomelen)
-      bpdist<-as.numeric(stats["breakpoints"]/stats["alignments"])
-      breakpoints<-as.numeric(stats["breakpoints"])
-      alignments<-as.numeric(stats["alignments"])
     } else if (length(stats2row)==0) {
-      stats<-data.frame(rbind(colSums(allsampledf[stats1row,c("hspidpositions","hsplength","breakpoints","alignments")])),row.names = NULL)
+      stats<-data.frame(rbind(colSums(allsampledf[stats1row,c("hspidpositions","hsplength")])),row.names = NULL)
       mygenomelen<-sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"]+sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]
       mymingenomelen<-min(sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"],sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"])*2
       if (stats["hsplength"]>mymingenomelen) { #this shouldn't be necessary given that only one genome has alignments
@@ -331,12 +256,9 @@ for (sample in samples) {
       d9<-as.numeric(-log(stats["hspidpositions"]/mymingenomelen))
       percentid<-as.numeric(stats["hspidpositions"]/stats["hsplength"])
       covbreadthmin<-as.numeric(stats["hsplength"]/mymingenomelen)
-      bpdist<-as.numeric(stats["breakpoints"]/stats["alignments"])
-      breakpoints<-as.numeric(stats["breakpoints"])
-      alignments<-as.numeric(stats["alignments"])
     } else { ##combine both
-      stats1<-data.frame(rbind(colSums(allsampledf[stats1row,c("hspidpositions","hsplength","breakpoints","alignments")])),row.names = NULL)
-      stats2<-data.frame(rbind(colSums(allsampledf[stats2row,c("hspidpositions","hsplength","breakpoints","alignments")])),row.names = NULL)
+      stats1<-data.frame(rbind(colSums(allsampledf[stats1row,c("hspidpositions","hsplength")])),row.names = NULL)
+      stats2<-data.frame(rbind(colSums(allsampledf[stats2row,c("hspidpositions","hsplength")])),row.names = NULL)
       mergedstats<-stats1+stats2
       mygenomelen<-sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"]+sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]
       mymingenomelen<-min(sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"],sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"])*2
@@ -354,12 +276,9 @@ for (sample in samples) {
       d9<-as.numeric(-log(mergedstats["hspidpositions"]/mymingenomelen))
       percentid<-as.numeric(mergedstats["hspidpositions"]/mergedstats["hsplength"])
       covbreadthmin<-as.numeric(mergedstats["hsplength"]/mymingenomelen) #this is the coverage breadth realtive to the mininum  genome length
-      bpdist<-as.numeric(mergedstats["breakpoints"]/mergedstats["alignments"])
-      breakpoints<-as.numeric(mergedstats["breakpoints"])
-      alignments<-as.numeric(mergedstats["alignments"])
     }
 
-    output[[counter2]]<-c(sample,sampleb,d0,d4,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments)
+    output[[counter2]]<-c(sample,sampleb,d0,d4,d6,d7,d8,d9,percentid,covbreadthmin)
   }
   finaldf<-as.data.frame(do.call(rbind,output))
   allsampledflist[[counter1]]<-finaldf
@@ -367,5 +286,5 @@ for (sample in samples) {
 }
 
 finaldf<-as.data.frame(do.call(rbind,allsampledflist))
-colnames(finaldf)<-c('Sample1','Sample2','DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth_mingenome','Breakpoint_distance','Breakpoints','Alignments')
+colnames(finaldf)<-c('Sample1','Sample2','DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth_mingenome')
 write.table(finaldf, file=gsubfn('%1',list('%1'=args[1]),'%1/output/distancestats.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)

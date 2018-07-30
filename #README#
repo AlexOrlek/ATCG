@@ -1,0 +1,49 @@
+To do:
+
+implement bootstrapping
+implement breakpoint distance
+include network analysis
+
+!granges.R:
+make sure seqlengths are ordered by seq name: DONE
+samplecontigs<-levels(as.factor(report$sname))
+samplecontiglens<-seqlenreport[seqlenreport$plasmid %in% samplecontigs,2]  ##levels gives alphabetical output; so seqlenreport$plasmid needs to be alphsbetical so contigs and lengths correspond.
+
+make sure query id and sample id are reformatted to sample|contig so any additional info doesn't cause bug (when using disjoin/split) DONE
+don't need to create data frame when getting final stats, jsut use named vectors
+need to have trimalignments return sfinal as well as qfinal so can do breakpoint distance analysis on trimmed alignments DONE
+have edited trimalignments function since there was a bug in the if else code block applying newstart/end DONE
+remove all references to 'plasmid' in scripts
+
+granges_nobreakpointstats.R  working code for hspid stats with bug corrected
+granges.R  includes breakpoint stats
+
+
+~~
+adding code so self-query is filtered before running blast but this tiurned out to cause error when running bash script using subprocess in runpipeline.py (using bash script because need to use seqkit and then pipe to blastn).
+
+Need to add following to subprocess command:
+import signal
+def default_sigpipe():
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+subprocess.Popen(['bash','runblast2.sh'], preexec_fn=default_sigpipe)  
+See: https://stackoverflow.com/questions/37547232/broken-pipe-error-python-subprocess
+
+
+cat ${query} | seqkit grep -r -p ^${sample} -v  | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt ${outfmt} -task 'blastn' -num_threads ${threads} -max_target_seqs '500' -word_size ${wordsize} -culling_limit '5'             
+
+*fixed bug (samplenames rather than included.txt)
+*removed python selffiltering script !N.B including this leadss to bug when there are no hits
+*added option for non-all-vs-all blast
+
+~~
+
+DONE(ish)
+make pipeline easier to use - just require multifasta and sample names as input rather than blast databases?; automatically detect whether samplelevel (multicontig) or individual analysis should be conducted based on whether input is a multifasta or single-header fasta [!no - just use samplelevel granges for both]; need to cater for situation where there is mixture of multicontig and single contig plasmids - just use samplelevel script for everything?; actually would be good to have two input options - either multifasta (followed by all-against-all comparisons) OR custom input if you don't need all-against-all e.g. just one query compared to a set of fastas (and in this case a dendrogram will not be produced); simplest option for handling multicontig samples is to say fasta headers need to be formatted as "sample|contig" or "sample|plasmid.contig" or just "sample"
+
+N.B to replicate results from before, need to sort input file (blastdb filepaths) by sample name - having done this, I get the same distancestats/dendrogram. Are distance stats the same with no sorting, just different order of pairs? checkdistancestats.py shows that the distance stats are the same - so either ordering of distance matrix influences hclust or there is a bug - it's a bug - distance matrices have different values - bug was because the dendrogram.R script relies on distance table to be structured such that each sample in sample1 column is associated with all sample2 samples that come after it in the alphabet - need to look into it more to fully understand; as quality check, could create symmetric matrix and checking symmetry in dendrogram.R?
+
+remove strsplit operation (used to strip guid) DONE (hashed lines in dendrogram.R)
+implement quiet mode in runsubprocess (so don't get boring info like mkdir ran successfully) DONE
+make dendrogram.R more flexible so that it can accept any distance score argument combination DONE
+mv splitblast to reformatblastoutput; mv granges_samplelevel to granges DONE
