@@ -10,7 +10,8 @@ simplify<-IRanges::simplify
 
 cores=as.integer(args[2])
 breakpoint=as.character(args[3])
-
+print(breakpoint)
+print('this is breakpoint value')
 ###define functions
 #stats functions
 gethspidpositions<-function(x) {
@@ -265,9 +266,11 @@ stopCluster(cl)
 
 allsampledf<-as.data.frame(do.call(rbind, allsampledflist))
 if (breakpoint=='True') {
-   colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments') #!ADDED breakpoint and alignment count
-else {
-   colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments')
+    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments') #!ADDED breakpoint and alignment count
+    statscols<-c("hspidpositions","hsplength","breakpoints","alignments")
+} else {
+    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength')
+    statscols<-c("hspidpositions","hsplength")
 }
 #allsampledf$querysample<-sapply(strsplit(as.vector(allsampledf$querysample),"|",fixed=T),function(x) x=x[1]) #reformat to remove |contig suffix from sample|contig #!!!REMOVED -now doing above
 
@@ -301,7 +304,7 @@ for (sample in samples) {
       print(c(sampleb,'no pairwise matches found for this sample'))
       next
     } else if (length(stats1row)==0) {
-      stats<-data.frame(rbind(colSums(allsampledf[stats2row,c("hspidpositions","hsplength","breakpoints","alignments")])),row.names = NULL)
+      stats<-data.frame(rbind(colSums(allsampledf[stats2row,statscols])),row.names = NULL)
       mygenomelen<-sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"]+sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]
       mymingenomelen<-min(sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"],sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"])*2
       if (stats["hsplength"]>mymingenomelen) { #this shouldn't be necessary given that only one genome has alignments
@@ -324,7 +327,7 @@ for (sample in samples) {
       	alignments<-as.numeric(stats["alignments"])
       }
     } else if (length(stats2row)==0) {
-      stats<-data.frame(rbind(colSums(allsampledf[stats1row,c("hspidpositions","hsplength","breakpoints","alignments")])),row.names = NULL)
+      stats<-data.frame(rbind(colSums(allsampledf[stats1row,statscols])),row.names = NULL)
       mygenomelen<-sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"]+sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]
       mymingenomelen<-min(sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"],sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"])*2
       if (stats["hsplength"]>mymingenomelen) { #this shouldn't be necessary given that only one genome has alignments
@@ -347,8 +350,8 @@ for (sample in samples) {
         alignments<-as.numeric(stats["alignments"])
       }
     } else { ##combine both
-      stats1<-data.frame(rbind(colSums(allsampledf[stats1row,c("hspidpositions","hsplength","breakpoints","alignments")])),row.names = NULL)
-      stats2<-data.frame(rbind(colSums(allsampledf[stats2row,c("hspidpositions","hsplength","breakpoints","alignments")])),row.names = NULL)
+      stats1<-data.frame(rbind(colSums(allsampledf[stats1row,statscols])),row.names = NULL)
+      stats2<-data.frame(rbind(colSums(allsampledf[stats2row,statscols])),row.names = NULL)
       mergedstats<-stats1+stats2
       mygenomelen<-sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"]+sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]
       mymingenomelen<-min(sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"],sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"])*2
@@ -375,7 +378,7 @@ for (sample in samples) {
     
     if (breakpoint=='True') {
       output[[counter2]]<-c(sample,sampleb,d0,d4,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments)
-    else {
+    } else {
       output[[counter2]]<-c(sample,sampleb,d0,d4,d6,d7,d8,d9,percentid,covbreadthmin)
     }
   }
@@ -387,7 +390,7 @@ for (sample in samples) {
 finaldf<-as.data.frame(do.call(rbind,allsampledflist))
 if (breakpoint=='True') {
    colnames(finaldf)<-c('Sample1','Sample2','DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth_mingenome','Breakpoint_distance','Breakpoints','Alignments')
-else {
+} else {
    colnames(finaldf)<-c('Sample1','Sample2','DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth_mingenome')
 }
 write.table(finaldf, file=gsubfn('%1',list('%1'=args[1]),'%1/output/distancestats.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
