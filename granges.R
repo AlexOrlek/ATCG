@@ -77,7 +77,7 @@ addcols<-function(x) {
 
 
 trimalignments<-function(qfinal,sfinal) {
-  #filter alignments of qfinal based on sfinal; apply to each qname split
+  #filter alignments of qfinal based on sfinal and vice-versa
   finalhsps<-sort(intersect(mcols(qfinal)$inputhsp,mcols(sfinal)$inputhsp))
   qfinal<-qfinal[mcols(qfinal)$inputhsp %in% finalhsps]
   sfinal<-sfinal[mcols(sfinal)$inputhsp %in% finalhsps]
@@ -264,7 +264,11 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
 stopCluster(cl)
 
 allsampledf<-as.data.frame(do.call(rbind, allsampledflist))
-colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments') #!ADDED breakpoint and alignment count 
+if (breakpoint=='True') {
+   colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments') #!ADDED breakpoint and alignment count
+else {
+   colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments')
+}
 #allsampledf$querysample<-sapply(strsplit(as.vector(allsampledf$querysample),"|",fixed=T),function(x) x=x[1]) #reformat to remove |contig suffix from sample|contig #!!!REMOVED -now doing above
 
 ###get final stats (distance scores) for each pairwise sample combination

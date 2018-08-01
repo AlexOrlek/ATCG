@@ -105,7 +105,7 @@ if args.sequences==None:
     later=time.time()
     print(later-start, 'runtime; finished getting sequence lengths')
 
-runsubprocess(['Rscript','granges.R',outputpath, str(args.threads), str(breakpoint]))
+runsubprocess(['Rscript','granges.R',outputpath, str(args.threads), str(args.breakpoint)])
 later=time.time()
 print(later-start, 'runtime; finished trimming alignments')
 if blasttype=='allvallpairwise':
