@@ -25,9 +25,24 @@ ATCG is __not__ appropriate if you want to:
 * [bioawk](https://github.com/lh3/bioawk)
 * [BLAST+](https://www.ncbi.nlm.nih.gov/books/NBK279690/) (`blastn`)
 * [R](https://www.r-project.org/) 3.3.1 or later with the following packages installed:
-    * Bioconductor 3.4 and the [GenomicRanges](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html) package
-    * [gsubfn](https://cran.r-project.org/web/packages/gsubfn/index.html)
-    * [purrr](https://github.com/tidyverse/purrr)
+    * [GenomicRanges](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html); [gsubfn](https://cran.r-project.org/web/packages/gsubfn/index.html); [purrr](https://github.com/tidyverse/purrr); [foreach](https://cran.r-project.org/web/packages/foreach/index.html); [doParallel](https://cran.r-project.org/web/packages/doParallel/index.html); [data.table](https://cran.r-project.org/web/packages/data.table/index.html)<br>
+
+Run the following code in R to install the required R packages:<br>
+```bash
+source("https://bioconductor.org/biocLite.R")
+biocLite("GenomicRanges")
+
+install.packages("devtools")
+library(devtools)
+devtools::install_github("ggrothendieck/gsubfn")
+
+install.packages("purrr")
+install.packages("foreach")
+install.packages("doParallel")
+install.packages("data.table")
+```
+
+    
 
 
 # Installation
