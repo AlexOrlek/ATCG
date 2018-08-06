@@ -5,6 +5,7 @@ library('purrr')
 reduce<-GenomicRanges::reduce
 simplify<-IRanges::simplify
 library(data.table)
+transpose<-purrr::transpose
 
 #args[1] is filepath to pipeline output folder; args[2] is threads; args[3] is breakpoint stats; args[4] is bootstrap number
 
@@ -216,9 +217,9 @@ statsfunc<-function(stats, breakpoint,mygenomelen,mymingenomelen) {
     bpdist<-as.numeric(stats["breakpoints"]/stats["alignments"])
     breakpoints<-as.numeric(stats["breakpoints"])
     alignments<-as.numeric(stats["alignments"])
-    return(c(d0,d4,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments))
+    return(c(d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments))
   } else {
-    return(c(d0,d4,d6,d7,d8,d9,percentid,covbreadthmin))
+    return(c(d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,percentid,covbreadthmin))
   }
 }
 
@@ -245,6 +246,7 @@ allsampledflist<-list()
 
 allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRanges','purrr')) %dopar% {
     #read alignmnents file for given sample
+    sample<-samples[i]
     report<-read.table(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),sep='\t',header=FALSE) #same subject, different queries
     colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
     report$qname<-sapply(strsplit(as.vector(report$qname),"|",fixed=T),function(x) x=x[1]) #!!!ADDED

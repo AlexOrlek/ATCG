@@ -49,7 +49,7 @@ install.packages("data.table")
 
 ```bash
 git clone https://github.com/AlexOrlek/ATCG.git
-cd ATCG-master
+cd ATCG
 ```
 # Quick start
 
