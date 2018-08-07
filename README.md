@@ -111,8 +111,8 @@ tree_[score].rds       | as above, but stored as an [rds file](https://stat.ethz
 
 If bootstrapping is specified, the following additional files will also be generated in the output directory:<br>
 A file containing distance statistics for each bootstrap replicate (distancestats_bootstrapped.tsv)<br>
-A pdf showing the original tree with bootstrap confidence values (tree\\_[score]\\_bootstrapped.pdf) is produced instead of tree_[score].pdf<br>
-A list of replicate trees, that were used to calculate confidence values for the original tree, is stored as an rds file (tree\\_[score]\\_bootstrapped.rds)
+A pdf showing the original tree with bootstrap confidence values (tree\_[score]\_bootstrapped.pdf) is produced instead of tree_[score].pdf<br>
+A list of replicate trees, that were used to calculate confidence values for the original tree, is stored as an rds file (tree\_[score]\_bootstrapped.rds)
 
 
 # Background and methods
