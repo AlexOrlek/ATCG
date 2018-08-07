@@ -11,9 +11,9 @@ boot=as.integer(args[3])
 distargs=args[4:length(args)]
 
 
-getphy<-function(myreport,distarg) {
+getphy<-function(myreport,distarg,getnumsamples=TRUE) {
   samples1<-as.character(sort(unique(myreport$Sample1)))
-  samples<-sort(unique(c(as.character(unique(myreport$Sample1)),as.character(unique(myreport$Sample2)))))
+  samples<-sort(unique(c(as.vector(myreport$Sample1),as.vector(myreport$Sample2))))
   numsamples<-length(samples)
   myreportmatrix<-matrix(NA, ncol=length(samples), nrow=length(samples))
   myreportlist<-list()
@@ -21,10 +21,9 @@ getphy<-function(myreport,distarg) {
   #first make list of samples1:samples2/scores
   colnamesmyreport<-colnames(myreport)
   scorecols<-c(which(colnamesmyreport=='Sample2'),which(colnamesmyreport==distarg))
-  for (i in 1:length(samples1))  {
-    myreportlist[[i]]<-myreport[myreport$Sample1==samples1[i],scorecols]
+  for (mysample in samples1)  {
+    myreportlist[[mysample]]<-myreport[myreport$Sample1==mysample,scorecols]
   }
-  names(myreportlist)<-samples1
   
   #make matrix
   maxdist<-2*(max(myreport[,distarg]))
@@ -62,7 +61,11 @@ getphy<-function(myreport,distarg) {
   
   #make phylogeny
   myphy<-fastme.bal(d, nni = TRUE, spr = TRUE, tbr = TRUE)
-  return(list(myphy,numsamples))
+  if (getnumsamples==TRUE) {
+    return(list(myphy,numsamples))
+  } else {
+    return(myphy)
+  }
 }
 
 
@@ -77,6 +80,7 @@ for (distarg in distargs) {
   #get original phylogeny
   phyout<-getphy(myreport,distarg)
   originalphy<-phyout[[1]]
+  originalphy$edge.length[originalphy$edge.length<0]<-0  
   numsamples<-phyout[[2]]
   height=(numsamples%/%5)*5
   width=(numsamples%/%5)*3
@@ -87,7 +91,7 @@ for (distarg in distargs) {
     width=10
   }
   
-  if (boot!='True') {
+  if (boot==0) {
     writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/tree_%2.pdf')
     pdf(writefilepath,width,height)
     par(mar = c(5,2,2,10)) #bottom left top right N.B this must come below pdf command 
@@ -104,21 +108,26 @@ for (distarg in distargs) {
     cl<-makeCluster(as.integer(threads))
     registerDoParallel(cl)
 
-    bootphys<-foreach(i=1:length(names(myreportbootsplit))) %dopar% {
+    bootphys<-foreach(i=1:length(names(myreportbootsplit)), .packages=c('ape')) %dopar% {
       bootname<-names(myreportbootsplit)[i]
-      phyout<-getphy(myreportbootsplit[[bootname]],distarg)
-      print(phyout)
+      phyout<-getphy(myreportbootsplit[[bootname]],distarg,getnumsamples=FALSE)
+      print(list(phyout))
     }
 
     stopCluster(cl)
+    names(bootphys)<-names(myreportbootsplit)
+    bootphys<-lapply(bootphys, function(l) l[[1]])
 
-    boot.clades<-prop.clades(originalphy, bootphys)
+    boot.clades<-prop.clades(originalphy, bootphys) #if a clade of the original tree is not represented in any of the bootstrap trees, the node support value will be 'NA'; convert to 0; express values as percentage; then re-convert 0s + convert other low values to NA
+    boot.clades[is.na(boot.clades)]<-0
+    boot.clades<-round(boot.clades/boot,2)*100 #express as percentage
+    boot.clades[boot.clades<50]<-NA
     
     writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/tree_%2_bootstrapped.pdf')
     pdf(writefilepath,width,height)
     par(mar = c(5,2,2,10)) 
     plot(originalphy)
-    nodelabels(boot.clades)
+    nodelabels(boot.clades,bg="white",frame="none",cex=0.8,adj=c(1.1,-0.4))
     dev.off()
     writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/tree_%2.rds')
     saveRDS(originalphy,writefilepath)

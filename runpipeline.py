@@ -5,13 +5,12 @@ from pythonmods import runsubprocess
 
 def default_sigpipe():
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-    
-def proportion(x):
-    x = float(x)
-    if x < 0.0 or x > 1.0:
-        raise argparse.ArgumentTypeError("%r not in range [0.0, 1.0]"%(x,))
+
+def positiveint(x):
+    x = int(x)
+    if x <= 0:
+         raise argparse.ArgumentTypeError("%s is an invalid positive int value" %x)
     return x
-            
 
 parser = argparse.ArgumentParser(description='Run pipeline scripts')
 parser.add_argument('-s','--sequences', help='Sequences, for all-vs-all pairwise comparison', required=False)
@@ -21,7 +20,7 @@ parser.add_argument('-o','--out', help='Output directory (required)', required=T
 parser.add_argument('-e','--evalue', help='BLAST e-value cutoff (default: 1e-8)', default=1e-8, type=float) #1e-8 is used in ggdc web pipeline - see Meier-Kolthoff 2014
 parser.add_argument('-w','--wordsize', help='BLAST word size (default: 38)', default=38, type=int) #38 is used in ggdc web pipleine?
 parser.add_argument('-t','--threads', help='Number of threads to use (default: 8)', default=8, type=int)
-parser.add_argument('-b','--boot', help='Number of bootstraps to run (default: no bootstrapping)', default=0, type=int)
+parser.add_argument('-b','--boot', help='Number of bootstraps to run (default: no bootstrapping)', default=0, type=positiveint)
 parser.add_argument('-d','--distscore', help='Distance score to use to construct phylogeny (can specify multiple parameters; default: DistanceScore_d8 DistanceScore_d9)', nargs='+', default=['DistanceScore_d8', 'DistanceScore_d9'], choices=['DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9'], metavar='',type=str)
 parser.add_argument('--breakpoint', action='store_true', help='Calculate breakpoint statistics (default: do not calculate)')
 args = parser.parse_args()

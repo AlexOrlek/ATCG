@@ -86,11 +86,16 @@ Alternatively, if all-vs-all comparison is not required, 2 input (multi-)FASTA f
 Run `python runpipeline.py --help` to view a summary of all the options
 
 By default, breakpoint distance is not calculated, but can be specified using the `--breakpoint` flag
-By default, bootstrapping will not be conducted and the tree will therefore not show bootstrap confidence values. To conduct bootstrapping, the number of replicates is specified using the `-b` flag. Trimmed alignments will be resampled with replacement to produce replicate distance scores, from which replicate trees are produced, allowing confidence values to be shown on the original tree. 
+By default, bootstrapping will not be conducted and the tree will therefore not show bootstrap confidence values. To conduct bootstrapping, the number of replicates is specified using the `-b` flag.
+
+`python runpipeline.py -s genomes.fasta -o output-directory -t 8 -b 100 --breakpoint`
+
+When bootstrapping is conducted, trimmed alignments will be resampled with replacement to produce replicate distance scores, from which replicate trees are produced, allowing confidence values to be shown on the original tree.
+
 
 # Output files
 
-The below table shows the most important outputs from running the pipeline with the -s input flag. Similar outputs are produced using -s1 and -s2 input flags.
+The below table shows the most important outputs from running the pipeline with the -s input flag. Similar outputs are produced using -s1 and -s2 input flags, but trees will not be produced.
 
 File/Directory         | Description                                                                                       
 ---------------------- | -------------------------------------------------------------------------------------------------
@@ -101,23 +106,23 @@ excluded.txt	       | names of any genomes with no detected blast alignments (th
 output/		       | directory containing output files described below
 distancestats.tsv      | columns of distance statistics for each unique pairwise combination of genomes
 tree_[score].pdf       | tree generated using a specified distance score column from the distancestats.tsv file; plotted as a pdf
-tree_[score].rds       | as above, but stored as an [rds file](https://stat.ethz.ch/R-manual/R-devel/library/base/html/readRDS.html) which can be restored, and the tree replotted 
+tree_[score].rds       | as above, but stored as an [rds file](https://stat.ethz.ch/R-manual/R-devel/library/base/html/readRDS.html) which can be read, and the tree replotted 
 
 
 If bootstrapping is specified, the following additional files will also be generated in the output directory:<br>
 A file containing distance statistics for each bootstrap replicate (distancestats_bootstrapped.tsv)<br>
-A pdf showing the original tree with bootstrap confidence values (tree_[score]_bootstrapped.pdf) is produced instead of tree_[score].pdf<br>
-A list of replicate trees, that were used to calculate confidence values for the original tree, is stored as an rds file (tree_[score]_bootstrapped.rds)
+A pdf showing the original tree with bootstrap confidence values (tree\\_[score]\\_bootstrapped.pdf) is produced instead of tree_[score].pdf<br>
+A list of replicate trees, that were used to calculate confidence values for the original tree, is stored as an rds file (tree\\_[score]\\_bootstrapped.rds)
 
 
 # Background and methods
 
-A methods paper will be written shortly. A brief outline is given below, and further information about the general approach can be found in a [paper](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-60) by Meier-Kolthoff _et al_. describing the genome-genome distance calculator tool.
+A paper describing the methods will be written shortly. A brief outline is given below, and further information about the general approach can be found in a [paper](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-60) by Meier-Kolthoff _et al_. describing the genome-genome distance calculator tool.
 
 1. BLAST is conducted on assembled nucleotide sequences.
 2. Overlapping alignments are trimmed.
 3. For trimmed alignments, distance metrics are calculated; different metrics reflect different distance concepts: [resemblance and containment](https://www.cs.princeton.edu/courses/archive/spring13/cos598C/broder97resemblance.pdf). Breakpoint distance can optionally be calculated.
-4. If all-vs-all BLAST was run, then a tree is generated using pairwise distance metrics.
+4. If all-vs-all BLAST was run, then a tree is generated using a specified pairwise distance metric; optionally, the tree can be annotated with bootstrap confidence values, which are calculated by resampling trimmed alignments.
 
 
 # License
