@@ -22,7 +22,7 @@ parser.add_argument('-e','--evalue', help='BLAST e-value cutoff (default: 1e-8)'
 parser.add_argument('-w','--wordsize', help='BLAST word size (default: 38)', default=38, type=int) #38 is used in ggdc web pipleine?
 parser.add_argument('-t','--threads', help='Number of threads to use (default: 8)', default=8, type=int)
 parser.add_argument('-b','--boot', help='Number of bootstraps to run (default: no bootstrapping)', default=0, type=int)
-parser.add_argument('-d','--distscore', help='Distance score to use to construct dendrogram (can specify multiple parameters; default: DistanceScore_d8 DistanceScore_d9)', nargs='+', default=['DistanceScore_d8', 'DistanceScore_d9'], choices=['DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9'], metavar='',type=str)
+parser.add_argument('-d','--distscore', help='Distance score to use to construct phylogeny (can specify multiple parameters; default: DistanceScore_d8 DistanceScore_d9)', nargs='+', default=['DistanceScore_d8', 'DistanceScore_d9'], choices=['DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9'], metavar='',type=str)
 parser.add_argument('--breakpoint', action='store_true', help='Calculate breakpoint statistics (default: do not calculate)')
 args = parser.parse_args()
 outputpath=os.path.relpath(args.out, os.path.dirname(os.path.abspath(__file__)))
@@ -110,11 +110,11 @@ runsubprocess(['Rscript','granges.R',outputpath, str(args.threads), str(args.bre
 later=time.time()
 print(later-start, 'runtime; finished trimming alignments')
 if blasttype=='allvallpairwise':
-    dendargs=['Rscript','dendrogram.R',outputpath]
-    dendargs.extend(args.distscore)
-    runsubprocess(dendargs)
+    phyargs=['Rscript','phylogeny.R',outputpath,str(args.threads),str(args.boot)]
+    phyargs.extend(args.distscore)
+    runsubprocess(phyargs)
     later=time.time()
-    print(later-start, 'runtime; finished plotting dendrogram using distance score(s): %s'%args.distscore)
+    print(later-start, 'runtime; finished plotting phylogeny using distance score(s): %s'%args.distscore)
                     
 
 

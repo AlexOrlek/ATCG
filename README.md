@@ -1,4 +1,4 @@
-ATCG (Alignment-based Tool for Comparative Genomics) is a command-line tool for pairwise comparison of nucleotide sequences; it is intended for small-to-medium-sized datasets (e.g. plasmids; small collections of bacterial genomes). [BLAST](https://www.ncbi.nlm.nih.gov/books/NBK279690/) alignments are analysed to calculate various overall measures of sequence relatedness, which can then be visualised as dendrograms. The approach of ATCG is similar to that of a web-based tool called the genome-genome distance calculator ([GGDC](https://ggdc.dsmz.de/ggdc.php#)).
+ATCG (Alignment-based Tool for Comparative Genomics) is a command-line tool for comparison of nucleotide sequences; it is intended for small-to-medium-sized datasets (e.g. plasmids; small collections of bacterial genomes). [BLAST](https://www.ncbi.nlm.nih.gov/books/NBK279690/) alignments are analysed to calculate various overall measures of pairwise sequence relatedness (expressed as distance scores). Pairwise distance scores can then be used to build a [distance-based](https://en.wikipedia.org/wiki/Distance_matrices_in_phylogeny) phylogenetic tree. The approach of ATCG is similar to that of a web-based tool called the genome-genome distance calculator ([GGDC](https://ggdc.dsmz.de/ggdc.php#)).
 
 # Introduction
 
@@ -25,7 +25,7 @@ ATCG is __not__ appropriate if you want to:
 * [bioawk](https://github.com/lh3/bioawk)
 * [BLAST+](https://www.ncbi.nlm.nih.gov/books/NBK279690/) (`blastn`)
 * [R](https://www.r-project.org/) 3.3.1 or later with the following packages installed:
-    * [GenomicRanges](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html); [gsubfn](https://cran.r-project.org/web/packages/gsubfn/index.html); [purrr](https://github.com/tidyverse/purrr); [foreach](https://cran.r-project.org/web/packages/foreach/index.html); [doParallel](https://cran.r-project.org/web/packages/doParallel/index.html); [data.table](https://cran.r-project.org/web/packages/data.table/index.html)<br>
+    * [GenomicRanges](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html); [gsubfn](https://cran.r-project.org/web/packages/gsubfn/index.html); [purrr](https://github.com/tidyverse/purrr); [foreach](https://cran.r-project.org/web/packages/foreach/index.html); [doParallel](https://cran.r-project.org/web/packages/doParallel/index.html); [data.table](https://cran.r-project.org/web/packages/data.table/index.html); [ape](https://cran.r-project.org/web/packages/ape/index.html)<br>
 
 Run the following code in R to install the required R packages:<br>
 ```bash
@@ -40,6 +40,7 @@ install.packages("purrr")
 install.packages("foreach")
 install.packages("doParallel")
 install.packages("data.table")
+install.packages("ape")
 ```
 
     
@@ -69,12 +70,12 @@ isolate2|plasmid1.contig2<br>
 isolate2|plasmid2
 
 
-For all-vs-all comparison, the tool can be run by providing a single multi-FASTA file using the `-s` flag; pairwise distance scores will be recorded and a dendrogram will be generated.
+For all-vs-all comparison, the tool can be run by providing a single multi-FASTA file using the `-s` flag; pairwise distance scores will be recorded and a phylogenetic tree will be generated.
 
 `python runpipeline.py -s genomes.fasta -o output-directory -t 8`
 
 
-Alternatively, if all-vs-all comparison is not required, 2 input (multi-)FASTA files can be provided using flags `-s1` and `-s2`; pairwise comparisons will be conducted between but not amongst sequence(s) in each file; the analysis will run faster than an all-vs-all comparison. Pairwise distances will be recorded but a dendrogram will not be generated since distances are not available for all pairwise combinations.
+Alternatively, if all-vs-all comparison is not required, 2 input (multi-)FASTA files can be provided using flags `-s1` and `-s2`; pairwise comparisons will be conducted between but not amongst sequence(s) in each file; the analysis will run faster than an all-vs-all comparison. Pairwise distances will be recorded but a tree will not be generated since distances are not available for all pairwise combinations.
 
 `python runpipeline.py -s1 query.fasta -s2 genomes.fasta -o output-directory -t 8`
 
@@ -85,20 +86,28 @@ Alternatively, if all-vs-all comparison is not required, 2 input (multi-)FASTA f
 Run `python runpipeline.py --help` to view a summary of all the options
 
 By default, breakpoint distance is not calculated, but can be specified using the `--breakpoint` flag
-
+By default, bootstrapping will not be conducted and the tree will therefore not show bootstrap confidence values. To conduct bootstrapping, the number of replicates is specified using the `-b` flag. Trimmed alignments will be resampled with replacement to produce replicate distance scores, from which replicate trees are produced, allowing confidence values to be shown on the original tree. 
 
 # Output files
 
-The below table shows the most important outputs from running the pipeline with the -s input flag. Similar outputs are produced using -s1 and -s2 input flags. 
+The below table shows the most important outputs from running the pipeline with the -s input flag. Similar outputs are produced using -s1 and -s2 input flags.
 
-File/Directory                 | Description                                                                                       
------------------------------- | -------------------------------------------------------------------------------------------------
-splitfastas/                   | directory containing FASTA files derived from the input multi-FASTA, split by unit of analysis i.e. genome (or metagenome)                                       
-blast/			       | directory containing tsv files of blast alignments for each genome
-output/distancestats.tsv       | columns of distance stats for each unique pairwise combination of genomes
-output/dendrogram_[score].pdf  | dendrogram generated using a specified distance score column from the distancestats.tsv file
-included.txt		       | names of genomes with detected blast alignments, that will therefore appear in the distancestats.tsv file
-excluded.txt		       | names of any genomes with no detected blast alignments (this file may well be blank)
+File/Directory         | Description                                                                                       
+---------------------- | -------------------------------------------------------------------------------------------------
+splitfastas/           | directory containing FASTA files derived from the input multi-FASTA, split by unit of analysis i.e. genome (or metagenome)                                       
+blast/		       | directory containing tsv files of blast alignments for each genome
+included.txt           | names of genomes with detected blast alignments, that will therefore appear in the distancestats.tsv file
+excluded.txt	       | names of any genomes with no detected blast alignments (this file may well be blank)
+output/		       | directory containing output files described below
+distancestats.tsv      | columns of distance statistics for each unique pairwise combination of genomes
+tree_[score].pdf       | tree generated using a specified distance score column from the distancestats.tsv file; plotted as a pdf
+tree_[score].rds       | as above, but stored as an [rds file](https://stat.ethz.ch/R-manual/R-devel/library/base/html/readRDS.html) which can be restored, and the tree replotted 
+
+
+If bootstrapping is specified, the following additional files will also be generated in the output directory:<br>
+A file containing distance statistics for each bootstrap replicate (distancestats_bootstrapped.tsv)<br>
+A pdf showing the original tree with bootstrap confidence values (tree_[score]_bootstrapped.pdf) is produced instead of tree_[score].pdf<br>
+A list of replicate trees, that were used to calculate confidence values for the original tree, is stored as an rds file (tree_[score]_bootstrapped.rds)
 
 
 # Background and methods
@@ -108,7 +117,7 @@ A methods paper will be written shortly. A brief outline is given below, and fur
 1. BLAST is conducted on assembled nucleotide sequences.
 2. Overlapping alignments are trimmed.
 3. For trimmed alignments, distance metrics are calculated; different metrics reflect different distance concepts: [resemblance and containment](https://www.cs.princeton.edu/courses/archive/spring13/cos598C/broder97resemblance.pdf). Breakpoint distance can optionally be calculated.
-4. If all-vs-all BLAST was run, then a dendrogram is generated using pairwise distance metrics.
+4. If all-vs-all BLAST was run, then a tree is generated using pairwise distance metrics.
 
 
 # License
