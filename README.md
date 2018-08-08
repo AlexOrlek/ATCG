@@ -20,7 +20,7 @@ ATCG is __not__ appropriate if you want to:
 # Requirements
 
 * Linux
-* [Python](https://www.python.org/) 2.7
+* [Python](https://www.python.org/) 2.7 or Python 3 (tested on Python 3.5.2)
 * [SeqKit](https://github.com/shenwei356/seqkit)
 * [bioawk](https://github.com/lh3/bioawk)
 * [BLAST+](https://www.ncbi.nlm.nih.gov/books/NBK279690/) (`blastn`)
@@ -54,7 +54,7 @@ cd ATCG
 ```
 # Quick start
 
-Information in FASTA headers must be delineated using vetical bar(s) "|" and the headers should be in the format `unit of analysis|subunit`. The `subunit` is only necessary when indicating affiliation of e.g. contigs with genomes, or of bacterial plasmids with bacterial isolates. Additional information can be included in the header by delineating with additional vertical bar(s)
+Information in FASTA headers must be delineated using vertical bar(s) "|" and the headers should be in the format `unit of analysis|subunit`. The `subunit` is only necessary when indicating affiliation of e.g. contigs with genomes, or of bacterial plasmids with bacterial isolates. Additional information can be included in the header by delineating with additional vertical bar(s)
 
 If comparing genomes, FASTA headers could be formatted as follows:<br>
 genome1|contig1<br>

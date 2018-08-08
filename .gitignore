@@ -2,3 +2,5 @@ README
 README~
 std.out
 std.err
+__pycache__
+*.pyc

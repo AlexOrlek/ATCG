@@ -1,7 +1,11 @@
 #Python modules
 
 def runsubprocess(args,stderrpath=None, stdoutpath=None, writefile=None,shell=False,verbose=True):
-    import subprocess,sys,thread #os
+    import subprocess,sys #os
+    try:
+        import thread
+    except:
+        import _thread
     """takes a subprocess argument list and runs Popen/communicate(); by default, both output and error are printed to screen; stderrpath and stdoutpath for saving output can be optionally set; a redirect can be optionally set (writefile argument); errors are handled at multiple levels i.e. subthread error handling; can set shell=True; the function can be used 'fruitfully' since stdout is returned"""
     if shell==True: #e.g. args=['ls *.txt]
         processname=args[0] #ls *.txt
@@ -41,8 +45,8 @@ def runsubprocess(args,stderrpath=None, stdoutpath=None, writefile=None,shell=Fa
                 p=subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
             stdout, stderr= p.communicate()
             if verbose==True:
-                print('{} {}'.format(stdout, 'stdout'))
-                print('{} {}'.format(stderr, 'stderr'))
+                print('{} {}'.format(stdout.decode(), 'stdout'))
+                print('{} {}'.format(stderr.decode(), 'stderr'))
             if stdoutpath==None:
                 pass
             else:
@@ -61,8 +65,8 @@ def runsubprocess(args,stderrpath=None, stdoutpath=None, writefile=None,shell=Fa
                     p=subprocess.Popen(args,stdout=stdout, stderr=subprocess.PIPE, shell=True)
                 stdout, stderr= p.communicate()
                 if verbose==True:
-                    print('{} {}'.format(stdout, 'stdout'))
-                    print('{} {}'.format(stderr, 'stderr'))
+                    print('{} {}'.format(stdout.decode(), 'stdout'))
+                    print('{} {}'.format(stderr.decode(), 'stderr'))
                 #n.b stdout is None - can't write to file
                 if stderrpath==None:
                     pass
@@ -87,7 +91,10 @@ def runsubprocess(args,stderrpath=None, stdoutpath=None, writefile=None,shell=Fa
             sys.exit()
         else:
             #os._exit
-            thread.interrupt_main()
+            try:
+                thread.interrupt_main()
+            except:
+                _thread.interrupt_main()
             #keyboard interrupt is more drastic than sys.exit - only use for subscript subprocess errors which wouldn't otherwise trigger driverscript abort
     else:
         return stdout
