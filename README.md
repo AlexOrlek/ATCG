@@ -85,7 +85,8 @@ Alternatively, if all-vs-all comparison is not required, 2 input (multi-)FASTA f
 
 Run `python runpipeline.py --help` to view a summary of all the options
 
-By default, breakpoint distance is not calculated, but can be specified using the `--breakpoint` flag
+By default, the number of threads is 1, but multi-threading is recommended to reduce computing time; the number of threads to use is specified using the `-t` flag; the value must not be set above the number of threads available on your machine. 
+By default, breakpoint distance is not calculated, but can be specified using the `--breakpoint` flag.
 By default, bootstrapping will not be conducted and the tree will therefore not show bootstrap confidence values. To conduct bootstrapping, the number of replicates is specified using the `-b` flag.
 
 `python runpipeline.py -s genomes.fasta -o output-directory -t 8 -b 100 --breakpoint`
