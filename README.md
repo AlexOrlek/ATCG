@@ -19,8 +19,8 @@ ATCG is __not__ appropriate if you want to:
 
 # Requirements
 
-* Linux
-* [Python](https://www.python.org/) 2.7 or Python 3 (tested on Python 3.5.2)
+* Linux or MacOS (with the [Bash shell](https://en.wikibooks.org/wiki/Bash_Shell_Scripting#What_is_Bash?), which is the default shell on MacOS and many Linux distributions; tested using Bash versions 3.2, 4.1, 4.3)
+* [Python](https://www.python.org/) 2.7 or Python 3 (tested using Python 3.5)
 * [SeqKit](https://github.com/shenwei356/seqkit)
 * [bioawk](https://github.com/lh3/bioawk)
 * [BLAST+](https://www.ncbi.nlm.nih.gov/books/NBK279690/) (`blastn`)
@@ -32,15 +32,15 @@ Run the following code in R to install the required R packages:<br>
 source("https://bioconductor.org/biocLite.R")
 biocLite("GenomicRanges")
 
-install.packages("devtools")
+install.packages("devtools",repo='https://cloud.r-project.org/')
 library(devtools)
 devtools::install_github("ggrothendieck/gsubfn")
 
-install.packages("purrr")
-install.packages("foreach")
-install.packages("doParallel")
-install.packages("data.table")
-install.packages("ape")
+install.packages("purrr",repo='https://cloud.r-project.org/')
+install.packages("foreach",repo='https://cloud.r-project.org/')
+install.packages("doParallel",repo='https://cloud.r-project.org/')
+install.packages("data.table",repo='https://cloud.r-project.org/')
+install.packages("ape",repo='https://cloud.r-project.org/')
 ```
 
     

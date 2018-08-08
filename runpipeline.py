@@ -50,8 +50,14 @@ if args.sequences!=None:
     print(later-start, 'runtime; finished creating blast databases')
     p=subprocess.Popen(['bash','runblast.sh',outputpath, str(args.sequences), blastdbs, str(args.evalue), str(args.wordsize), str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
-    print('{} {}'.format(stdout.decode(), 'stdout'))
-    print('{} {}'.format(stderr.decode(), 'stderr'))                   
+    try:
+        print('{} {}'.format(stdout.decode(), 'stdout'))
+    except:
+        pass
+    try:
+        print('{} {}'.format(stderr.decode(), 'stderr'))
+    except:
+        pass
     if p.returncode!=0:
         sys.exit()
     later=time.time()
@@ -81,14 +87,26 @@ if args.sequences==None:
     print(later-start, 'runtime; finished creating blast databases')
     p=subprocess.Popen(['bash','runblast.sh',outputpath, str(args.sequences1), blastdbs2, str(args.evalue), str(args.wordsize), str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
-    print('{} {}'.format(stdout.decode(), 'stdout'))
-    print('{} {}'.format(stderr.decode(), 'stderr'))                   
+    try:
+        print('{} {}'.format(stdout.decode(), 'stdout'))
+    except:
+        pass
+    try:
+        print('{} {}'.format(stderr.decode(), 'stderr'))
+    except:
+        pass
     if p.returncode!=0:
         sys.exit()
     p=subprocess.Popen(['bash','runblast.sh',outputpath, str(args.sequences2), blastdbs1, str(args.evalue), str(args.wordsize), str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
-    print('{} {}'.format(stdout.decode(), 'stdout'))
-    print('{} {}'.format(stderr.decode(), 'stderr'))                   
+    try:
+        print('{} {}'.format(stdout.decode(), 'stdout'))
+    except:
+        pass
+    try:
+        print('{} {}'.format(stderr.decode(), 'stderr'))
+    except:
+        pass
     if p.returncode!=0:
         sys.exit()
 

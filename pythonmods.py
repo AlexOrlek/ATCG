@@ -45,8 +45,14 @@ def runsubprocess(args,stderrpath=None, stdoutpath=None, writefile=None,shell=Fa
                 p=subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
             stdout, stderr= p.communicate()
             if verbose==True:
-                print('{} {}'.format(stdout.decode(), 'stdout'))
-                print('{} {}'.format(stderr.decode(), 'stderr'))
+                try:
+                    print('{} {}'.format(stdout.decode(), 'stdout'))
+                except:
+                    pass
+                try:
+                    print('{} {}'.format(stderr.decode(), 'stderr'))
+                except:
+                    pass
             if stdoutpath==None:
                 pass
             else:
@@ -65,8 +71,14 @@ def runsubprocess(args,stderrpath=None, stdoutpath=None, writefile=None,shell=Fa
                     p=subprocess.Popen(args,stdout=stdout, stderr=subprocess.PIPE, shell=True)
                 stdout, stderr= p.communicate()
                 if verbose==True:
-                    print('{} {}'.format(stdout.decode(), 'stdout'))
-                    print('{} {}'.format(stderr.decode(), 'stderr'))
+                    try:
+                        print('{} {}'.format(stdout.decode(), 'stdout'))
+                    except:
+                        pass
+                    try:
+                        print('{} {}'.format(stderr.decode(), 'stderr'))
+                    except:
+                        pass
                 #n.b stdout is None - can't write to file
                 if stderrpath==None:
                     pass
@@ -83,7 +95,7 @@ def runsubprocess(args,stderrpath=None, stdoutpath=None, writefile=None,shell=Fa
     except:
         if verbose==False:
             print('{} {}'.format(processname, 'processname'))
-        print('{} {}'.format('runsubprocess code fail'))
+        print('runsubprocess code fail')
         sys.exit()
         
     if p.returncode!=0:
