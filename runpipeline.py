@@ -12,6 +12,16 @@ def positiveint(x):
          raise argparse.ArgumentTypeError("%s is an invalid positive int value" %x)
     return x
 
+def runtime():
+    try:
+        runtime=time.perf_counter()
+        cputime=time.process_time()
+    except:
+        runtime=time.time()
+        cputime=time.clock()
+    return(float(runtime),float(cputime))
+
+
 parser = argparse.ArgumentParser(description='Run pipeline scripts')
 parser.add_argument('-s','--sequences', help='Sequences, for all-vs-all pairwise comparison', required=False)
 parser.add_argument('-s1','--sequences1', help='First set of sequence(s), for pairwise comparison against second set', required=False)
@@ -23,13 +33,13 @@ parser.add_argument('-t','--threads', help='Number of threads to use (default: 1
 parser.add_argument('-b','--boot', help='Number of bootstraps to run (default: no bootstrapping)', default=0, type=positiveint)
 parser.add_argument('-d','--distscore', help='Distance score to use to construct phylogeny (can specify multiple parameters; default: DistanceScore_d8 DistanceScore_d9)', nargs='+', default=['DistanceScore_d8', 'DistanceScore_d9'], choices=['DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9'], metavar='',type=str)
 parser.add_argument('--breakpoint', action='store_true', help='Calculate breakpoint statistics (default: do not calculate)')
+parser.add_argument('--alnlenstats', action='store_true', help='Calculate alignment length distribution statistics (default: do not calculate)')
 args = parser.parse_args()
 outputpath=os.path.relpath(args.out, os.path.dirname(os.path.abspath(__file__)))
 
 
 
-
-start=time.time()
+startruntime,startcputime=runtime()
 if args.sequences==None and args.sequences1==None and args.sequences2==None:
     parser.error('as input, you must either --sequences or both --sequences1 and --sequences2')
 if args.sequences!=None and args.sequences1!=None and args.sequences2!=None:
@@ -46,8 +56,9 @@ if args.sequences!=None:
     runsubprocess(['bash','splitfasta.sh',outputpath, fastadir, str(args.sequences),str(args.threads)])
     runsubprocess(['python','renamefastas.py',outputpath, fastadir, str(args.sequences),fastafiles])
     runsubprocess(['python','makeblastdbs.py',outputpath, fastadir, fastafiles, blastdbs])
-    later=time.time()
-    print(later-start, 'runtime; finished creating blast databases')
+    laterruntime,latercputime=runtime()
+    print(laterruntime-startruntime, 'runtime; finished creating blast databases')
+    print(latercputime-startcputime, 'cputime; finished creating blast databases')
     p=subprocess.Popen(['bash','runblast.sh',outputpath, str(args.sequences), blastdbs, str(args.evalue), str(args.wordsize), str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     try:
@@ -60,14 +71,17 @@ if args.sequences!=None:
         pass
     if p.returncode!=0:
         sys.exit()
-    later=time.time()
-    print(later-start, 'runtime; finished running blast')
+    laterruntime,latercputime=runtime()
+    print(laterruntime-startruntime, 'runtime; finished running blast')
+    print(latercputime-startcputime, 'cputime; finished running blast')
     runsubprocess(['bash','reformatblastoutput.sh',outputpath,blastdbs])
-    later=time.time()
-    print(later-start, 'runtime; finished splitting alignments')        
+    laterruntime,latercputime=runtime()
+    print(laterruntime-startruntime, 'runtime; finished splitting alignments')
+    print(latercputime-startcputime, 'cputime; finished splitting alignments')        
     runsubprocess(['bash','getseqlengths.sh',outputpath,blasttype,str(args.sequences)])
-    later=time.time()
-    print(later-start, 'runtime; finished getting sequence lengths')
+    laterruntime,latercputime=runtime()
+    print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
+    print(latercputime-startcputime, 'cputime; finished getting sequence lengths')
     
 if args.sequences==None:
     blasttype='pairwise'
@@ -83,8 +97,9 @@ if args.sequences==None:
     runsubprocess(['python','renamefastas.py',outputpath, fastadir2, str(args.sequences2), fastafiles2])
     runsubprocess(['python','makeblastdbs.py',outputpath, fastadir1, fastafiles1, blastdbs1])
     runsubprocess(['python','makeblastdbs.py',outputpath, fastadir2, fastafiles2, blastdbs2])
-    later=time.time()
-    print(later-start, 'runtime; finished creating blast databases')
+    laterruntime,latercputime=runtime()
+    print(laterruntime-startruntime, 'runtime; finished creating blast databases')
+    print(latercputime-startcputime, 'cputime; finished creating blast databases')
     p=subprocess.Popen(['bash','runblast.sh',outputpath, str(args.sequences1), blastdbs2, str(args.evalue), str(args.wordsize), str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     try:
@@ -109,29 +124,33 @@ if args.sequences==None:
         pass
     if p.returncode!=0:
         sys.exit()
-
-    later=time.time()
-    print(later-start, 'runtime; finished running blast')
+        
+    laterruntime,latercputime=runtime()
+    print(laterruntime-startruntime, 'runtime; finished running blast')
+    print(latercputime-startcputime, 'cputime; finished running blast')
     
     blastdbs='%s/blastdbfilepaths_combined.tsv'%outputpath
     runsubprocess(['cat %s %s | sort -k1,1V > %s'%(blastdbs1,blastdbs2,blastdbs)],shell=True)
 
     runsubprocess(['bash','reformatblastoutput.sh',outputpath,blastdbs])
-    later=time.time()
-    print(later-start, 'runtime; finished splitting alignments')        
+    laterruntime,latercputime=runtime()
+    print(laterruntime-startruntime, 'runtime; finished splitting alignments')
+    print(latercputime-startcputime, 'cputime; finished splitting alignments')        
     runsubprocess(['bash','getseqlengths.sh',outputpath,blasttype,str(args.sequences1),str(args.sequences2)])
-    later=time.time()
-    print(later-start, 'runtime; finished getting sequence lengths')
+    laterruntime,latercputime=runtime()
+    print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
+    print(latercputime-startcputime, 'cputime; finished getting sequence lengths')
 
-runsubprocess(['Rscript','granges.R',outputpath, str(args.threads), str(args.breakpoint),str(args.boot)])
-later=time.time()
-print(later-start, 'runtime; finished trimming alignments')
+runsubprocess(['Rscript','granges.R',outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot)])
+laterruntime,latercputime=runtime()
+print(laterruntime-startruntime, 'runtime; finished trimming alignments')
+print(latercputime-startcputime, 'runtime; finished trimming alignments')
 if blasttype=='allvallpairwise':
     phyargs=['Rscript','phylogeny.R',outputpath,str(args.threads),str(args.boot)]
     phyargs.extend(args.distscore)
     runsubprocess(phyargs)
-    later=time.time()
-    print(later-start, 'runtime; finished plotting phylogeny using distance score(s): %s'%args.distscore)
+    laterruntime,latercputime=runtime()
+    print(laterruntime-startruntime, 'runtime; finished plotting phylogeny using distance score(s): %s'%args.distscore)
+    print(latercputime-startcputime, 'cputime; finished plotting phylogeny using distance score(s): %s'%args.distscore)
                     
-
 

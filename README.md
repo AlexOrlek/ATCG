@@ -6,7 +6,7 @@ As input, ATCG can take nucleotide sequence assemblies in [FASTA](https://en.wik
 
 * Complete genomes (e.g. plasmids; small collections of bacterial genomes)
 * Complete metagenomes (e.g. sets of bacterial plasmids, where each set comprises plasmids from a single bacterial isolate)
-* Incomplete genome/metagenome sequences (or a combination of complete/incomplete sequences). Incomplete sequences (contigs or scaffolds) must be affiliated to a known genome or metagenome and this affiliation is indicated in the sequence's FASTA header (see [Quick start](#quick-start))
+* Incomplete genome/metagenome sequences (or a combination of complete/incomplete sequences). Incomplete sequences (contigs or scaffolds) must be affiliated to a known genome or metagenome and this affiliation is indicated in the sequence's FASTA header (see [Input](#input))
 
 ATCG is appropriate if you want to:
 * Compare sequences in terms of overall relatedness metrics (genome-genome distances, percentage identity, coverage breadth)
@@ -52,23 +52,23 @@ install.packages("ape",repo='https://cloud.r-project.org/')
 git clone https://github.com/AlexOrlek/ATCG.git
 cd ATCG
 ```
-# Quick start
+# Input
 
-Information in FASTA headers must be delineated using vertical bar(s) "|" and the headers should be in the format `unit of analysis|subunit`. The `subunit` is only necessary when indicating affiliation of e.g. contigs with genomes, or of bacterial plasmids with bacterial isolates. Additional information can be included in the header by delineating with additional vertical bar(s)
+Sequences are provided in FASTA format, a flexibly-defined format comprising header lines (prefixed by ">") and sequences. Here, we follow the common convention where the header line is permitted to have two parts, separated by a space: the identifier and an optional comment after the first space. Information in the header identifier must be delineated using vertical bar(s) "|" and adhere to the format: `unit of analysis|subunit`. The `subunit` is only necessary when indicating affiliation of e.g. contigs with genomes, or of bacterial plasmids with bacterial isolates.
 
 If comparing genomes, FASTA headers could be formatted as follows:<br>
 genome1|contig1<br>
 genome1|contig2<br>
 genome2<br>
-genome3|contig1|additional information
+genome3|contig1 additional information provided after the first space
 
 If comparing plasmids by isolate, FASTA headers could be formatted as follows:<br>
 isolate1|plasmid1<br>
 isolate1|plasmid2<br>
-isolate2|plasmid1.contig1<br>
-isolate2|plasmid1.contig2<br>
+isolate2|plasmid1<br>
 isolate2|plasmid2
 
+# Quick start
 
 For all-vs-all comparison, the tool can be run by providing a single multi-FASTA file using the `-s` flag; pairwise distance scores will be recorded and a phylogenetic tree will be generated.
 
@@ -86,12 +86,14 @@ Alternatively, if all-vs-all comparison is not required, 2 input (multi-)FASTA f
 Run `python runpipeline.py --help` to view a summary of all the options
 
 By default, the number of threads is 1, but multi-threading is recommended to reduce computing time; the number of threads to use is specified using the `-t` flag; the value must not be set above the number of threads available on your machine. 
-By default, breakpoint distance is not calculated, but can be specified using the `--breakpoint` flag.
-By default, bootstrapping will not be conducted and the tree will therefore not show bootstrap confidence values. To conduct bootstrapping, the number of replicates is specified using the `-b` flag.
+By default, breakpoint distance and alignment length distribution statistics are not calculated, and bootstrap confidence values will not be calculated.
+To conduct bootstrapping, the number of replicates is specified using the `-b` flag; trimmed alignments will be resampled with replacement to produce replicate distance scores, from which replicate trees are produced, allowing bootstrap confidence values to be shown on the original tree.
+Calculation of breakpoint distance (a measure of structural similarity) is specified using the `--breakpoint` flag.
+Calculation of alignment length distribution statistics is specified using the `--alnlenstats` flag. The alignment length statistics provide information on the distribution of BLAST alignment lengths and are analogous to the widely used [assembly contiguity statistics](https://www.molecularecologist.com/2017/03/whats-n50/) e.g N50/L50.
 
-`python runpipeline.py -s genomes.fasta -o output-directory -t 8 -b 100 --breakpoint`
 
-When bootstrapping is conducted, trimmed alignments will be resampled with replacement to produce replicate distance scores, from which replicate trees are produced, allowing confidence values to be shown on the original tree.
+`python runpipeline.py -s genomes.fasta -o output-directory -t 8 -b 100 --breakpoint --alnlenstats`
+
 
 
 # Output files
@@ -100,20 +102,23 @@ The below table shows the most important outputs from running the pipeline with 
 
 File/Directory         | Description                                                                                       
 ---------------------- | -------------------------------------------------------------------------------------------------
-splitfastas/           | directory containing FASTA files derived from the input multi-FASTA, split by unit of analysis i.e. genome (or metagenome)                                       
+splitfastas/           | directory containing FASTA files (and corresponding BLAST databases), derived from the input multi-FASTA, split by unit of analysis i.e. genome (or metagenome)
 blast/		       | directory containing tsv files of blast alignments for each genome
 included.txt           | names of genomes with detected blast alignments, that will therefore appear in the distancestats.tsv file
 excluded.txt	       | names of any genomes with no detected blast alignments (this file may well be blank)
+fastafilepaths.tsv     | genomes and corresponding FASTA file paths
+blastdbfilepaths.tsv   | genomes and corresponding BLAST database file paths
+seqlengths.tsv         | genomes and their lengths in bp
 output/		       | directory containing output files described below
 distancestats.tsv      | columns of distance statistics for each unique pairwise combination of genomes
 tree_[score].pdf       | tree generated using a specified distance score column from the distancestats.tsv file; plotted as a pdf
 tree_[score].rds       | as above, but stored as an [rds file](https://stat.ethz.ch/R-manual/R-devel/library/base/html/readRDS.html) which can be read, and the tree replotted 
+distobject_[score].rds | a "dist" object distance matrix derived from distancestats.tsv, stored as an rds file
 
-
-If bootstrapping is specified, the following additional files will also be generated in the output directory:<br>
+If bootstrapping is specified, a pdf showing the original tree with bootstrap confidence values (tree\_[score]\_bootstrapped.pdf) is produced instead of tree_[score].pdf<br>
+Also, the following additional files will be generated in the output directory:<br>
 A file containing distance statistics for each bootstrap replicate (distancestats_bootstrapped.tsv)<br>
-A pdf showing the original tree with bootstrap confidence values (tree\_[score]\_bootstrapped.pdf) is produced instead of tree_[score].pdf<br>
-A list of replicate trees, that were used to calculate confidence values for the original tree, is stored as an rds file (tree\_[score]\_bootstrapped.rds)
+A list of replicate trees, that were used to calculate confidence values for the original tree, stored as an rds file (tree\_[score]\_bootstrapped.rds)
 
 
 # Background and methods
@@ -122,7 +127,7 @@ A paper describing the methods will be written shortly. A brief outline is given
 
 1. BLAST is conducted on assembled nucleotide sequences.
 2. Overlapping alignments are trimmed.
-3. For trimmed alignments, distance metrics are calculated; different metrics reflect different distance concepts: [resemblance and containment](https://www.cs.princeton.edu/courses/archive/spring13/cos598C/broder97resemblance.pdf). Breakpoint distance can optionally be calculated.
+3. For trimmed alignments, distance metrics are calculated; different metrics reflect different distance concepts: [resemblance and containment](https://www.cs.princeton.edu/courses/archive/spring13/cos598C/broder97resemblance.pdf). Breakpoint distances and alignment length statistics can optionally be calculated.
 4. If all-vs-all BLAST was run, then a tree is generated using a specified pairwise distance metric; optionally, the tree can be annotated with bootstrap confidence values, which are calculated by resampling trimmed alignments.
 
 
