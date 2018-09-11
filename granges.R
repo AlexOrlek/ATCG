@@ -430,7 +430,7 @@ samples2<-samples
 allsampledflist<-list()
 counter1=0
 for (sample in samples) {
-  print(sample)
+  #print(sample)
   sampleaseqlen<-sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"]
   counter1=counter1+1
   counter2=0
@@ -446,7 +446,7 @@ for (sample in samples) {
     stats1row<-which(allsampledf[,"querysample"]==sample & allsampledf[,"subjectsample"]==sampleb)
     stats2row<-which(allsampledf[,"querysample"]==sampleb & allsampledf[,"subjectsample"]==sample)
     if (length(stats1row)==0 && length(stats2row)==0) {
-      print(c(sampleb,'no pairwise matches found for this sample'))
+      #print(c(sampleb,'no pairwise matches found for this sample'))
       next
     }
     samplebseqlen<-sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]
@@ -516,13 +516,13 @@ statscols<-statscolsboot
 alnlenstats='False'
 
 for (i in names(allsampledfbootsplit)){
-  print(i)
+  #print(i)
   allsampledf<-allsampledfbootsplit[[i]]
   samples2<-samples
   allsampledflist<-list()
   counter1=0
   for (sample in samples) {
-    print(c(sample,'sample'))
+    #print(c(sample,'sample'))
     sampleaseqlen<-sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"]
     counter1=counter1+1
     counter2=0
@@ -537,7 +537,7 @@ for (i in names(allsampledfbootsplit)){
       stats1row<-which(allsampledf[,"querysample"]==sample & allsampledf[,"subjectsample"]==sampleb)
       stats2row<-which(allsampledf[,"querysample"]==sampleb & allsampledf[,"subjectsample"]==sample)
       if (length(stats1row)==0 && length(stats2row)==0) {
-        print(c(sampleb,'no pairwise matches found for this sample'))
+        #print(c(sampleb,'no pairwise matches found for this sample'))
         next
       }
       samplebseqlen<-sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]

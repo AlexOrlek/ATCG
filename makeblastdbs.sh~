@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+set -u
+set -o pipefail
+
+cat fastafilepaths.tsv | cut -f2 | python basename.py | parallel -k -j ${1} "makeblastdb -dbtype nucl -in {}.fasta -out {}_db"
+#cat fastafilepaths.tsv | cut -f2 | parallel -k -j3 "makeblastdb -dbtype nucl -in {} -out "
