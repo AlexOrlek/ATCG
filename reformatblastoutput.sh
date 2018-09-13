@@ -8,7 +8,7 @@ set -o pipefail
 #$1 is filepath to pipeline output folder
 
 #reformat blast output file
-samples=($(cut -f1 ${2} | sort | uniq)) #${2} is subject sequence blast database file; format: sample \t filepath to database
+samples=($(cut -f1 ${2} | sort -V | uniq)) #${2} is subject sequence blast database file; format: sample \t filepath to database
 
 for sample in ${samples[@]}; do
     mkdir -p ${1}/blast/${sample}
