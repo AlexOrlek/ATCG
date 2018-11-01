@@ -1,0 +1,2 @@
+e-value cutoff: 1e-08
+word size: 38

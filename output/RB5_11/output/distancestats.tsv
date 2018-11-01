@@ -1,0 +1,3 @@
+Sample1	Sample2	Sample1_length	Sample2_length	DistanceScore_d0	DistanceScore_d1	DistanceScore_d2	DistanceScore_d3	DistanceScore_d4	DistanceScore_d5	DistanceScore_d6	DistanceScore_d7	DistanceScore_d8	DistanceScore_d9	Percent_identity	Coverage_breadth_mingenome	Breakpoint_distance	Breakpoints	Alignments	l10	l20	l30	l40	l50	l60	l70	l80	l90	n10	n20	n30	n40	n50	n60	n70	n80	n90
+RB5_11	SFV70_4	1873	99518	0.963053919973173	0	3.29829572579957	0	0	0	0.963053919973173	0	3.29829572579957	0	1	1	0	0	2	2	2	2	2	2	2	2	2	2	3746	3746	3746	3746	3746	3746	3746	3746	3746
+RB5_11	SFV131_3	1873	103447	0.964432206608431	0	3.33631473060621	0	0	0	0.964432206608431	0	3.33631473060621	0	1	1	0	0	2	2	2	2	2	2	2	2	2	2	3746	3746	3746	3746	3746	3746	3746	3746	3746

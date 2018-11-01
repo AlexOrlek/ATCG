@@ -11,4 +11,4 @@ else
     cat ${3} ${4} | bioawk -c fastx '{print $name,length($seq)}' | sort -k1,1V | uniq > ${1}/seqlengths.tsv
 fi
 
-> ${1}/output/distancestats.tsv
+

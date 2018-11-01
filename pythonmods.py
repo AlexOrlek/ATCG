@@ -12,7 +12,7 @@ def runsubprocess(args,stderrpath=None, stdoutpath=None, writefile=None,shell=Fa
         processname=processname.split()#['ls', '*.txt'] #list argument syntax 
     else:
         processname=args
-    processname=("-".join(a for a in args))
+    processname=(" ".join(a for a in args))
     if stderrpath==None:
         pass
     else:

@@ -71,7 +71,7 @@ splitreducecombine<-function(x) {
 
 
 addcols<-function(x) {
-  #add pid and strand to reduced output (apply to each list element i.e. each qname split)     
+  #add pid, strand, and subject names to reduced output (apply to each list element i.e. each qname split)     
   myinputhsps<-mcols(x)$inputhsp
   mcols(x)$pid<-pid[myinputhsps]
   mcols(x)$mystrand<-mystrand[myinputhsps]
@@ -319,10 +319,10 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     mcols(gr2)$revmap<-NULL
     grsplit<-split(gr2,seqnames(gr2)) #split by seqnames i.e. one list per paired sample
     sreducedoutput<-lapply(grsplit, function(x) x=splitreducecombine(x))
-    #add pid and strand
+    #add pid, strand, and subject name
     qfinal<-lapply(qreducedoutput, function(x) x=addcols(x))
     sfinal<-lapply(sreducedoutput, function(x) x=addcols(x))
-    #trim query alignments
+    #trim alignments
     if (breakpoint=='True') {
       trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,SIMPLIFY = F)) #!ADDED
       qtrimmed<-trimmedalignments$qfinal
