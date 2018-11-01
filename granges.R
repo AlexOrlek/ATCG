@@ -18,12 +18,12 @@ boot=as.integer(args[5])
 
 #stats functions
 gethspidpositions<-function(x) {
-  #returns the number of identical nucleotide alignment positions for a given set of alignments ('HSPs'); to avoid bias, it is applied after overlaps have been excluded from the alignment set
+  #returns the number of identical nucleotide alignment positions for a given set of alignments ('HSPs'); it is applied after overlaps have been excluded from the alignment set
   return(sum(round(width(x)*(x$pid/100))))
 }
 
 gethsplength<-function(x) {
-  #returns the total coverage length of a set of alignments ('HSPs'); to avoid bias, it is applied after overlaps have been excluded from the alignment set
+  #returns the total coverage length of a set of alignments ('HSPs'); it is applied after overlaps have been excluded from the alignment set
   return(sum(width(x)))
 }
 
@@ -154,13 +154,28 @@ trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
 
 
 #breakpoint caluclation functions
-makepairs <- function(x) paste(head(x, -1), tail(x, -1)) 
-BP <- function(x, y) makepairs(x)[!(makepairs(x) %in% makepairs(y) | makepairs(x) %in% makepairs(rev(y*-1)))]
+makepairs<-function(x) mapply(c, head(x,-1), tail(x,-1), SIMPLIFY = FALSE)
+BP<-function(x,y) { #this function works on signed permuations (numeric vectors with +/- indicated)
+  out1<-fun(x)[!(fun(x) %in% fun(y) | fun(x) %in% fun(rev(y*-1)))]
+  out2<-fun(x)[unlist(lapply(fun(x), function(z) length(unique(sign(z)))))>1]
+  all<-c(out1,out2)
+  return(all[!duplicated(all)]) #deduplicate to aovid double counting breakpoints that occur in out1 and out2
+}
 
-BPfunc<-function(x,y) {  #apply to granges object
+BPfunc<-function(x,y) {  #apply to granges objects
   stopifnot(nrow(x)==nrow(y))
   alncount<-length(mcols(x)$inputhsp)
-  bpcount<-length(BP(mcols(x)$inputhsp,mcols(y)$inputhsp))
+  xinputhsps<-mcols(x)$inputhsp
+  yinputhsps<-mcols(y)$inputhsp
+  xstrand<-as.vector(mcols(x)$mystrand)
+  ystrand<-as.vector(mcols(y)$mystrand)
+  xstrand[xstrand=='+']<-1  #convert inputhsp vectors to signed permuations by multipling by +1/-1 strand vector
+  xstrand[xstrand=='-']<--1
+  ystrand[ystrand=='+']<-1
+  ystrand[ystrand=='-']<--1
+  xinputhsps<-xinputhsps*as.numeric(xstrand)
+  yinputhsps<-yinputhsps*as.numeric(ystrand)
+  bpcount<-length(BP(xinputhsps,yinputhsps))
   return(list("bpcount"=bpcount,"alncount"=alncount))
 }
 
@@ -218,7 +233,7 @@ getalnlenstats<-function(x) {
   return(list(lxvector,nxvector))
 }
 
-#final ditance stats calculation function
+#final ditance stats calculation functions
 statsfunc<-function(stats, breakpoint,mygenomelen,mymingenomelen,alnlenstats='False') {
   lxcols<-c('l10','l20','l30','l40','l50','l60','l70','l80','l90')
   nxcols<-c('n10','n20','n30','n40','n50','n60','n70','n80','n90')
@@ -235,14 +250,14 @@ statsfunc<-function(stats, breakpoint,mygenomelen,mymingenomelen,alnlenstats='Fa
   percentid<-as.numeric(stats["hspidpositions"]/stats["hsplength"])
   covbreadthmin<-as.numeric(stats["hsplength"]/mymingenomelen)
   if (breakpoint=='True' && alnlenstats=='True') {
-    bpdist<-as.numeric(stats["breakpoints"]/stats["alignments"])
+    bpdist<-as.numeric(stats["breakpoints"]/(stats["alignments"]-1))
     breakpoints<-as.numeric(stats["breakpoints"])
     alignments<-as.numeric(stats["alignments"])
     lxstats<-as.integer(stats[lxcols])
     nxstats<-as.integer(stats[nxcols])
     return(c(d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments,lxstats,nxstats))
   } else if (breakpoint=='True') {
-    bpdist<-as.numeric(stats["breakpoints"]/stats["alignments"])
+    bpdist<-as.numeric(stats["breakpoints"]/(stats["alignments"]-1))
     breakpoints<-as.numeric(stats["breakpoints"])
     alignments<-as.numeric(stats["alignments"])
     return(c(d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments))
@@ -253,6 +268,21 @@ statsfunc<-function(stats, breakpoint,mygenomelen,mymingenomelen,alnlenstats='Fa
   } else {
     return(c(d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,percentid,covbreadthmin))
   }
+}
+
+
+mergestats<-function(x,y) {
+  merge<-data.frame()
+  for (i in 1:length(colnames(x))) {
+    mycol<-colnames(x)[i]
+    if (mycol=="hspidpositions" || mycol=="hsplength") {
+      merge[1,i]<-as.integer(x[i])+as.integer(y[i])
+    } else {
+      merge[1,i]<-mean(as.integer(x[i]),as.integer(y[i]))
+    }
+  }
+  colnames(merge)<-colnames(x)
+  return(merge)
 }
 
 
@@ -356,12 +386,12 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       myfinaldfbootlist<-list()
       for (i in 1:boot) {
         qtrimmedboot<-lapply(qtrimmed,resample)
-        strimmedboot<-lapply(strimmed,resample)
         mystatsboot<-lapply(qtrimmedboot,getstats) #!!!CHANGED
         mydfboot<-as.data.frame(do.call(rbind, mystatsboot)) #convert list of vectors to dataframe                                               
         mydfboot<-cbind(querysample=rownames(mydfboot),subjectsample=rep(sample,nrow(mydfboot)),mydfboot)
         #get breakpoint stats
         if (breakpoint=='True') {
+	  strimmedboot<-lapply(strimmed,resample)
           myfinaldfboot<-breakpointcalc(qtrimmedboot,strimmedboot,mydfboot)
         } else {
           myfinaldfboot<-mydfboot
@@ -475,7 +505,7 @@ for (sample in samples) {
     } else { ##combine both
       stats1<-data.frame(rbind(colSums(allsampledf[stats1row,statscols])),row.names = NULL)
       stats2<-data.frame(rbind(colSums(allsampledf[stats2row,statscols])),row.names = NULL)
-      mergedstats<-stats1+stats2
+      mergedstats<-mergestats(stats1,stats2)
       if (mergedstats["hsplength"]>mymingenomelen) {
         mergedstats["hsplength"]<-mymingenomelen
       }
@@ -566,7 +596,7 @@ for (i in names(allsampledfbootsplit)){
       } else { ##combine both
         stats1<-data.frame(rbind(colSums(allsampledf[stats1row,statscols])),row.names = NULL)
         stats2<-data.frame(rbind(colSums(allsampledf[stats2row,statscols])),row.names = NULL)
-        mergedstats<-stats1+stats2
+        mergedstats<-mergestats(stats1,stats2)
         if (mergedstats["hsplength"]>mymingenomelen) {
           mergedstats["hsplength"]<-mymingenomelen
         }

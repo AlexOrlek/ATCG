@@ -89,6 +89,14 @@ if args.sequences==None:
     runsubprocess(['bash','splitfasta.sh',outputpath, fastadir2, str(args.sequences2),str(args.threads)])
     runsubprocess(['python','renamefastas.py',outputpath, fastadir1, str(args.sequences1), fastafiles1,blastdbs1])
     runsubprocess(['python','renamefastas.py',outputpath, fastadir2, str(args.sequences2), fastafiles2,blastdbs2])
+    #check there is no overlap between fastas provided in -s1 and -s2
+    s1dir=os.listdir()
+    s2dir=os.listdir()
+    s1fastas=[f for f in s1dir if f.endswith('.fasta')]
+    s2fastas=[f for f in s2dir if f.endswith('.fasta')]
+    overlap=len(set(s1fastas).intersection(set(s2fastas)))
+    if overlap>0:
+        parser.error('there must be no overlap between fasta identifiers contained within the fasta files provided using the -s1 and -s2 flags')
     runsubprocess(['bash','makeblastdbs.sh',fastadir1, fastafiles1, str(args.threads)])
     runsubprocess(['bash','makeblastdbs.sh',fastadir2, fastafiles2, str(args.threads)])
     laterruntime=runtime()
