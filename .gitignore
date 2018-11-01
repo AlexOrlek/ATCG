@@ -3,5 +3,9 @@ README~
 std.out*
 std.err*
 __pycache__
-*.pyc
+pythonmods.pyc
 OLD
+.gitignore~
+*.sh~
+*.py~
+*.R~
