@@ -156,8 +156,8 @@ trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
 #breakpoint caluclation functions
 makepairs<-function(x) mapply(c, head(x,-1), tail(x,-1), SIMPLIFY = FALSE)
 BP<-function(x,y) { #this function works on signed permuations (numeric vectors with +/- indicated)
-  out1<-fun(x)[!(fun(x) %in% fun(y) | fun(x) %in% fun(rev(y*-1)))]
-  out2<-fun(x)[unlist(lapply(fun(x), function(z) length(unique(sign(z)))))>1]
+  out1<-makepairs(x)[!(makepairs(x) %in% makepairs(y) | makepairs(x) %in% makepairs(rev(y*-1)))]
+  out2<-makepairs(x)[unlist(lapply(makepairs(x), function(z) length(unique(sign(z)))))>1]
   all<-c(out1,out2)
   return(all[!duplicated(all)]) #deduplicate to aovid double counting breakpoints that occur in out1 and out2
 }
