@@ -148,7 +148,7 @@ trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
   mylist<-list("qfinal"=qfinal,"sfinal"=sfinal)
   return(mylist)
   } else {
-  return(qfinal)
+    return(qfinal)
   }
 }
 
@@ -201,12 +201,6 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
 
 
 #bootstrapping functions
-
-resample<-function(x) {
-  indices<-sample(1:length(x),replace=T)
-  return(x[indices])
-}
-
 
 combinebootfunc<-function(x) {
   bootlist<-lapply(x, function(l) l[[2]])
@@ -375,8 +369,8 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #get alignment length distribution stats
     if (alnlenstats=='True') {
        alnlenstatslist<-lapply(qtrimmed, getalnlenstats)
-       alnlenstatsdf<-cbind(as.data.frame(do.call(rbind, lapply(alnlenstatslist, function(l) l[[1]]))), as.data.frame(do.call(rbind, lapply(alnlenstatslist, function(l) l[[2]]))))
-       myfinaldf<-cbind(myfinaldf,alnlenstatsdf)
+       alnlenstatsdf<-cbind(rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[1]]),as.data.frame.list),idcol="querysample"),rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[2]]),as.data.frame.list)))
+       myfinaldf<-merge(myfinaldf,alnlenstatsdf,by="querysample")
     }
     #IF NO BOOTSTRAPPING, SAVE ALL ALIGNMENT STATS
     if (boot==0) {
@@ -385,13 +379,15 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       #IF BOOTSTRAPPING, SAVE ALL ALIGNMENT STATS + BOOTSTRAPPED STATS
       myfinaldfbootlist<-list()
       for (i in 1:boot) {
-        qtrimmedboot<-lapply(qtrimmed,resample)
+        #stopifnot(sapply(qtrimmed, function(x) length(x))==sapply(strimmed, function(x) length(x)))
+	indices<-lapply(qtrimmed, function(x) sample(1:length(x), replace=T)) #get indices for resampling qtrimmed/strimmed
+	qtrimmedboot<-lapply(1:length(qtrimmed), FUN=function(x, list1, list2) list1[[x]][list2[[x]]] , list1=qtrimmed, list2=indices) #resample qtrimmed using indices
         mystatsboot<-lapply(qtrimmedboot,getstats) #!!!CHANGED
         mydfboot<-as.data.frame(do.call(rbind, mystatsboot)) #convert list of vectors to dataframe                                               
         mydfboot<-cbind(querysample=rownames(mydfboot),subjectsample=rep(sample,nrow(mydfboot)),mydfboot)
         #get breakpoint stats
         if (breakpoint=='True') {
-	  strimmedboot<-lapply(strimmed,resample)
+	  strimmedboot<-lapply(1:length(strimmed), FUN=function(x, list1, list2) list1[[x]][list2[[x]]] , list1=strimmed, list2=indices) #resample strimmed using indices
           myfinaldfboot<-breakpointcalc(qtrimmedboot,strimmedboot,mydfboot)
         } else {
           myfinaldfboot<-mydfboot
