@@ -90,8 +90,8 @@ if args.sequences==None:
     runsubprocess(['python','renamefastas.py',outputpath, fastadir1, str(args.sequences1), fastafiles1,blastdbs1])
     runsubprocess(['python','renamefastas.py',outputpath, fastadir2, str(args.sequences2), fastafiles2,blastdbs2])
     #check there is no overlap between fastas provided in -s1 and -s2
-    s1dir=os.listdir()
-    s2dir=os.listdir()
+    s1dir=os.listdir('%s/splitfastas1'%outputpath)
+    s2dir=os.listdir('%s/splitfastas2'%outputpath)
     s1fastas=[f for f in s1dir if f.endswith('.fasta')]
     s2fastas=[f for f in s2dir if f.endswith('.fasta')]
     overlap=len(set(s1fastas).intersection(set(s2fastas)))
