@@ -5,6 +5,7 @@ library('purrr')
 reduce<-GenomicRanges::reduce
 simplify<-IRanges::simplify
 library(data.table)
+rbindlist<-data.table::rbindlist
 transpose<-purrr::transpose
 
 #args[1] is filepath to pipeline output folder; args[2] is threads; args[3] is breakpoint stats; args[4] is bootstrap number
@@ -192,7 +193,8 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
     alncount<-sum(unlist((out["alncount",])))
     bpout[[qname]]<-c(bpcount,alncount)
   }
-  mydfbp<-as.data.frame(do.call(rbind, bpout)) 
+  mydfbp<-as.data.frame(do.call(rbind, bpout))
+  colnames(mydfbp)<-c('breakpoints','alignments')
   mydfbp<-cbind(querysample=rownames(mydfbp),subjectsample=rep(sample,nrow(mydfbp)),mydfbp)
   #merge dataframes
   myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"))
@@ -299,6 +301,9 @@ samples<-as.vector(samples[,1])
 #samples<-samples[1:6]
 allsampledflist<-list()
 
+lxcols<-c('l10','l20','l30','l40','l50','l60','l70','l80','l90')
+nxcols<-c('n10','n20','n30','n40','n50','n60','n70','n80','n90')
+
 allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRanges','purrr')) %dopar% {
     #read alignmnents file for given sample
     sample<-samples[i]
@@ -358,7 +363,8 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #trimmedalignments<-lapply(split(1:nrow(trimmedalignments), rownames(trimmedalignments)), function(i) trimmedalignments[i,])  #!!!ADDED
     #get hsp id stats
     mystats<-lapply(qtrimmed,getstats) #!!!CHANGED
-    mydf<-as.data.frame(do.call(rbind, mystats)) #convert list of vectors to dataframe                                               
+    mydf<-as.data.frame(do.call(rbind, mystats)) #convert list of vectors to dataframe
+    colnames(mydf)<-c('hspidpositions','hsplength')
     mydf<-cbind(querysample=rownames(mydf),subjectsample=rep(sample,nrow(mydf)),mydf)
     #get breakpoint stats
     if (breakpoint=='True') {
@@ -370,6 +376,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     if (alnlenstats=='True') {
        alnlenstatslist<-lapply(qtrimmed, getalnlenstats)
        alnlenstatsdf<-cbind(rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[1]]),as.data.frame.list),idcol="querysample"),rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[2]]),as.data.frame.list)))
+       colnames(alnlenstatsdf)<-c('querysample',lxcols,nxcols)
        myfinaldf<-merge(myfinaldf,alnlenstatsdf,by="querysample")
     }
     #IF NO BOOTSTRAPPING, SAVE ALL ALIGNMENT STATS
@@ -378,21 +385,24 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     } else {
       #IF BOOTSTRAPPING, SAVE ALL ALIGNMENT STATS + BOOTSTRAPPED STATS
       myfinaldfbootlist<-list()
-      for (i in 1:boot) {
+      for (z in 1:boot) {
         #stopifnot(sapply(qtrimmed, function(x) length(x))==sapply(strimmed, function(x) length(x)))
 	indices<-lapply(qtrimmed, function(x) sample(1:length(x), replace=T)) #get indices for resampling qtrimmed/strimmed
 	qtrimmedboot<-lapply(1:length(qtrimmed), FUN=function(x, list1, list2) list1[[x]][list2[[x]]] , list1=qtrimmed, list2=indices) #resample qtrimmed using indices
+	names(qtrimmedboot)<-names(qtrimmed)
         mystatsboot<-lapply(qtrimmedboot,getstats) #!!!CHANGED
-        mydfboot<-as.data.frame(do.call(rbind, mystatsboot)) #convert list of vectors to dataframe                                               
-        mydfboot<-cbind(querysample=rownames(mydfboot),subjectsample=rep(sample,nrow(mydfboot)),mydfboot)
+	mydfboot<-rbindlist(lapply(mystatsboot,as.data.frame.list),idcol="querysample") ##convert list of vectors to dataframe
+        mydfboot<-cbind(subjectsample=rep(sample,nrow(mydfboot)),mydfboot)
+	colnames(mydfboot)<-c('subjectsample','querysample','hspidpositions','hsplength')
         #get breakpoint stats
         if (breakpoint=='True') {
 	  strimmedboot<-lapply(1:length(strimmed), FUN=function(x, list1, list2) list1[[x]][list2[[x]]] , list1=strimmed, list2=indices) #resample strimmed using indices
+	  names(strimmedboot)<-names(strimmed)
           myfinaldfboot<-breakpointcalc(qtrimmedboot,strimmedboot,mydfboot)
         } else {
           myfinaldfboot<-mydfboot
         }
-        myfinaldfbootlist[[i]]<-myfinaldfboot
+        myfinaldfbootlist[[z]]<-myfinaldfboot
       }
       print(list(myfinaldf, myfinaldfbootlist))
     }
@@ -401,8 +411,6 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
 stopCluster(cl)
 
 
-lxcols<-c('l10','l20','l30','l40','l50','l60','l70','l80','l90')
-nxcols<-c('n10','n20','n30','n40','n50','n60','n70','n80','n90')
 if (boot==0) {
   allsampledf<-as.data.frame(do.call(rbind, allsampledflist))
   if (breakpoint=='True' && alnlenstats=='True') {
