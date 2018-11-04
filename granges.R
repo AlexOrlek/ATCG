@@ -256,14 +256,14 @@ statsfunc<-function(stats, breakpoint,mygenomelen,mymingenomelen,alnlenstats='Fa
   percentid<-as.numeric(stats["hspidpositions"]/stats["hsplength"])
   covbreadthmin<-as.numeric(stats["hsplength"]/mymingenomelen)
   if (breakpoint=='True' && alnlenstats=='True') {
-    bpdist<-bpdistcalc(stats["breakpoints"],(stats["alignments"]-1))
+    bpdist<-bpdistcalc(stats["breakpoints"],stats["alignments"])
     breakpoints<-as.numeric(stats["breakpoints"])
     alignments<-as.numeric(stats["alignments"])
     lxstats<-as.integer(stats[lxcols])
     nxstats<-as.integer(stats[nxcols])
     return(c(d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments,lxstats,nxstats))
   } else if (breakpoint=='True') {
-    bpdist<-bpdistcalc(stats["breakpoints"],(stats["alignments"]-1))
+    bpdist<-bpdistcalc(stats["breakpoints"],stats["alignments"])
     breakpoints<-as.numeric(stats["breakpoints"])
     alignments<-as.numeric(stats["alignments"])
     return(c(d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments))
