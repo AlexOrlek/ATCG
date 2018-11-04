@@ -405,13 +405,14 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
         mydfboot<-cbind(subjectsample=rep(sample,nrow(mydfboot)),mydfboot)
 	colnames(mydfboot)<-c('subjectsample','querysample','hspidpositions','hsplength')
         #get breakpoint stats
-        if (breakpoint=='True') {
-	  strimmedboot<-lapply(1:length(strimmed), FUN=function(x, list1, list2) list1[[x]][list2[[x]]] , list1=strimmed, list2=indices) #resample strimmed using indices
-	  names(strimmedboot)<-names(strimmed)
-          myfinaldfboot<-breakpointcalc(qtrimmedboot,strimmedboot,mydfboot)
-        } else {
-          myfinaldfboot<-mydfboot
-        }
+        #if (breakpoint=='True') {
+	#  strimmedboot<-lapply(1:length(strimmed), FUN=function(x, list1, list2) list1[[x]][list2[[x]]] , list1=strimmed, list2=indices) #resample strimmed using indices
+	#  names(strimmedboot)<-names(strimmed)
+        #  myfinaldfboot<-breakpointcalc(qtrimmedboot,strimmedboot,mydfboot)
+        #} else {
+        #  myfinaldfboot<-mydfboot
+        #}
+	myfinaldfboot<-mydfboot #NO LONGER RESAMPLING BREAKPOINT STATS
         myfinaldfbootlist[[z]]<-myfinaldfboot
       }
       print(list(myfinaldf, myfinaldfbootlist))
@@ -442,13 +443,17 @@ if (boot==0) {
   if (breakpoint=='True' && alnlenstats=='True') {
     colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments',lxcols,nxcols)
     statscols<-c("hspidpositions","hsplength","breakpoints","alignments",lxcols,nxcols)
-    statscolsboot<-c("hspidpositions","hsplength","breakpoints","alignments")
-    colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments')
+    #statscolsboot<-c("hspidpositions","hsplength","breakpoints","alignments") #NO LONGER BOOTSTRAPPING BREAKPOINTS
+    #colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments')
+    statscolsboot<-c("hspidpositions","hsplength")
+    colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength')
   } else if (breakpoint=='True') {
     colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments')
     statscols<-c("hspidpositions","hsplength","breakpoints","alignments")
-    statscolsboot<-c("hspidpositions","hsplength","breakpoints","alignments")
-    colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments')
+    #statscolsboot<-c("hspidpositions","hsplength","breakpoints","alignments")
+    #colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments')
+    statscolsboot<-c("hspidpositions","hsplength")
+    colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength')
   } else if (alnlenstats=='True') {
     colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength',lxcols,nxcols)
     statscols<-c("hspidpositions","hsplength",lxcols,nxcols)
@@ -558,6 +563,7 @@ allsampledfbootsplit<-split(allsampledfboot, allsampledfboot$bootstrap)
 finaldflist<-list()
 statscols<-statscolsboot
 alnlenstats='False'
+breakpoint='False' #NO LONGER DOING BOOTSTRAPPING OF BREAKPOINTS
 
 for (i in names(allsampledfbootsplit)){
   #print(i)
