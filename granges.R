@@ -202,6 +202,16 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
 }
 
 
+
+bpdistcalc<-function(bps,alns) {
+  if ((alns-1)==0) {
+    return(as.numeric(0))
+  } else {
+    return(as.numeric(bps/(alns-1)))
+  }
+}
+
+
 #bootstrapping functions
 
 combinebootfunc<-function(x) {
@@ -246,14 +256,14 @@ statsfunc<-function(stats, breakpoint,mygenomelen,mymingenomelen,alnlenstats='Fa
   percentid<-as.numeric(stats["hspidpositions"]/stats["hsplength"])
   covbreadthmin<-as.numeric(stats["hsplength"]/mymingenomelen)
   if (breakpoint=='True' && alnlenstats=='True') {
-    bpdist<-as.numeric(stats["breakpoints"]/(stats["alignments"]-1))
+    bpdist<-bpdistcalc(stats["breakpoints"],(stats["alignments"]-1))
     breakpoints<-as.numeric(stats["breakpoints"])
     alignments<-as.numeric(stats["alignments"])
     lxstats<-as.integer(stats[lxcols])
     nxstats<-as.integer(stats[nxcols])
     return(c(d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments,lxstats,nxstats))
   } else if (breakpoint=='True') {
-    bpdist<-as.numeric(stats["breakpoints"]/(stats["alignments"]-1))
+    bpdist<-bpdistcalc(stats["breakpoints"],(stats["alignments"]-1))
     breakpoints<-as.numeric(stats["breakpoints"])
     alignments<-as.numeric(stats["alignments"])
     return(c(d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments))
