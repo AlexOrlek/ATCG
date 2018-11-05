@@ -1,4 +1,5 @@
-args = commandArgs(trailingOnly=TRUE)
+#args = commandArgs(trailingOnly=TRUE)
+args=c('.',1,'True','True',0)
 library('gsubfn')
 library('GenomicRanges')
 library('purrr')
@@ -655,4 +656,5 @@ if (boot!=0) {
 
   write.table(finaldfboot, file=gsubfn('%1',list('%1'=args[1]),'%1/output/distancestats_bootstrapped.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
 
+   
 }
