@@ -63,7 +63,7 @@ genome1|contig2<br>
 genome2<br>
 genome3|contig1 additional information provided after the first space
 
-If comparing plasmids by isolate, FASTA headers could be formatted as follows:<br>
+If comparing isolates in terms of their overall plasmid genetic content, FASTA headers could be formatted as follows:<br>
 isolate1|plasmid1<br>
 isolate1|plasmid2<br>
 isolate2|plasmid1<br>
@@ -76,7 +76,7 @@ For all-vs-all comparison, the tool can be run by providing a single multi-FASTA
 `python runpipeline.py -s genomes.fasta -o output-directory -t 8`
 
 
-Alternatively, if all-vs-all comparison is not required, 2 input (multi-)FASTA files can be provided using flags `-s1` and `-s2`; pairwise comparisons will be conducted between but not amongst sequence(s) in each file; pairwise distances will be recorded but a tree will not be generated since distances are not available for all pairwise combinations. The order in which the fasta files are provided to the -s1/-s2 flags will not affect results, however the sequences in the two files must be non-overlapping (ATCG will check this based on examination of the sequence identifiers).
+Alternatively, if all-vs-all comparison is not required, 2 input (multi-)FASTA files can be provided using flags `-s1` and `-s2`; pairwise comparisons will be conducted between but not amongst sequence(s) in each file; pairwise distances will be recorded but a tree will not be generated since distances are not available for all pairwise combinations. The order in which the FASTA files are provided to the -s1/-s2 flags will not affect results, however the sequences in the two files must be non-overlapping (ATCG will check this based on examination of the FASTA header identifiers).
 
 `python runpipeline.py -s1 query.fasta -s2 genomes.fasta -o output-directory -t 8`
 
@@ -84,16 +84,18 @@ Alternatively, if all-vs-all comparison is not required, 2 input (multi-)FASTA f
 
 # Options and usage
 
-Run `python runpipeline.py --help` to view a summary of all the options
+`python runpipeline.py --help` produces a summary of all the options.
 
-By default, the number of threads is 1, but multi-threading is recommended to reduce computing time; the number of threads to use is specified using the `-t` flag; the value must not be set above the number of threads available on your machine. 
-By default, breakpoint distance and alignment length distribution statistics are not calculated, and bootstrap confidence values will not be calculated.
+By default, the number of threads is 1, but multi-threading is recommended to reduce computing time; the number of threads to use is specified using the `-t` flag; the value must not exceed the number of threads available on your machine. 
+By default, breakpoint distance and alignment length distribution statistics are not calculated; bootstrap confidence values are also not calculated by default.
 To conduct bootstrapping, the number of replicates is specified using the `-b` flag; trimmed alignments will be resampled with replacement to produce replicate distance scores, from which replicate trees are produced, allowing bootstrap confidence values to be shown on the original tree.
 Calculation of breakpoint distance (a measure of structural similarity) is specified using the `--breakpoint` flag.
-Calculation of alignment length distribution statistics is specified using the `--alnlenstats` flag. The alignment length statistics provide information on the distribution of BLAST alignment lengths and are analogous to the widely used [assembly contiguity statistics](https://www.molecularecologist.com/2017/03/whats-n50/) e.g N50/L50. To better understand the calculation of the various statistics, it may help to take a look at the [example](#Example) below.
+Calculation of alignment length distribution statistics is specified using the `--alnlenstats` flag. The alignment length statistics provide information on the distribution of BLAST alignment lengths and are analogous to the widely used [assembly contiguity statistics](https://www.molecularecologist.com/2017/03/whats-n50/) e.g N50/L50.
 
+`python runpipeline.py -s genomes.fasta -o output-directory -t 8 -b 100 --breakpoint --alnlenstats` runs the pipeline using 8 threads, with 100 bootstrap replicates, and calculation of breakpoint distance and alignment length distribution statistics.
 
-`python runpipeline.py -s genomes.fasta -o output-directory -t 8 -b 100 --breakpoint --alnlenstats`
+To better understand the calculation of the various statistics, it may help to take a look at the [example](#Example) below.
+
 
 
 
@@ -124,26 +126,35 @@ A list of replicate trees, that were used to calculate confidence values for the
 
 # Background and methods
 
-A paper describing the methods will be written shortly, and further information about the general approach can be found in a [paper](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-60) by Meier-Kolthoff _et al_. describing the similar genome-genome distance calculator tool. Description of the statistics produced by ATCG and formulae for their calculation are given [here](misc/statistics_calculation.pdf). A brief outline of the steps of ATCG is given below:
+A paper describing the methods will be written shortly, and further information about the general approach can be found in a [paper](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-60) by Meier-Kolthoff _et al_. describing the similar genome-genome distance calculator tool ([GGDC](https://ggdc.dsmz.de/ggdc.php#)). A brief outline of the steps of ATCG is given below:
 
-1. All-vs-all BLAST is conducted on assembled nucleotide sequences in both directions (genome A vs genome B and genome B vs genome A).
-2. Overlapping alignments are trimmed.
-3. For trimmed alignments across both BLAST directions, distance metrics are calculated; different metrics reflect different distance concepts: [resemblance and containment](https://www.cs.princeton.edu/courses/archive/spring13/cos598C/broder97resemblance.pdf). Breakpoint distances and alignment length statistics can optionally be calculated.
+1. BLAST is conducted on assembled nucleotide sequences in both directions between each pair of geneomes (i.e. genome A vs genome B and genome B vs genome A; that is, with genome A as the [query sequence](https://www.ncbi.nlm.nih.gov/books/NBK1734/) and genome B as the subject database sequence, and vice-versa).
+2. Where alignment ranges overlap at the same region on the query genome or the subject genome, the shorter overlapping alignment is trimmed to eliminate the overlap. Trimming performed on the query/subject genome is applied to the corresponding range on the subject/query genome, accounting for the strand of the alignment. So, if an alignment is '-' strand (a reverse complement alignment), and the alignment range on the query sequence is trimmed from the 5' end, then the corresponding alignment range on the subject sequence will be trimmed by the same length on the 3' end. See the example(#Example) below for a visual depiction of how alignment trimming works.
+3. For trimmed alignments from both BLAST directions, distance metrics are calculated; optionally, breakpoint distances and alignment length statistics can optionally be calculated. A description of the statistics produced by ATCG, and formulae for their calculation are given [here](misc/statistics_calculation.pdf).
 4. If all-vs-all BLAST was run, then a tree is generated using a specified pairwise distance metric; optionally, the tree can be annotated with bootstrap confidence values, which are calculated by resampling trimmed alignments.
 
 
 # Example
 
-To clarify the calculation of statistics, the alignment trimming and statistics calculation stages of the ATCG pipeline can be run on very simple example BLAST output files, using the following codfe, called within the example folder:
+To clarify the calculation of statistics, the alignment trimming and statistics calculation stages of the ATCG pipeline can be run on very simple example BLAST output files, using the following code, called within the example folder:
 
 `Rscript granges_example.R`
 
-Output is produced in the output folder. Diagrams below show the alignments before trimming and after trimming; calculation of the statistics in the output folder can be done manually for the benefit of understanding, as is shown for percent identity calculation. 
+Results are produced in the example/output folder. Diagrams below show the alignments before trimming and after trimming; calculation of the statistics in the output folder can be done manually for the benefit of understanding, as is shown below for the calculation of percent identity. 
 
+Untrimmed alignments
 <p align="center"><img src="example/images/untrimmed.JPG" alt="untrimmed" width="600"></p>
+Trimmed alignments
 <p align="center"><img src="example/images/trimmed.JPG" alt="trimmed" width="600"></p>
-<p align="center"><img src="example/images/percent_identity.JPG" alt="trimmed" width="600"></p>
+Calculation of percent identity from trimmed alignments
+<p align="center"><img src="example/images/percent_identity.JPG" alt="percent identity calculation" width="600"></p>
 
+Things to note:
+Notice how the red alignment is involved in alignment trimming. It overlaps with the turquoise alignment on sequence B and since it is longer, the turquoise alignment is trimmed. The red alignment also overlaps with the yellow alignment on sequence A; in this case it is the shorter of the two alignments, so it is trimmed. However, because it is a '-' strand alignment, it is trimmed from the 3' end on sequence B.
+
+The breakpoint distance is 1 meaning there were no pairs of sequences found to be adjacent and in the same relative order in sequence A and sequence B. While the red and yellow alignments are adjacent in both sequence A and B, one is '+' strand and the other is '-' strand so they are not in the same relative order.  
+
+For the percent identity calculation, the numerator and denominator and multiplied by 2. This is because the numer of identical basepairs (numerator) and the total alignment length (denominator) is the same in both BLAST directions. However, BLAST is not always symmetric; this is the rationale for aggregating across both BLAST directions. 
 
 # License
 
