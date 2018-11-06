@@ -155,10 +155,10 @@ Results are produced in the example/output folder. Diagrams below show the align
 
 __Things to note:__<br>
 <br>
-Notice how the red alignment is involved in alignment trimming: it overlaps with the turquoise alignment on sequence B and since the red alignment is longer, the turquoise alignment is trimmed. The red alignment also overlaps with the yellow alignment on sequence A; in this case, it is the shorter of the two alignments, so it is trimmed. However, because it is a '-' strand alignment, it is trimmed from the 3' end on sequence B.
-<br>
-The breakpoint distance is 1 meaning there were no pairs of sequences found to be adjacent and in the same relative order in sequence A and sequence B. While the red and yellow alignments are adjacent in both sequence A and B, one is '+' strand and the other is '-' strand so they are not in the same relative order.  
-<br>
+Notice how the red alignment is involved in alignment trimming: it overlaps with the turquoise alignment on sequence B and since the red alignment is longer, the turquoise alignment is trimmed. The red alignment also overlaps with the yellow alignment on sequence A; in this case, it is the shorter of the two alignments, so it is trimmed. However, because it is a '-' strand alignment, it is trimmed from the 3' end on sequence B.  <br>
+
+The breakpoint distance is 1 meaning there were no pairs of sequences found to be adjacent and in the same relative order in sequence A and sequence B. While the red and yellow alignments are adjacent in both sequence A and B, one is '+' strand and the other is '-' strand so they are not in the same relative order.  <br>
+
 For the percent identity calculation, the numerator and denominator are multiplied by 2. This is because the numer of identical basepairs (numerator) and the alignment length (denominator) is the same in both BLAST directions. However, BLAST is not always symmetric; this is the rationale for aggregating across both BLAST directions. 
 
 # License
