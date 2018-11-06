@@ -128,9 +128,9 @@ A list of replicate trees, that were used to calculate confidence values for the
 
 A paper describing the methods will be written shortly, and further information about the general approach can be found in a [paper](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-60) by Meier-Kolthoff _et al_. describing the similar genome-genome distance calculator tool ([GGDC](https://ggdc.dsmz.de/ggdc.php#)). A brief outline of the steps of ATCG is given below:
 
-1. BLAST is conducted on assembled nucleotide sequences in both directions between each pair of geneomes (i.e. genome A vs genome B and genome B vs genome A; that is, with genome A as the [query sequence](https://www.ncbi.nlm.nih.gov/books/NBK1734/) and genome B as the subject database sequence, and vice-versa).
-2. Where alignment ranges overlap at the same region on the query genome or the subject genome, the shorter overlapping alignment is trimmed to eliminate the overlap. Trimming performed on the query/subject genome is applied to the corresponding range on the subject/query genome, accounting for the strand of the alignment. So, if an alignment is '-' strand (a reverse complement alignment), and the alignment range on the query sequence is trimmed from the 5' end, then the corresponding alignment range on the subject sequence will be trimmed by the same length on the 3' end. See the example(#Example) below for a visual depiction of how alignment trimming works.
-3. For trimmed alignments from both BLAST directions, distance metrics are calculated; optionally, breakpoint distances and alignment length statistics can optionally be calculated. A description of the statistics produced by ATCG, and formulae for their calculation are given [here](misc/statistics_calculation.pdf).
+1. BLAST is conducted on assembled nucleotide sequences in both directions between each pair of genomes (i.e. genome A vs genome B and genome B vs genome A; that is, with genome A as the [query sequence](https://www.ncbi.nlm.nih.gov/books/NBK1734/) and genome B as the subject database sequence, and vice-versa).
+2. Where alignment ranges overlap at the same region on the query genome or the subject genome, the shorter overlapping alignment is trimmed to eliminate the overlap. Trimming performed on the query/subject genome is applied to the corresponding range on the subject/query genome, accounting for the strand of the alignment. So, if an alignment is '-' strand (a reverse complement alignment), and the alignment range on the query sequence is trimmed from the 5' end, then the corresponding alignment range on the subject sequence will be trimmed by the same length on the 3' end. See the [example](#Example) below for a visual depiction of how alignment trimming works.
+3. Using trimmed alignments from both BLAST directions, distance metrics are calculated; breakpoint distances and alignment length statistics can optionally be calculated. A description of the statistics produced by ATCG, and formulae for their calculation are given [here](misc/statistics_calculation.pdf).
 4. If all-vs-all BLAST was run, then a tree is generated using a specified pairwise distance metric; optionally, the tree can be annotated with bootstrap confidence values, which are calculated by resampling trimmed alignments.
 
 
@@ -142,19 +142,19 @@ To clarify the calculation of statistics, the alignment trimming and statistics 
 
 Results are produced in the example/output folder. Diagrams below show the alignments before trimming and after trimming; calculation of the statistics in the output folder can be done manually for the benefit of understanding, as is shown below for the calculation of percent identity. 
 
-Untrimmed alignments
+<p align="center">**Untrimmed alignments**</p>
 <p align="center"><img src="example/images/untrimmed.JPG" alt="untrimmed" width="600"></p>
-Trimmed alignments
+<p align="center">**Trimmed alignments**</p>
 <p align="center"><img src="example/images/trimmed.JPG" alt="trimmed" width="600"></p>
-Calculation of percent identity from trimmed alignments
+<p align="center">**Calculation of percent identity from trimmed alignments**</p>
 <p align="center"><img src="example/images/percent_identity.JPG" alt="percent identity calculation" width="600"></p>
 
-Things to note:
-Notice how the red alignment is involved in alignment trimming. It overlaps with the turquoise alignment on sequence B and since it is longer, the turquoise alignment is trimmed. The red alignment also overlaps with the yellow alignment on sequence A; in this case it is the shorter of the two alignments, so it is trimmed. However, because it is a '-' strand alignment, it is trimmed from the 3' end on sequence B.
+Things to note:<br>
+Notice how the red alignment is involved in alignment trimming: it overlaps with the turquoise alignment on sequence B and since the red alignment is longer, the turquoise alignment is trimmed. The red alignment also overlaps with the yellow alignment on sequence A; in this case, it is the shorter of the two alignments, so it is trimmed. However, because it is a '-' strand alignment, it is trimmed from the 3' end on sequence B.
 
 The breakpoint distance is 1 meaning there were no pairs of sequences found to be adjacent and in the same relative order in sequence A and sequence B. While the red and yellow alignments are adjacent in both sequence A and B, one is '+' strand and the other is '-' strand so they are not in the same relative order.  
 
-For the percent identity calculation, the numerator and denominator and multiplied by 2. This is because the numer of identical basepairs (numerator) and the total alignment length (denominator) is the same in both BLAST directions. However, BLAST is not always symmetric; this is the rationale for aggregating across both BLAST directions. 
+For the percent identity calculation, the numerator and denominator are multiplied by 2. This is because the numer of identical basepairs (numerator) and the alignment length (denominator) is the same in both BLAST directions. However, BLAST is not always symmetric; this is the rationale for aggregating across both BLAST directions. 
 
 # License
 
