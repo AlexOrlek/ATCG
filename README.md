@@ -142,14 +142,15 @@ To clarify the calculation of statistics, the alignment trimming and statistics 
 
 Results are produced in the example/output folder. Diagrams below show the alignments before trimming and after trimming; calculation of the statistics in the output folder can be done manually for the benefit of understanding, as is shown below for the calculation of percent identity. 
 
-<p align="center">**Untrimmed alignments**</p>
+<p align="center">__Untrimmed alignments__</p>
 <p align="center"><img src="example/images/untrimmed.JPG" alt="untrimmed" width="600"></p>
-<p align="center">**Trimmed alignments**</p>
+<p align="center">__Trimmed alignments__</p>
 <p align="center"><img src="example/images/trimmed.JPG" alt="trimmed" width="600"></p>
-<p align="center">**Calculation of percent identity from trimmed alignments**</p>
+<p align="center">__Calculation of percent identity from trimmed alignments__</p>
 <p align="center"><img src="example/images/percent_identity.JPG" alt="percent identity calculation" width="600"></p>
 
-Things to note:<br>
+__Things to note:__<br>
+<br>
 Notice how the red alignment is involved in alignment trimming: it overlaps with the turquoise alignment on sequence B and since the red alignment is longer, the turquoise alignment is trimmed. The red alignment also overlaps with the yellow alignment on sequence A; in this case, it is the shorter of the two alignments, so it is trimmed. However, because it is a '-' strand alignment, it is trimmed from the 3' end on sequence B.
 
 The breakpoint distance is 1 meaning there were no pairs of sequences found to be adjacent and in the same relative order in sequence A and sequence B. While the red and yellow alignments are adjacent in both sequence A and B, one is '+' strand and the other is '-' strand so they are not in the same relative order.  
