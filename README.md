@@ -136,19 +136,23 @@ A paper describing the methods will be written shortly, and further information 
 
 # Example
 
-To clarify the calculation of statistics, the alignment trimming and statistics calculation stages of the ATCG pipeline can be run on very simple example BLAST output files, using the following code, called within the example folder:
+To clarify the calculation of statistics, the alignment trimming and statistics calculation stages of the ATCG pipeline can be run on simple example BLAST output files (found within the example/blast folder). To run the example, call the following code from within the example folder:
 
 `Rscript granges_example.R`
 
-Results are produced in the example/output folder. Diagrams below show the alignments before trimming and after trimming; calculation of the statistics in the output folder can be done manually for the benefit of understanding, as is shown below for the calculation of percent identity. 
+Results are produced in the example/output folder. Diagrams below show the alignments before trimming and after trimming; calculation of the statistics in the output folder can be done manually for the benefit of understanding, as is shown below for the calculation of percent identity.
 
-<p align="center">__Untrimmed alignments__</p>
+<br>
+<p align="center">Untrimmed alignments</p>
 <p align="center"><img src="example/images/untrimmed.JPG" alt="untrimmed" width="600"></p>
-<p align="center">__Trimmed alignments__</p>
+<br>
+<p align="center">Trimmed alignments</p>
 <p align="center"><img src="example/images/trimmed.JPG" alt="trimmed" width="600"></p>
-<p align="center">__Calculation of percent identity from trimmed alignments__</p>
+<br>
+<p align="center">Calculation of percent identity from trimmed alignments</p>
 <p align="center"><img src="example/images/percent_identity.JPG" alt="percent identity calculation" width="600"></p>
 
+<br>
 __Things to note:__<br>
 <br>
 Notice how the red alignment is involved in alignment trimming: it overlaps with the turquoise alignment on sequence B and since the red alignment is longer, the turquoise alignment is trimmed. The red alignment also overlaps with the yellow alignment on sequence A; in this case, it is the shorter of the two alignments, so it is trimmed. However, because it is a '-' strand alignment, it is trimmed from the 3' end on sequence B.
