@@ -16,7 +16,7 @@ for sample in ${samples[@]}; do
 done
 
 
-python getexcludednames.py ${1} ${2}
+python ${3}/getexcludednames.py ${1} ${2}
 
 
 #NOTES

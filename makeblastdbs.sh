@@ -7,5 +7,5 @@ set -o pipefail
 
 mkdir -p ${1}
 
-cat ${2} | cut -f2 | python removeextension.py | parallel -k -j ${3} "makeblastdb -dbtype nucl -in {}.fasta -out {}_db"
+cat ${2} | cut -f2 | python ${4}/removeextension.py | parallel -k -j ${3} "makeblastdb -dbtype nucl -in {}.fasta -out {}_db"
 

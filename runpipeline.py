@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 import argparse, os, sys, time,subprocess, signal
-sys.path.append('./')
+sourcedir=os.path.dirname(os.path.abspath(__file__))
+cwdir=os.getcwd()
+sys.path.append(sourcedir)
+
 from pythonmods import runsubprocess
 
 
@@ -34,8 +37,7 @@ parser.add_argument('-d','--distscore', help='Distance score to use to construct
 parser.add_argument('--breakpoint', action='store_true', help='Calculate breakpoint statistics (default: do not calculate)')
 parser.add_argument('--alnlenstats', action='store_true', help='Calculate alignment length distribution statistics (default: do not calculate)')
 args = parser.parse_args()
-outputpath=os.path.relpath(args.out, os.path.dirname(os.path.abspath(__file__)))
-
+outputpath=os.path.relpath(args.out, cwdir)
 
 
 startruntime=runtime()
@@ -52,12 +54,12 @@ if args.sequences!=None:
     fastadir='%s/splitfastas'%outputpath
     fastafiles='%s/fastafilepaths.tsv'%outputpath
     blastdbs='%s/blastdbfilepaths.tsv'%outputpath
-    runsubprocess(['bash','splitfasta.sh',outputpath, fastadir, str(args.sequences),str(args.threads)])
-    runsubprocess(['python','renamefastas.py',outputpath, fastadir, str(args.sequences),fastafiles,blastdbs])
-    runsubprocess(['bash','makeblastdbs.sh',fastadir, fastafiles, str(args.threads)])
+    runsubprocess(['bash','%s/splitfasta.sh'%sourcedir,outputpath, fastadir, str(args.sequences),str(args.threads)])
+    runsubprocess(['python','%s/renamefastas.py'%sourcedir,outputpath, fastadir, str(args.sequences),fastafiles,blastdbs])
+    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastadir, fastafiles, str(args.threads),sourcedir])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished creating blast databases')
-    p=subprocess.Popen(['bash','runblast.sh',outputpath, str(args.sequences), blastdbs, str(args.evalue), str(args.wordsize), str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, str(args.sequences), blastdbs, str(args.evalue), str(args.wordsize), str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     try:
         print('{} {}'.format(stdout.decode(), 'stdout'))
@@ -71,10 +73,10 @@ if args.sequences!=None:
         sys.exit()
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished running blast')
-    runsubprocess(['bash','reformatblastoutput.sh',outputpath,blastdbs])
+    runsubprocess(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath,blastdbs,sourcedir])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
-    runsubprocess(['bash','getseqlengths.sh',outputpath,blasttype,str(args.sequences)])
+    runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences)])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
     
@@ -86,10 +88,10 @@ if args.sequences==None:
     blastdbs1='%s/blastdbfilepaths1.tsv'%outputpath
     fastafiles2='%s/fastafilepaths2.tsv'%outputpath
     blastdbs2='%s/blastdbfilepaths2.tsv'%outputpath
-    runsubprocess(['bash','splitfasta.sh',outputpath, fastadir1, str(args.sequences1),str(args.threads)])
-    runsubprocess(['bash','splitfasta.sh',outputpath, fastadir2, str(args.sequences2),str(args.threads)])
-    runsubprocess(['python','renamefastas.py',outputpath, fastadir1, str(args.sequences1), fastafiles1,blastdbs1])
-    runsubprocess(['python','renamefastas.py',outputpath, fastadir2, str(args.sequences2), fastafiles2,blastdbs2])
+    runsubprocess(['bash','%s/splitfasta.sh'%sourcedir,outputpath, fastadir1, str(args.sequences1),str(args.threads)])
+    runsubprocess(['bash','%s/splitfasta.sh'%sourcedir,outputpath, fastadir2, str(args.sequences2),str(args.threads)])
+    runsubprocess(['python','%s/renamefastas.py'%sourcedir,outputpath, fastadir1, str(args.sequences1), fastafiles1,blastdbs1])
+    runsubprocess(['python','%s/renamefastas.py'%sourcedir,outputpath, fastadir2, str(args.sequences2), fastafiles2,blastdbs2])
     #check there is no overlap between fastas provided in -s1 and -s2
     s1dir=os.listdir('%s/splitfastas1'%outputpath)
     s2dir=os.listdir('%s/splitfastas2'%outputpath)
@@ -98,11 +100,11 @@ if args.sequences==None:
     overlap=len(set(s1fastas).intersection(set(s2fastas)))
     if overlap>0:
         parser.error('there must be no overlap between fasta identifiers contained within the fasta files provided using the -s1 and -s2 flags')
-    runsubprocess(['bash','makeblastdbs.sh',fastadir1, fastafiles1, str(args.threads)])
-    runsubprocess(['bash','makeblastdbs.sh',fastadir2, fastafiles2, str(args.threads)])
+    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastadir1, fastafiles1, str(args.threads)])
+    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastadir2, fastafiles2, str(args.threads)])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished creating blast databases')
-    p=subprocess.Popen(['bash','runblast.sh',outputpath, str(args.sequences1), blastdbs2, str(args.evalue), str(args.wordsize), str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, str(args.sequences1), blastdbs2, str(args.evalue), str(args.wordsize), str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     try:
         print('{} {}'.format(stdout.decode(), 'stdout'))
@@ -133,18 +135,18 @@ if args.sequences==None:
     blastdbs='%s/blastdbfilepaths_combined.tsv'%outputpath
     runsubprocess(['cat %s %s | sort -k1,1V > %s'%(blastdbs1,blastdbs2,blastdbs)],shell=True)
 
-    runsubprocess(['bash','reformatblastoutput.sh',outputpath,blastdbs])
+    runsubprocess(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath,blastdbs])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
-    runsubprocess(['bash','getseqlengths.sh',outputpath,blasttype,str(args.sequences1),str(args.sequences2)])
+    runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences1),str(args.sequences2)])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
 
-runsubprocess(['Rscript','granges.R',outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot)])
+runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot)])
 laterruntime=runtime()
 print(laterruntime-startruntime, 'runtime; finished trimming alignments')
 if blasttype=='allvallpairwise':
-    phyargs=['Rscript','phylogeny.R',outputpath,str(args.threads),str(args.boot)]
+    phyargs=['Rscript','%s/phylogeny.R'%sourcedir,outputpath,str(args.threads),str(args.boot)]
     phyargs.extend(args.distscore)
     runsubprocess(phyargs)
     laterruntime=runtime()
