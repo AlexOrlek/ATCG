@@ -25,6 +25,7 @@ ATCG is __not__ appropriate if you want to:
 * [SeqKit](https://github.com/shenwei356/seqkit)
 * [bioawk](https://github.com/lh3/bioawk)
 * [BLAST+](https://www.ncbi.nlm.nih.gov/books/NBK279690/) (`blastn`)
+* [GNU Parallel](https://www.gnu.org/software/parallel/)
 * [R](https://www.r-project.org/) 3.3.1 or later with the following packages installed:
     * [GenomicRanges](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html); [gsubfn](https://cran.r-project.org/web/packages/gsubfn/index.html); [purrr](https://github.com/tidyverse/purrr); [foreach](https://cran.r-project.org/web/packages/foreach/index.html); [doParallel](https://cran.r-project.org/web/packages/doParallel/index.html); [data.table](https://cran.r-project.org/web/packages/data.table/index.html); [ape](https://cran.r-project.org/web/packages/ape/index.html)<br>
 

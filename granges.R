@@ -3,7 +3,7 @@ library('gsubfn')
 library('GenomicRanges')
 library('purrr')
 reduce<-GenomicRanges::reduce
-simplify<-IRanges::simplify
+shift<-GenomicRanges::shift
 library(data.table)
 rbindlist<-data.table::rbindlist
 transpose<-purrr::transpose
@@ -80,6 +80,14 @@ addcols<-function(x) {
   return(x)
 }
 
+
+pastefunction<-function(x) {
+  if (length(x)==1) {
+    x=x[1]
+  } else {
+    x=paste(x[1],x[2],sep='|')
+  }
+}
 
 trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
   #filter alignments of qfinal based on sfinal and vice-versa
@@ -319,6 +327,12 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     sample<-samples[i]
     report<-read.table(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),sep='\t',header=FALSE) #same subject, different queries
     colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
+    #get information for shifting subject ranges where there are multiple contigs (below)
+    reformattedsname<-as.factor(sapply(strsplit(as.vector(report$sname),"|",fixed=T),pastefunction))
+    samplecontigs<-levels(reformattedsname)
+    samplecontiglens<-seqlenreport[sapply(strsplit(as.vector(seqlenreport$sequence),'|',fixed=T),pastefunction) %in% samplecontigs,2]
+    sampleindices<-as.numeric(reformattedsname)
+    #remove any contig information
     report$qname<-sapply(strsplit(as.vector(report$qname),"|",fixed=T),function(x) x=x[1]) #!!!ADDED
     report$sname<-sapply(strsplit(as.vector(report$sname),"|",fixed=T),function(x) x=x[1])   
     ###disjoin method trimming
@@ -331,9 +345,6 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     qalnlen<-width(qgr)
     salnlen<-width(sgr)
     #shift subject ranges where there are multiple contigs
-    samplecontigs<-levels(as.factor(report$sname))
-    samplecontiglens<-seqlenreport[seqlenreport$sequence %in% samplecontigs,2]
-    sampleindices<-as.numeric(as.factor(report$sname))
     for (j in 1:length(samplecontiglens)) {
       if (j==1) {
         next

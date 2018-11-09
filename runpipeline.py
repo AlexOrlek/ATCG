@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import argparse, os, sys, time,subprocess, signal
 sys.path.append('./')
 from pythonmods import runsubprocess
