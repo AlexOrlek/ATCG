@@ -1,10 +1,10 @@
 #args = commandArgs(trailingOnly=TRUE)
-args=c('.',1,'True','True',0)
+args=c('.',1,'True','True',0) #arg1: outputpath (current directory); arg2: threads; arg3: run breakpoint calculation; arg4: calculate alignment length statistics; arg5: bootstrapping (0, not running).
 library('gsubfn')
 library('GenomicRanges')
 library('purrr')
 reduce<-GenomicRanges::reduce
-simplify<-IRanges::simplify
+shift<-GenomicRanges::shift
 library(data.table)
 rbindlist<-data.table::rbindlist
 transpose<-purrr::transpose
@@ -81,6 +81,14 @@ addcols<-function(x) {
   return(x)
 }
 
+
+pastefunction<-function(x) {
+  if (length(x)==1) {
+    x=x[1]
+  } else {
+    x=paste(x[1],x[2],sep='|')
+  }
+}
 
 trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
   #filter alignments of qfinal based on sfinal and vice-versa
@@ -293,6 +301,14 @@ mergestats<-function(x,y) {
 }
 
 
+#function to shift subject ranges back (after shifting forward to avoid ranges on different contigs from being considered overlapping)
+shiftback<-function(sfinal,myindices,addlen) {
+  myfinalindices<-which(mcols(sfinal)$inputhsp%in%myindices)
+  sfinal[myfinalindices]<-shift(sfinal[myfinalindices],addlen)
+  return(sfinal)
+}
+
+
 ###iterate through samples, to get initial raw statistics for sample-pairs
 
 #read seqlength file
@@ -320,6 +336,12 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     sample<-samples[i]
     report<-read.table(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),sep='\t',header=FALSE) #same subject, different queries
     colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
+    #get information for shifting subject ranges where there are multiple contigs (below)
+    reformattedsname<-as.factor(sapply(strsplit(as.vector(report$sname),"|",fixed=T),pastefunction))
+    samplecontigs<-levels(reformattedsname)
+    samplecontiglens<-seqlenreport[sapply(strsplit(as.vector(seqlenreport$sequence),'|',fixed=T),pastefunction) %in% samplecontigs,2]
+    sampleindices<-as.numeric(reformattedsname)
+    #remove any contig information
     report$qname<-sapply(strsplit(as.vector(report$qname),"|",fixed=T),function(x) x=x[1]) #!!!ADDED
     report$sname<-sapply(strsplit(as.vector(report$sname),"|",fixed=T),function(x) x=x[1])   
     ###disjoin method trimming
@@ -332,9 +354,6 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     qalnlen<-width(qgr)
     salnlen<-width(sgr)
     #shift subject ranges where there are multiple contigs
-    samplecontigs<-levels(as.factor(report$sname))
-    samplecontiglens<-seqlenreport[seqlenreport$sequence %in% samplecontigs,2]
-    sampleindices<-as.numeric(as.factor(report$sname))
     for (j in 1:length(samplecontiglens)) {
       if (j==1) {
         next
@@ -362,6 +381,15 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #add pid, strand, and subject name
     qfinal<-lapply(qreducedoutput, function(x) x=addcols(x))
     sfinal<-lapply(sreducedoutput, function(x) x=addcols(x))
+    #shift subject ranges back, if they were shifted due to multiple contigs
+    for (j in 1:length(samplecontiglens)) {  #N.B if wanting to use this method, would have to use an lapply on sfinal or loop though
+    	if (j==1) {
+    	   next
+  	}
+	myindices<-which(sampleindices==j)
+  	addlen<-(sum(samplecontiglens[c(1:(j-1))])*-1)
+	sfinal<-lapply(sfinal, shiftback, myindices=myindices, addlen=addlen)
+    }
     #trim alignments
     if (breakpoint=='True') {
       trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,SIMPLIFY = F)) #!ADDED
@@ -656,5 +684,4 @@ if (boot!=0) {
 
   write.table(finaldfboot, file=gsubfn('%1',list('%1'=args[1]),'%1/output/distancestats_bootstrapped.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
 
-   
 }
