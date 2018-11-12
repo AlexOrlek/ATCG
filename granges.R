@@ -300,6 +300,14 @@ mergestats<-function(x,y) {
 }
 
 
+#function to shift subject ranges back (after shifting forward to avoid ranges on different contigs from being considered overlapping)
+shiftback<-function(sfinal,myindices,addlen) {
+  myfinalindices<-which(mcols(sfinal)$inputhsp%in%myindices)
+  sfinal[myfinalindices]<-shift(sfinal[myfinalindices],addlen)
+  return(sfinal)
+}
+
+
 ###iterate through samples, to get initial raw statistics for sample-pairs
 
 #read seqlength file
@@ -372,6 +380,15 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #add pid, strand, and subject name
     qfinal<-lapply(qreducedoutput, function(x) x=addcols(x))
     sfinal<-lapply(sreducedoutput, function(x) x=addcols(x))
+    #shift subject ranges back, if they were shifted due to multiple contigs
+    for (j in 1:length(samplecontiglens)) {  #N.B if wanting to use this method, would have to use an lapply on sfinal or loop though
+    	if (j==1) {
+    	   next
+  	}
+	myindices<-which(sampleindices==j)
+  	addlen<-(sum(samplecontiglens[c(1:(j-1))])*-1)
+	sfinal<-lapply(sfinal, shiftback, myindices=myindices, addlen=addlen)
+    }
     #trim alignments
     if (breakpoint=='True') {
       trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,SIMPLIFY = F)) #!ADDED

@@ -6,7 +6,7 @@ As input, ATCG can take nucleotide sequence assemblies in [FASTA](https://en.wik
 
 * Complete genomes (e.g. plasmids; small collections of bacterial genomes)
 * Complete metagenomes (e.g. sets of bacterial plasmids, where each set comprises plasmids from a single bacterial isolate)
-* Incomplete genome/metagenome sequences (or a combination of complete/incomplete sequences). Incomplete sequences (contigs or scaffolds) must be affiliated to a known genome or metagenome and this affiliation is indicated in the sequence's FASTA header (see [Input](#input))
+* Incomplete genome/metagenome sequences (or a combination of complete/incomplete sequences). Incomplete sequences (contigs or scaffolds) must be affiliated to a known genome or metagenome and this affiliation is indicated in the sequence's FASTA header (see [Input](#Input))
 
 ATCG is appropriate if you want to:
 * Compare sequences in terms of overall relatedness metrics (genome-genome distances, percentage identity, coverage breadth)
@@ -45,8 +45,6 @@ install.packages("data.table",repo='https://cloud.r-project.org/')
 install.packages("ape",repo='https://cloud.r-project.org/')
 ```
 
-    
-
 
 # Installation
 
@@ -54,6 +52,8 @@ install.packages("ape",repo='https://cloud.r-project.org/')
 git clone https://github.com/AlexOrlek/ATCG.git
 cd ATCG
 ```
+You should find the atcg.py executable script within the repository directory. If you add the path of this directory to your [$PATH variable](https://www.computerhope.com/issues/ch001647.htm), then ATCG can be run by calling `atcg.py [_arguments_...]` from any directory location. Note also that ATCG expects the tools listed in [Requirements](#Requirements) to be available in your $PATH variable.
+
 # Input
 
 Sequences are provided in FASTA format, a flexibly-defined format comprising header lines (prefixed by ">") and sequences. Here, we follow the common convention where the header line is permitted to have two parts, separated by a space: the identifier and an optional comment after the first space. Information in the header identifier must be delineated using vertical bar(s) "|" and adhere to the format: `unit of analysis|subunit`. The `subunit` is only necessary when indicating affiliation of e.g. contigs with genomes, or of bacterial plasmids with bacterial isolates.
@@ -74,18 +74,18 @@ isolate2|plasmid2
 
 For all-vs-all comparison, the tool can be run by providing a single multi-FASTA file using the `-s` flag; pairwise distance scores will be recorded and a tree will be generated.
 
-`python runpipeline.py -s genomes.fasta -o output-directory -t 8`
+`atcg.py -s genomes.fasta -o output-directory -t 8`
 
 
 Alternatively, if all-vs-all comparison is not required, 2 input (multi-)FASTA files can be provided using flags `-s1` and `-s2`; pairwise comparisons will be conducted between but not amongst sequence(s) in each file; pairwise distances will be recorded but a tree will not be generated since distances are not available for all pairwise combinations. The order in which the FASTA files are provided to the -s1/-s2 flags will not affect results, however the sequences in the two files must be non-overlapping (ATCG will check this based on examination of the FASTA header identifiers).
 
-`python runpipeline.py -s1 query.fasta -s2 genomes.fasta -o output-directory -t 8`
+`atcg.py -s1 query.fasta -s2 genomes.fasta -o output-directory -t 8`
 
 
 
 # Options and usage
 
-`python runpipeline.py --help` produces a summary of all the options.
+`atcg.py --help` produces a summary of all the options.
 
 By default, the number of threads is 1, but multi-threading is recommended to reduce computing time; the number of threads to use is specified using the `-t` flag; the value must not exceed the number of threads available on your machine. 
 By default, breakpoint distance and alignment length distribution statistics are not calculated; bootstrap confidence values are also not calculated by default.
@@ -93,7 +93,7 @@ To conduct bootstrapping, the number of replicates is specified using the `-b` f
 Calculation of breakpoint distance (a measure of structural similarity) is specified using the `--breakpoint` flag.
 Calculation of alignment length distribution statistics is specified using the `--alnlenstats` flag. The alignment length statistics provide information on the distribution of BLAST alignment lengths and are analogous to the widely used [assembly contiguity statistics](https://www.molecularecologist.com/2017/03/whats-n50/) e.g N50/L50.
 
-`python runpipeline.py -s genomes.fasta -o output-directory -t 8 -b 100 --breakpoint --alnlenstats` runs the pipeline using 8 threads, with 100 bootstrap replicates, and calculation of breakpoint distance and alignment length distribution statistics.
+`atcg.py -s genomes.fasta -o output-directory -t 8 -b 100 --breakpoint --alnlenstats` runs the pipeline using 8 threads, with 100 bootstrap replicates, and calculation of breakpoint distance and alignment length distribution statistics.
 
 To better understand the calculation of the various statistics, it may help to take a look at the [example](#Example) below.
 
@@ -137,11 +137,11 @@ A paper describing the methods will be written shortly, and further information 
 
 # Example
 
-To clarify the calculation of statistics, the alignment trimming and statistics calculation stages of the ATCG pipeline can be run on simple example BLAST output files (found within the example/blast folder). To run the example, call the following code from within the example folder:
+To clarify the calculation of statistics, the alignment trimming and statistics calculation stages of the ATCG pipeline can be run on simple example BLAST output files (found within the example/blast directory). To run the example, call the following code from within the example directory:
 
 `Rscript granges_example.R`
 
-Results are produced in the example/output folder. Diagrams below show the alignments before trimming and after trimming; calculation of the statistics in the output folder can be done manually for the benefit of understanding, as is shown below for the calculation of percent identity.
+Results are produced in the example/output directory. Diagrams below show the alignments before trimming and after trimming; calculation of the statistics in the output directory can be done manually for the benefit of understanding, as is shown below for the calculation of percent identity.
 
 <br>
 <p align="center">Untrimmed alignments</p>
