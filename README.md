@@ -52,7 +52,7 @@ install.packages("ape",repo='https://cloud.r-project.org/')
 git clone https://github.com/AlexOrlek/ATCG.git
 cd ATCG
 ```
-You should find the atcg.py executable script within the repository directory. If you add the path of this directory to your [$PATH variable](https://www.computerhope.com/issues/ch001647.htm), then ATCG can be run by calling `atcg.py [`*`arguments...`*`] from any directory location. Note also that ATCG expects the tools listed in [Requirements](#Requirements) to be available in your $PATH variable.
+You should find the atcg.py executable script within the repository directory. If you add the path of this directory to your [$PATH variable](https://www.computerhope.com/issues/ch001647.htm), then ATCG can be run by calling `atcg.py [`*`arguments...`*`]` from any directory location. Note also that ATCG expects the tools listed in [Requirements](#Requirements) to be available in your $PATH variable.
 
 # Input
 
