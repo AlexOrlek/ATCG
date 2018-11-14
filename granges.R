@@ -188,9 +188,10 @@ BPfunc<-function(x,y) {  #apply to granges objects
   return(list("bpcount"=bpcount,"alncount"=alncount))
 }
 
+
 breakpointcalc<-function(qtrimmed,strimmed,mydf) {
-  qcontigsplit<-lapply(qtrimmed, function(x) split(x,as.vector(mcols(x)$sname))) 
-  scontigsplit<-lapply(strimmed, function(x) split(x,as.vector(mcols(x)$sname))) #nested lists- need to split by subject contigs before calculating breakpoints; convert mcols()$sname to vector otherwise fator levels are used
+  qcontigsplit<-lapply(qtrimmed, function(x) split(x,bpsplit[mcols(x)$inputhsp])) 
+  scontigsplit<-lapply(strimmed, function(x) split(x,bpsplit[mcols(x)$inputhsp])) #nested lists- need to split by query and subject contigs before calculating breakpoints
   bpout<-list()
   for (qname in names(qcontigsplit)) {
     #sort alignments by position
@@ -208,7 +209,6 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
   myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"))
   return(myfinaldf)
 }
-
 
 
 bpdistcalc<-function(bps,alns) {
@@ -336,10 +336,20 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     report<-read.table(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),sep='\t',header=FALSE) #same subject, different queries
     colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
     #get information for shifting subject ranges where there are multiple contigs (below)
+    seqlenreportseqs<-sapply(strsplit(as.vector(seqlenreport$sequence),'|',fixed=T),pastefunction)
     reformattedsname<-as.factor(sapply(strsplit(as.vector(report$sname),"|",fixed=T),pastefunction))
-    samplecontigs<-levels(reformattedsname)
-    samplecontiglens<-seqlenreport[sapply(strsplit(as.vector(seqlenreport$sequence),'|',fixed=T),pastefunction) %in% samplecontigs,2]
-    sampleindices<-as.numeric(reformattedsname)
+    samplescontigs<-levels(reformattedsname)
+    samplescontiglens<-seqlenreport[seqlenreportseqs %in% samplescontigs,2]
+    samplesindices<-as.numeric(reformattedsname)
+    #get information for shifting query ranges where there are multiple contigs (below)
+    reformattedqname<-as.factor(sapply(strsplit(as.vector(report$qname),"|",fixed=T),pastefunction))
+    sampleqcontigs<-levels(reformattedqname)
+    sampleqcontiglens<-seqlenreport[seqlenreportseqs %in% sampleqcontigs,2]
+    sampleqindices<-as.numeric(reformattedqname)
+    #
+    if (breakpoint=='True') {
+        bpsplit<-paste(reformattedqname,reformattedsname,sep='_') #required for breakpoint calculation
+    }
     #remove any contig information
     report$qname<-sapply(strsplit(as.vector(report$qname),"|",fixed=T),function(x) x=x[1]) #!!!ADDED
     report$sname<-sapply(strsplit(as.vector(report$sname),"|",fixed=T),function(x) x=x[1])   
@@ -353,13 +363,22 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     qalnlen<-width(qgr)
     salnlen<-width(sgr)
     #shift subject ranges where there are multiple contigs
-    for (j in 1:length(samplecontiglens)) {
+    for (j in 1:length(samplescontiglens)) {
       if (j==1) {
         next
       }
-      myindices<-which(sampleindices==j)
-      addlen<-sum(samplecontiglens[c(1:(j-1))])
+      myindices<-which(samplesindices==j)
+      addlen<-sum(samplescontiglens[c(1:(j-1))])
       sgr[myindices]<-shift(sgr[myindices],addlen)
+    }
+    #shift query ranges where there are multiple contigs
+    for (j in 1:length(sampleqcontiglens)) {
+      if (j==1) {
+        next
+      }
+      myindices<-which(sampleqindices==j)
+      addlen<-sum(sampleqcontiglens[c(1:(j-1))])
+      qgr[myindices]<-shift(qgr[myindices],addlen)
     }
     #query disjoin
     gr2<-disjoin(qgr,with.revmap=TRUE,ignore.strand=TRUE)
@@ -381,13 +400,22 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     qfinal<-lapply(qreducedoutput, function(x) x=addcols(x))
     sfinal<-lapply(sreducedoutput, function(x) x=addcols(x))
     #shift subject ranges back, if they were shifted due to multiple contigs
-    for (j in 1:length(samplecontiglens)) {  #N.B if wanting to use this method, would have to use an lapply on sfinal or loop though
+    for (j in 1:length(samplescontiglens)) {
     	if (j==1) {
     	   next
   	}
-	myindices<-which(sampleindices==j)
-  	addlen<-(sum(samplecontiglens[c(1:(j-1))])*-1)
+	myindices<-which(samplesindices==j)
+  	addlen<-(sum(samplescontiglens[c(1:(j-1))])*-1)
 	sfinal<-lapply(sfinal, shiftback, myindices=myindices, addlen=addlen)
+    }
+    #shift query ranges back, if they were shifted due to multiple contigs
+    for (j in 1:length(sampleqcontiglens)) {
+      if (j==1) {
+        next
+      }
+      myindices<-which(sampleqindices==j)
+      addlen<-(sum(sampleqcontiglens[c(1:(j-1))])*-1)
+      qfinal<-lapply(qfinal, shiftback, myindices=myindices, addlen=addlen)
     }
     #trim alignments
     if (breakpoint=='True') {
