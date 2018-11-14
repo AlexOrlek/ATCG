@@ -146,8 +146,12 @@ runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads),
 laterruntime=runtime()
 print(laterruntime-startruntime, 'runtime; finished trimming alignments')
 if blasttype=='allvallpairwise':
-    phyargs=['Rscript','%s/phylogeny.R'%sourcedir,outputpath,str(args.threads),str(args.boot)]
-    phyargs.extend(args.distscore)
-    runsubprocess(phyargs)
-    laterruntime=runtime()
-    print(laterruntime-startruntime, 'runtime; finished plotting phylogeny using distance score(s): %s'%args.distscore)
+    linecount=int(runsubprocess(['wc -l < %s/included.txt'%outputpath],shell=True))
+    if linecount < 3:
+        print('Warning: there are only %i samples: a dendrogram cannot be constructed'%linecount)
+    else:
+        phyargs=['Rscript','%s/phylogeny.R'%sourcedir,outputpath,str(args.threads),str(args.boot)]
+        phyargs.extend(args.distscore)
+        runsubprocess(phyargs)
+        laterruntime=runtime()
+        print(laterruntime-startruntime, 'runtime; finished plotting phylogeny using distance score(s): %s'%args.distscore)

@@ -197,13 +197,14 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
     #sort alignments by position
     qcontigsplit[[qname]]<-lapply(qcontigsplit[[qname]], function(x) sort(x,ignore.strand=T))
     scontigsplit[[qname]]<-lapply(scontigsplit[[qname]], function(x) sort(x,ignore.strand=T))
+    numsplits<-length(qcontigsplit[[qname]])
     out<-mapply(BPfunc,qcontigsplit[[qname]],scontigsplit[[qname]]) #apply breakpoint function to sublists
     bpcount<-sum(unlist((out["bpcount",]))) #sum across subject contig splits to get count per query
     alncount<-sum(unlist((out["alncount",])))
-    bpout[[qname]]<-c(bpcount,alncount)
+    bpout[[qname]]<-c(bpcount,alncount,numsplits)
   }
   mydfbp<-as.data.frame(do.call(rbind, bpout))
-  colnames(mydfbp)<-c('breakpoints','alignments')
+  colnames(mydfbp)<-c('breakpoints','alignments','numsplits')
   mydfbp<-cbind(querysample=rownames(mydfbp),subjectsample=rep(sample,nrow(mydfbp)),mydfbp)
   #merge dataframes
   myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"))
@@ -211,11 +212,11 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
 }
 
 
-bpdistcalc<-function(bps,alns) {
-  if ((alns-1)==0) {
+bpdistcalc<-function(bps,alns,numsplits) {
+  if ((alns-numsplits)==0) {
     return(as.numeric(0))
   } else {
-    return(as.numeric(bps/(alns-1)))
+    return(as.numeric(bps/(alns-numsplits)))
   }
 }
 
@@ -264,14 +265,14 @@ statsfunc<-function(stats, breakpoint,mygenomelen,mymingenomelen,alnlenstats='Fa
   percentid<-as.numeric(stats["hspidpositions"]/stats["hsplength"])
   covbreadthmin<-as.numeric(stats["hsplength"]/mymingenomelen)
   if (breakpoint=='True' && alnlenstats=='True') {
-    bpdist<-bpdistcalc(stats["breakpoints"],stats["alignments"])
+    bpdist<-bpdistcalc(stats["breakpoints"],stats["alignments"],stats["numsplits"])
     breakpoints<-as.numeric(stats["breakpoints"])
     alignments<-as.numeric(stats["alignments"])
     lxstats<-as.integer(stats[lxcols])
     nxstats<-as.integer(stats[nxcols])
     return(c(d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments,lxstats,nxstats))
   } else if (breakpoint=='True') {
-    bpdist<-bpdistcalc(stats["breakpoints"],stats["alignments"])
+    bpdist<-bpdistcalc(stats["breakpoints"],stats["alignments"],stats["numsplits"])
     breakpoints<-as.numeric(stats["breakpoints"])
     alignments<-as.numeric(stats["alignments"])
     return(c(d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments))
@@ -481,11 +482,11 @@ stopCluster(cl)
 if (boot==0) {
   allsampledf<-as.data.frame(do.call(rbind, allsampledflist))
   if (breakpoint=='True' && alnlenstats=='True') {
-    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments',lxcols, nxcols)
-    statscols<-c("hspidpositions","hsplength","breakpoints","alignments",lxcols,nxcols)
+    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','numsplits',lxcols, nxcols)
+    statscols<-c("hspidpositions","hsplength","breakpoints","alignments","numsplits",lxcols,nxcols)
   } else if (breakpoint=='True') {
-    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments')
-    statscols<-c("hspidpositions","hsplength","breakpoints","alignments")
+    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','numsplits')
+    statscols<-c("hspidpositions","hsplength","breakpoints","alignments","numsplits")
   } else if (alnlenstats=='True') {
     colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength',lxcols,nxcols)
     statscols<-c("hspidpositions","hsplength",lxcols,nxcols)
@@ -497,17 +498,17 @@ if (boot==0) {
   allsampledf<-as.data.frame(do.call(rbind, lapply(allsampledflist, function(l) l[[1]])))
   allsampledfboot<-combinebootfunc(allsampledflist)
   if (breakpoint=='True' && alnlenstats=='True') {
-    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments',lxcols,nxcols)
-    statscols<-c("hspidpositions","hsplength","breakpoints","alignments",lxcols,nxcols)
-    #statscolsboot<-c("hspidpositions","hsplength","breakpoints","alignments") #NO LONGER BOOTSTRAPPING BREAKPOINTS
-    #colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments')
+    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','numsplits',lxcols,nxcols)
+    statscols<-c("hspidpositions","hsplength","breakpoints","alignments","numsplits",lxcols,nxcols)
+    #statscolsboot<-c("hspidpositions","hsplength","breakpoints","alignments","numsplits") #NO LONGER BOOTSTRAPPING BREAKPOINTS
+    #colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','numsplits')
     statscolsboot<-c("hspidpositions","hsplength")
     colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength')
   } else if (breakpoint=='True') {
-    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments')
-    statscols<-c("hspidpositions","hsplength","breakpoints","alignments")
-    #statscolsboot<-c("hspidpositions","hsplength","breakpoints","alignments")
-    #colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments')
+    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','numsplits')
+    statscols<-c("hspidpositions","hsplength","breakpoints","alignments","numsplits")
+    #statscolsboot<-c("hspidpositions","hsplength","breakpoints","alignments","numsplits")
+    #colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','numsplits')
     statscolsboot<-c("hspidpositions","hsplength")
     colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength')
   } else if (alnlenstats=='True') {
