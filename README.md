@@ -58,15 +58,20 @@ You should find the atcg.py executable script within the repository directory. I
 
 Sequences are provided in FASTA format, a flexibly-defined format comprising header lines (prefixed by ">") and sequences. Here, we follow the common convention where the header line is permitted to have two parts, separated by a space: the identifier and an optional comment after the first space. Information in the header identifier must be delineated using vertical bar(s) "|" and adhere to the format: `unit of analysis|subunit`. The `subunit` is only necessary when indicating affiliation of e.g. contigs with genomes, or of bacterial plasmids with bacterial isolates.
 
-If comparing genomes, FASTA headers could be formatted as follows:<br>
-genome1|contig1<br>
-genome1|contig2<br>
+If comparing complete genomes, FASTA headers could be formatted as follows:<br>
+genome1 additional information provided after the first space<br>
 genome2<br>
-genome3|contig1 additional information provided after the first space
+genome3<br>
+
+If comparing genomes where at least some genomes comprise contigs, FASTA headers could be formatted as follows:<br>
+genome1|contig1 additional information provided after the first space<br>
+genome1|contig2|additional information can also be provided in the identifier after genome|contig|<br>
+genome2|contig1<br>
+genome3|contig1
 
 If comparing isolates in terms of their overall plasmid genetic content, FASTA headers could be formatted as follows:<br>
-isolate1|plasmid1<br>
-isolate1|plasmid2<br>
+isolate1|plasmid1 additional information provided after the first space<br>
+isolate1|plasmid2|additional information can also be provided in the identifier after isolate|plasmid|<br>
 isolate2|plasmid1<br>
 isolate2|plasmid2
 

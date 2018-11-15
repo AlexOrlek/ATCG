@@ -302,11 +302,11 @@ mergestats<-function(x,y) {
 
 
 #function to shift subject ranges back (after shifting forward to avoid ranges on different contigs from being considered overlapping)
-shiftback<-function(sfinal,myindices,addlen) {
-  myfinalindices<-which(mcols(sfinal)$inputhsp%in%myindices)
-  sfinal[myfinalindices]<-shift(sfinal[myfinalindices],addlen)
-  return(sfinal)
-}
+#shiftback<-function(sfinal,myindices,addlen) {
+#  myfinalindices<-which(mcols(sfinal)$inputhsp%in%myindices)
+#  sfinal[myfinalindices]<-shift(sfinal[myfinalindices],addlen)
+#  return(sfinal)
+#}
 
 
 ###iterate through samples, to get initial raw statistics for sample-pairs
@@ -381,6 +381,14 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       addlen<-sum(sampleqcontiglens[c(1:(j-1))])
       qgr[myindices]<-shift(qgr[myindices],addlen)
     }
+    #overwrite report with shifted forward ranges
+    if (length(samplescontiglens)>1) {
+       report$sstart<-start(sgr)
+       report$send<-end(sgr)
+    if (length(sampleqcontiglens)>1) {
+       report$qstart<-start(qgr)
+       report$qend<-end(qgr)
+    }
     #query disjoin
     gr2<-disjoin(qgr,with.revmap=TRUE,ignore.strand=TRUE)
     revmap<-gr2$revmap
@@ -401,23 +409,23 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     qfinal<-lapply(qreducedoutput, function(x) x=addcols(x))
     sfinal<-lapply(sreducedoutput, function(x) x=addcols(x))
     #shift subject ranges back, if they were shifted due to multiple contigs
-    for (j in 1:length(samplescontiglens)) {
-    	if (j==1) {
-    	   next
-  	}
-	myindices<-which(samplesindices==j)
-  	addlen<-(sum(samplescontiglens[c(1:(j-1))])*-1)
-	sfinal<-lapply(sfinal, shiftback, myindices=myindices, addlen=addlen)
-    }
+    #for (j in 1:length(samplescontiglens)) {
+    #	if (j==1) {
+    #	   next
+    #	}
+    #	myindices<-which(samplesindices==j)
+    #	addlen<-(sum(samplescontiglens[c(1:(j-1))])*-1)
+    #	sfinal<-lapply(sfinal, shiftback, myindices=myindices, addlen=addlen)
+    #}
     #shift query ranges back, if they were shifted due to multiple contigs
-    for (j in 1:length(sampleqcontiglens)) {
-      if (j==1) {
-        next
-      }
-      myindices<-which(sampleqindices==j)
-      addlen<-(sum(sampleqcontiglens[c(1:(j-1))])*-1)
-      qfinal<-lapply(qfinal, shiftback, myindices=myindices, addlen=addlen)
-    }
+    #for (j in 1:length(sampleqcontiglens)) {
+    #  if (j==1) {
+    #    next
+    #  }
+    #  myindices<-which(sampleqindices==j)
+    #  addlen<-(sum(sampleqcontiglens[c(1:(j-1))])*-1)
+    #  qfinal<-lapply(qfinal, shiftback, myindices=myindices, addlen=addlen)
+    #}
     #trim alignments
     if (breakpoint=='True') {
       trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,SIMPLIFY = F)) #!ADDED
