@@ -89,6 +89,9 @@ pastefunction<-function(x) {
   }
 }
 
+
+
+
 trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
   #filter alignments of qfinal based on sfinal and vice-versa
   finalhsps<-sort(intersect(mcols(qfinal)$inputhsp,mcols(sfinal)$inputhsp))
@@ -102,60 +105,80 @@ trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
   copyqfinal<-qfinal
   addstart<-start(sfinal)-finalalignments$sstart
   minusend<-finalalignments$send-end(sfinal)
-  mydiff<-addstart+minusend
-  for (i in 1:length(mydiff)) {
-    if (mydiff[i]>0) {
-      #calculate new start/end positions
-      if (finalalignments$strand[i]=='+') {
-        newstart<-start(qfinal[i])+addstart[i]
-        newend<-end(qfinal[i])-minusend[i]
-      } else {
-        newstart<-start(qfinal[i])+minusend[i]
-        newend<-end(qfinal[i])-addstart[i]
-      }
-      #apply new start/end positions in order to trim alignments
-      if (newstart>=end(qfinal[i])) {
-        start(qfinal[i])<-end(qfinal[i])
-      } else {
-        start(qfinal[i])<-newstart
-      }
-      if (newend<=start(qfinal[i])) {
-        end(qfinal[i])<-start(qfinal[i])
-      } else {
-        end(qfinal[i])<-newend
-      }
-    }
+  #get indices that require position reassignment
+  mydiffindices<-which((addstart > 0 | minusend > 0)==TRUE)
+  #calculate new start/end positions
+  lenmydiff<-length(mydiffindices)
+  newstart<-numeric(lenmydiff)
+  newend<-numeric(lenmydiff)
+  strandpos<-which(finalalignments$strand[mydiffindices]=='+') #strandpos is for subsetting mydiffindices/indexing newstart/end vectors; mydiffindices is for subsetting alignments
+  lenstrandpos<-length(strandpos)
+  if (lenstrandpos==0) { #all negative
+    newstart<-start(qfinal[mydiffindices])+minusend[mydiffindices]
+    newend<-end(qfinal[mydiffindices])-addstart[mydiffindices]
+  } else if (lenstrandpos==lenmydiff) { #all positive
+    newstart<-start(qfinal[mydiffindices])+addstart[mydiffindices]
+    newend<-end(qfinal[mydiffindices])-minusend[mydiffindices]
+  } else {
+    mydiffindicespos<-mydiffindices[strandpos]
+    mydiffindicesneg<-mydiffindices[-strandpos]
+    newstart[strandpos]<-start(qfinal[mydiffindicespos])+addstart[mydiffindicespos]
+    newend[strandpos]<-end(qfinal[mydiffindicespos])-minusend[mydiffindicespos]
+    newstart[-strandpos]<-start(qfinal[mydiffindicesneg])+minusend[mydiffindicesneg]
+    newend[-strandpos]<-end(qfinal[mydiffindicesneg])-addstart[mydiffindicesneg]
   }
+  #set bounds for new start/ends
+  boundnewstartindices<-which(newstart>end(qfinal[mydiffindices]))
+  if (length(boundnewstartindices)>0) {
+    newstart[boundnewstartindices]<-end(qfinal[mydiffindices][boundnewstartindices])
+  }
+  start(qfinal)[mydiffindices]<-newstart #reassign
+  boundnewendindices<-which(newend<start(qfinal[mydiffindices]))
+  if (length(boundnewendindices)>0) {
+    newend[boundnewendindices]<-start(qfinal[mydiffindices][boundnewendindices])
+  }
+  end(qfinal)[mydiffindices]<-newend #reassign
+  
   if (qtrimonly==FALSE) {
-  #trim SUBJECT alignments
-  addstart<-start(copyqfinal)-finalalignments$qstart
-  minusend<-finalalignments$qend-end(copyqfinal)
-  mydiff<-addstart+minusend
-  for (i in 1:length(mydiff)) {
-    if (mydiff[i]>0) {
-      #calculate new start/end positions
-      if (finalalignments$strand[i]=='+') {
-        newstart<-start(sfinal[i])+addstart[i]
-        newend<-end(sfinal[i])-minusend[i]
-      } else {
-        newstart<-start(sfinal[i])+minusend[i]
-        newend<-end(sfinal[i])-addstart[i]
-      }
-      #apply new start/end positions in order to trim alignments
-      if (newstart>=end(sfinal[i])) {
-        start(sfinal[i])<-end(sfinal[i])
-      } else {
-        start(sfinal[i])<-newstart
-      }
-      if (newend<=start(sfinal[i])) {
-        end(sfinal[i])<-start(sfinal[i])
-      } else {
-        end(sfinal[i])<-newend
-      }
+    #trim SUBJECT alignments
+    addstart<-start(copyqfinal)-finalalignments$qstart
+    minusend<-finalalignments$qend-end(copyqfinal)
+    #get indices that require position reassignment
+    mydiffindices<-which((addstart > 0 | minusend > 0)==TRUE)
+    #calculate new start/end positions
+    lenmydiff<-length(mydiffindices)
+    newstart<-numeric(lenmydiff)
+    newend<-numeric(lenmydiff)
+    strandpos<-which(finalalignments$strand[mydiffindices]=='+') #strandpos is for subsetting mydiffindices/indexing newstart/end vectors; mydiffindices is for subsetting alignments
+    lenstrandpos<-length(strandpos)
+    if (lenstrandpos==0) { #all negative
+      newstart<-start(sfinal[mydiffindices])+minusend[mydiffindices]
+      newend<-end(sfinal[mydiffindices])-addstart[mydiffindices]
+    } else if (lenstrandpos==lenmydiff) { #all positive
+      newstart<-start(sfinal[mydiffindices])+addstart[mydiffindices]
+      newend<-end(sfinal[mydiffindices])-minusend[mydiffindices]
+    } else {
+      mydiffindicespos<-mydiffindices[strandpos]
+      mydiffindicesneg<-mydiffindices[-strandpos]
+      newstart[strandpos]<-start(sfinal[mydiffindicespos])+addstart[mydiffindicespos]
+      newend[strandpos]<-end(sfinal[mydiffindicespos])-minusend[mydiffindicespos]
+      newstart[-strandpos]<-start(sfinal[mydiffindicesneg])+minusend[mydiffindicesneg]
+      newend[-strandpos]<-end(sfinal[mydiffindicesneg])-addstart[mydiffindicesneg]
     }
-  }
-  mylist<-list("qfinal"=qfinal,"sfinal"=sfinal)
-  return(mylist)
+    #set bounds for new start/ends
+    boundnewstartindices<-which(newstart>end(sfinal[mydiffindices]))
+    if (length(boundnewstartindices)>0) {
+      newstart[boundnewstartindices]<-end(sfinal[mydiffindices][boundnewstartindices])
+    }
+    start(sfinal)[mydiffindices]<-newstart #reassign
+    boundnewendindices<-which(newend<start(sfinal[mydiffindices]))
+    if (length(boundnewendindices)>0) {
+      newend[boundnewendindices]<-start(sfinal[mydiffindices][boundnewendindices])
+    }  
+    end(sfinal)[mydiffindices]<-newend #reassign
+    
+    mylist<-list("qfinal"=qfinal,"sfinal"=sfinal)
+    return(mylist)
   } else {
     return(qfinal)
   }
@@ -299,6 +322,7 @@ mergestats<-function(x,y) {
   colnames(merge)<-colnames(x)
   return(merge)
 }
+
 
 
 ###iterate through samples, to get initial raw statistics for sample-pairs
