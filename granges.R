@@ -189,28 +189,28 @@ trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
       strandpos<-which(finalalignments$strand[smydiffindices]=='+') #strandpos is for subsetting mydiffindices/indexing newstart/end vectors; mydiffindices is for subsetting alignments
       lenstrandpos<-length(strandpos)
       if (lenstrandpos==0) { #all negative
-	newstart<-start(sfinal[smydiffindices])+sminusend[smydiffindices]
-	newend<-end(sfinal[smydiffindices])-saddstart[smydiffindices]
+        newstart<-start(sfinal[smydiffindices])+sminusend[smydiffindices]
+        newend<-end(sfinal[smydiffindices])-saddstart[smydiffindices]
       } else if (lenstrandpos==lenmydiff) { #all positive
-	newstart<-start(sfinal[smydiffindices])+saddstart[smydiffindices]
-	newend<-end(sfinal[smydiffindices])-sminusend[smydiffindices]
+        newstart<-start(sfinal[smydiffindices])+saddstart[smydiffindices]
+        newend<-end(sfinal[smydiffindices])-sminusend[smydiffindices]
       } else {
-	mydiffindicespos<-smydiffindices[strandpos]
-	mydiffindicesneg<-smydiffindices[-strandpos]
-	newstart[strandpos]<-start(sfinal[mydiffindicespos])+saddstart[mydiffindicespos]
-	newend[strandpos]<-end(sfinal[mydiffindicespos])-sminusend[mydiffindicespos]
-	newstart[-strandpos]<-start(sfinal[mydiffindicesneg])+sminusend[mydiffindicesneg]
-	newend[-strandpos]<-end(sfinal[mydiffindicesneg])-saddstart[mydiffindicesneg]
+        mydiffindicespos<-smydiffindices[strandpos]
+        mydiffindicesneg<-smydiffindices[-strandpos]
+        newstart[strandpos]<-start(sfinal[mydiffindicespos])+saddstart[mydiffindicespos]
+        newend[strandpos]<-end(sfinal[mydiffindicespos])-sminusend[mydiffindicespos]
+        newstart[-strandpos]<-start(sfinal[mydiffindicesneg])+sminusend[mydiffindicesneg]
+        newend[-strandpos]<-end(sfinal[mydiffindicesneg])-saddstart[mydiffindicesneg]
       }
       #set bounds for new start/ends
       boundnewstartindices<-which(newstart>end(sfinal[smydiffindices]))
       if (length(boundnewstartindices)>0) {
-	newstart[boundnewstartindices]<-end(sfinal[smydiffindices][boundnewstartindices])
+        newstart[boundnewstartindices]<-end(sfinal[smydiffindices][boundnewstartindices])
       }
       start(sfinal)[smydiffindices]<-newstart #reassign
       boundnewendindices<-which(newend<start(sfinal[smydiffindices]))
       if (length(boundnewendindices)>0) {
-	newend[boundnewendindices]<-start(sfinal[smydiffindices][boundnewendindices])
+        newend[boundnewendindices]<-start(sfinal[smydiffindices][boundnewendindices])
       }
       end(sfinal)[smydiffindices]<-newend #reassign
     }
