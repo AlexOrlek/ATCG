@@ -90,6 +90,38 @@ pastefunction<-function(x) {
   }
 }
 
+
+
+canceldoubletrim<-function(x,y) {
+  #x is query, y is subject; return x,y after cancelling double trim
+  xcancel<-x-y
+  ycancel<-y-x
+  xcancel[xcancel<0]<-0
+  ycancel[ycancel<0]<-0
+  return(list(xcancel,ycancel))
+}
+
+canceldoubletrimwrapper<-function(qaddstart,qminusend,saddstart,sminusend,alldiffindices,posindices,negindices) {
+  cancelout<-canceldoubletrim(qaddstart[alldiffindices][posindices],saddstart[alldiffindices][posindices])
+  qaddstart[alldiffindices][posindices]<-cancelout[[1]]
+  saddstart[alldiffindices][posindices]<-cancelout[[2]]
+  
+  cancelout<-canceldoubletrim(qminusend[alldiffindices][posindices],sminusend[alldiffindices][posindices])
+  qminusend[alldiffindices][posindices]<-cancelout[[1]]
+  sminusend[alldiffindices][posindices]<-cancelout[[2]]
+  
+  cancelout<-canceldoubletrim(qaddstart[alldiffindices][negindices],sminusend[alldiffindices][negindices])
+  qaddstart[alldiffindices][negindices]<-cancelout[[1]]
+  sminusend[alldiffindices][negindices]<-cancelout[[2]]
+  
+  cancelout<-canceldoubletrim(qminusend[alldiffindices][negindices],saddstart[alldiffindices][negindices])
+  qminusend[alldiffindices][negindices]<-cancelout[[1]]
+  saddstart[alldiffindices][negindices]<-cancelout[[2]]
+  
+  return(list(qaddstart,qminusend,saddstart,sminusend))
+}
+
+
 trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
   #filter alignments of qfinal based on sfinal and vice-versa
   finalhsps<-sort(intersect(mcols(qfinal)$inputhsp,mcols(sfinal)$inputhsp))
@@ -101,66 +133,92 @@ trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
   sfinal<-sfinal[order(mcols(sfinal)$inputhsp)]
   #trim QUERY alignments
   copyqfinal<-qfinal
-  addstart<-start(sfinal)-finalalignments$sstart
-  minusend<-finalalignments$send-end(sfinal)
-  mydiff<-addstart+minusend
-  for (i in 1:length(mydiff)) {
-    if (mydiff[i]>0) {
-      #calculate new start/end positions
-      if (finalalignments$strand[i]=='+') {
-        newstart<-start(qfinal[i])+addstart[i]
-        newend<-end(qfinal[i])-minusend[i]
-      } else {
-        newstart<-start(qfinal[i])+minusend[i]
-        newend<-end(qfinal[i])-addstart[i]
-      }
-      #apply new start/end positions in order to trim alignments
-      if (newstart>=end(qfinal[i])) {
-        start(qfinal[i])<-end(qfinal[i])
-      } else {
-        start(qfinal[i])<-newstart
-      }
-      if (newend<=start(qfinal[i])) {
-        end(qfinal[i])<-start(qfinal[i])
-      } else {
-        end(qfinal[i])<-newend
-      }
-    }
+  #get addstart/minusend vectors for query and subject
+  qaddstart<-start(sfinal)-finalalignments$sstart #based on subject trimming, how much should be trimmed from query 
+  qminusend<-finalalignments$send-end(sfinal)
+  saddstart<-start(copyqfinal)-finalalignments$qstart #based on query trimming, how much should be trimmed from subject - need to know this at query trimming stage to avoid double trimming
+  sminusend<-finalalignments$qend-end(copyqfinal)
+  #get indices that require position reassignment
+  qmydiffindices<-which((qaddstart > 0 | qminusend > 0)==TRUE)  
+  smydiffindices<-which((saddstart > 0 | sminusend > 0)==TRUE)
+  alldiffindices<-intersect(qmydiffindices,smydiffindices) #indices where there is trimming on both query and subject - this is used to prevent double trimming
+  posindices<-which(mcols(qfinal[alldiffindices])$mystrand=='+') #of the alldiffindices, which are positive strand
+  negindices<-which(mcols(qfinal[alldiffindices])$mystrand=='-')
+  cancelout<-canceldoubletrimwrapper(qaddstart,qminusend,saddstart,sminusend,alldiffindices,posindices,negindices)
+  qaddstart<-cancelout[[1]];qminusend<-cancelout[[2]];saddstart<-cancelout[[3]];sminusend<-cancelout[[4]]
+  #calculate new start/end positions
+  lenmydiff<-length(qmydiffindices)
+  newstart<-numeric(lenmydiff)
+  newend<-numeric(lenmydiff)
+  strandpos<-which(finalalignments$strand[qmydiffindices]=='+') #of the mydiffindices, which are positive strand; strandpos is for subsetting mydiffindices/indexing newstart/end vectors; mydiffindices is for subsetting alignments
+  lenstrandpos<-length(strandpos)
+  if (lenstrandpos==0) { #all negative
+    newstart<-start(qfinal[qmydiffindices])+qminusend[qmydiffindices]
+    newend<-end(qfinal[qmydiffindices])-qaddstart[qmydiffindices]
+  } else if (lenstrandpos==lenmydiff) { #all positive
+    newstart<-start(qfinal[qmydiffindices])+qaddstart[qmydiffindices]
+    newend<-end(qfinal[qmydiffindices])-qminusend[qmydiffindices]
+  } else {
+    mydiffindicespos<-qmydiffindices[strandpos]
+    mydiffindicesneg<-qmydiffindices[-strandpos] #error - now corrected !  instead of -
+    newstart[strandpos]<-start(qfinal[mydiffindicespos])+qaddstart[mydiffindicespos]
+    newend[strandpos]<-end(qfinal[mydiffindicespos])-qminusend[mydiffindicespos]
+    newstart[-strandpos]<-start(qfinal[mydiffindicesneg])+qminusend[mydiffindicesneg]
+    newend[-strandpos]<-end(qfinal[mydiffindicesneg])-qaddstart[mydiffindicesneg]
   }
+  #set bounds for new start/ends
+  boundnewstartindices<-which(newstart>end(qfinal[qmydiffindices]))
+  if (length(boundnewstartindices)>0) {
+    newstart[boundnewstartindices]<-end(qfinal[qmydiffindices][boundnewstartindices])
+  }
+  start(qfinal)[qmydiffindices]<-newstart #reassign
+  boundnewendindices<-which(newend<start(qfinal[qmydiffindices]))
+  if (length(boundnewendindices)>0) {
+    newend[boundnewendindices]<-start(qfinal[qmydiffindices][boundnewendindices])
+  }
+  end(qfinal)[qmydiffindices]<-newend #reassign
+  
   if (qtrimonly==FALSE) {
-  #trim SUBJECT alignments
-  addstart<-start(copyqfinal)-finalalignments$qstart
-  minusend<-finalalignments$qend-end(copyqfinal)
-  mydiff<-addstart+minusend
-  for (i in 1:length(mydiff)) {
-    if (mydiff[i]>0) {
-      #calculate new start/end positions
-      if (finalalignments$strand[i]=='+') {
-        newstart<-start(sfinal[i])+addstart[i]
-        newend<-end(sfinal[i])-minusend[i]
-      } else {
-        newstart<-start(sfinal[i])+minusend[i]
-        newend<-end(sfinal[i])-addstart[i]
-      }
-      #apply new start/end positions in order to trim alignments
-      if (newstart>=end(sfinal[i])) {
-        start(sfinal[i])<-end(sfinal[i])
-      } else {
-        start(sfinal[i])<-newstart
-      }
-      if (newend<=start(sfinal[i])) {
-        end(sfinal[i])<-start(sfinal[i])
-      } else {
-        end(sfinal[i])<-newend
-      }
+    #trim SUBJECT alignments
+    #calculate new start/end positions
+    lenmydiff<-length(smydiffindices)
+    newstart<-numeric(lenmydiff)
+    newend<-numeric(lenmydiff)
+    strandpos<-which(finalalignments$strand[smydiffindices]=='+') #strandpos is for subsetting mydiffindices/indexing newstart/end vectors; mydiffindices is for subsetting alignments
+    lenstrandpos<-length(strandpos)
+    if (lenstrandpos==0) { #all negative
+      newstart<-start(sfinal[smydiffindices])+sminusend[smydiffindices]
+      newend<-end(sfinal[smydiffindices])-saddstart[smydiffindices]
+    } else if (lenstrandpos==lenmydiff) { #all positive
+      newstart<-start(sfinal[smydiffindices])+saddstart[smydiffindices]
+      newend<-end(sfinal[smydiffindices])-sminusend[smydiffindices]
+    } else {
+      mydiffindicespos<-smydiffindices[strandpos]
+      mydiffindicesneg<-smydiffindices[-strandpos] #error - now corrected !  instead of -
+      newstart[strandpos]<-start(sfinal[mydiffindicespos])+saddstart[mydiffindicespos]
+      newend[strandpos]<-end(sfinal[mydiffindicespos])-sminusend[mydiffindicespos]
+      newstart[-strandpos]<-start(sfinal[mydiffindicesneg])+sminusend[mydiffindicesneg]
+      newend[-strandpos]<-end(sfinal[mydiffindicesneg])-saddstart[mydiffindicesneg]
     }
-  }
-  mylist<-list("qfinal"=qfinal,"sfinal"=sfinal)
-  return(mylist)
+    #set bounds for new start/ends
+    boundnewstartindices<-which(newstart>end(sfinal[smydiffindices]))
+    if (length(boundnewstartindices)>0) {
+      newstart[boundnewstartindices]<-end(sfinal[smydiffindices][boundnewstartindices])
+    }
+    start(sfinal)[smydiffindices]<-newstart #reassign
+    boundnewendindices<-which(newend<start(sfinal[smydiffindices]))
+    if (length(boundnewendindices)>0) {
+      newend[boundnewendindices]<-start(sfinal[smydiffindices][boundnewendindices])
+    }
+    end(sfinal)[smydiffindices]<-newend #reassign
+    
+    mylist<-list("qfinal"=qfinal,"sfinal"=sfinal)
+    return(mylist)
   } else {
     return(qfinal)
   }
 }
+
 
 
 #breakpoint caluclation functions
@@ -189,21 +247,23 @@ BPfunc<-function(x,y) {  #apply to granges objects
   return(list("bpcount"=bpcount,"alncount"=alncount))
 }
 
+
 breakpointcalc<-function(qtrimmed,strimmed,mydf) {
-  qcontigsplit<-lapply(qtrimmed, function(x) split(x,as.vector(mcols(x)$sname))) 
-  scontigsplit<-lapply(strimmed, function(x) split(x,as.vector(mcols(x)$sname))) #nested lists- need to split by subject contigs before calculating breakpoints; convert mcols()$sname to vector otherwise fator levels are used
+  qcontigsplit<-lapply(qtrimmed, function(x) split(x,bpsplit[mcols(x)$inputhsp])) 
+  scontigsplit<-lapply(strimmed, function(x) split(x,bpsplit[mcols(x)$inputhsp])) #nested lists- need to split by query and subject contigs before calculating breakpoints
   bpout<-list()
   for (qname in names(qcontigsplit)) {
     #sort alignments by position
     qcontigsplit[[qname]]<-lapply(qcontigsplit[[qname]], function(x) sort(x,ignore.strand=T))
     scontigsplit[[qname]]<-lapply(scontigsplit[[qname]], function(x) sort(x,ignore.strand=T))
+    numsplits<-length(qcontigsplit[[qname]])
     out<-mapply(BPfunc,qcontigsplit[[qname]],scontigsplit[[qname]]) #apply breakpoint function to sublists
     bpcount<-sum(unlist((out["bpcount",]))) #sum across subject contig splits to get count per query
     alncount<-sum(unlist((out["alncount",])))
-    bpout[[qname]]<-c(bpcount,alncount)
+    bpout[[qname]]<-c(bpcount,alncount,numsplits)
   }
   mydfbp<-as.data.frame(do.call(rbind, bpout))
-  colnames(mydfbp)<-c('breakpoints','alignments')
+  colnames(mydfbp)<-c('breakpoints','alignments','numsplits')
   mydfbp<-cbind(querysample=rownames(mydfbp),subjectsample=rep(sample,nrow(mydfbp)),mydfbp)
   #merge dataframes
   myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"))
@@ -211,12 +271,11 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
 }
 
 
-
-bpdistcalc<-function(bps,alns) {
-  if ((alns-1)==0) {
+bpdistcalc<-function(bps,alns,numsplits) {
+  if ((alns-numsplits)==0) {
     return(as.numeric(0))
   } else {
-    return(as.numeric(bps/(alns-1)))
+    return(as.numeric(bps/(alns-numsplits)))
   }
 }
 
@@ -265,14 +324,14 @@ statsfunc<-function(stats, breakpoint,mygenomelen,mymingenomelen,alnlenstats='Fa
   percentid<-as.numeric(stats["hspidpositions"]/stats["hsplength"])
   covbreadthmin<-as.numeric(stats["hsplength"]/mymingenomelen)
   if (breakpoint=='True' && alnlenstats=='True') {
-    bpdist<-bpdistcalc(stats["breakpoints"],stats["alignments"])
+    bpdist<-bpdistcalc(stats["breakpoints"],stats["alignments"],stats["numsplits"])
     breakpoints<-as.numeric(stats["breakpoints"])
     alignments<-as.numeric(stats["alignments"])
     lxstats<-as.integer(stats[lxcols])
     nxstats<-as.integer(stats[nxcols])
     return(c(d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments,lxstats,nxstats))
   } else if (breakpoint=='True') {
-    bpdist<-bpdistcalc(stats["breakpoints"],stats["alignments"])
+    bpdist<-bpdistcalc(stats["breakpoints"],stats["alignments"],stats["numsplits"])
     breakpoints<-as.numeric(stats["breakpoints"])
     alignments<-as.numeric(stats["alignments"])
     return(c(d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments))
@@ -300,13 +359,6 @@ mergestats<-function(x,y) {
   return(merge)
 }
 
-
-#function to shift subject ranges back (after shifting forward to avoid ranges on different contigs from being considered overlapping)
-shiftback<-function(sfinal,myindices,addlen) {
-  myfinalindices<-which(mcols(sfinal)$inputhsp%in%myindices)
-  sfinal[myfinalindices]<-shift(sfinal[myfinalindices],addlen)
-  return(sfinal)
-}
 
 
 ###iterate through samples, to get initial raw statistics for sample-pairs
@@ -337,10 +389,20 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     report<-read.table(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),sep='\t',header=FALSE) #same subject, different queries
     colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
     #get information for shifting subject ranges where there are multiple contigs (below)
+    seqlenreportseqs<-sapply(strsplit(as.vector(seqlenreport$sequence),'|',fixed=T),pastefunction)
     reformattedsname<-as.factor(sapply(strsplit(as.vector(report$sname),"|",fixed=T),pastefunction))
-    samplecontigs<-levels(reformattedsname)
-    samplecontiglens<-seqlenreport[sapply(strsplit(as.vector(seqlenreport$sequence),'|',fixed=T),pastefunction) %in% samplecontigs,2]
-    sampleindices<-as.numeric(reformattedsname)
+    samplescontigs<-levels(reformattedsname)
+    samplescontiglens<-seqlenreport[seqlenreportseqs %in% samplescontigs,2]
+    samplesindices<-as.numeric(reformattedsname)
+    #get information for shifting query ranges where there are multiple contigs (below)
+    reformattedqname<-as.factor(sapply(strsplit(as.vector(report$qname),"|",fixed=T),pastefunction))
+    sampleqcontigs<-levels(reformattedqname)
+    sampleqcontiglens<-seqlenreport[seqlenreportseqs %in% sampleqcontigs,2]
+    sampleqindices<-as.numeric(reformattedqname)
+    #
+    if (breakpoint=='True') {
+        bpsplit<-paste(reformattedqname,reformattedsname,sep='_') #required for breakpoint calculation
+    }
     #remove any contig information
     report$qname<-sapply(strsplit(as.vector(report$qname),"|",fixed=T),function(x) x=x[1]) #!!!ADDED
     report$sname<-sapply(strsplit(as.vector(report$sname),"|",fixed=T),function(x) x=x[1])   
@@ -354,13 +416,31 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     qalnlen<-width(qgr)
     salnlen<-width(sgr)
     #shift subject ranges where there are multiple contigs
-    for (j in 1:length(samplecontiglens)) {
+    for (j in 1:length(samplescontiglens)) {
       if (j==1) {
         next
       }
-      myindices<-which(sampleindices==j)
-      addlen<-sum(samplecontiglens[c(1:(j-1))])
+      myindices<-which(samplesindices==j)
+      addlen<-sum(samplescontiglens[c(1:(j-1))])
       sgr[myindices]<-shift(sgr[myindices],addlen)
+    }
+    #shift query ranges where there are multiple contigs
+    for (j in 1:length(sampleqcontiglens)) {
+      if (j==1) {
+        next
+      }
+      myindices<-which(sampleqindices==j)
+      addlen<-sum(sampleqcontiglens[c(1:(j-1))])
+      qgr[myindices]<-shift(qgr[myindices],addlen)
+    }
+    #overwrite report with shifted forward ranges
+    if (length(samplescontiglens)>1) {
+       report$sstart<-start(sgr)
+       report$send<-end(sgr)
+    }
+    if (length(sampleqcontiglens)>1) {
+       report$qstart<-start(qgr)
+       report$qend<-end(qgr)
     }
     #query disjoin
     gr2<-disjoin(qgr,with.revmap=TRUE,ignore.strand=TRUE)
@@ -381,22 +461,19 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #add pid, strand, and subject name
     qfinal<-lapply(qreducedoutput, function(x) x=addcols(x))
     sfinal<-lapply(sreducedoutput, function(x) x=addcols(x))
-    #shift subject ranges back, if they were shifted due to multiple contigs
-    for (j in 1:length(samplecontiglens)) {  #N.B if wanting to use this method, would have to use an lapply on sfinal or loop though
-    	if (j==1) {
-    	   next
-  	}
-	myindices<-which(sampleindices==j)
-  	addlen<-(sum(samplecontiglens[c(1:(j-1))])*-1)
-	sfinal<-lapply(sfinal, shiftback, myindices=myindices, addlen=addlen)
-    }
     #trim alignments
     if (breakpoint=='True') {
       trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,SIMPLIFY = F)) #!ADDED
       qtrimmed<-trimmedalignments$qfinal
       strimmed<-trimmedalignments$sfinal
+      for (qname in names(strimmed)) {
+        write.table(as.data.frame(strimmed[[qname]]), file=gsubfn('%1',list('%1'=sample),'output/subjectgenome%1_strimmed_subject%1.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
+      }
     } else {
       qtrimmed<-mapply(trimalignments,qfinal,sfinal,qtrimonly=TRUE)
+    }
+    for (qname in names(qtrimmed)) {
+      write.table(as.data.frame(qtrimmed[[qname]]), file=gsubfn('%1|%2',list('%1'=sample,'%2'=qname),'output/subjectgenome%1_qtrimmed_query%2.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
     }
     #trimmedalignments<-mapply(trimalignments,qfinal,sfinal)
     #trimmedalignments<-lapply(split(1:nrow(trimmedalignments), rownames(trimmedalignments)), function(i) trimmedalignments[i,])  #!!!ADDED
@@ -454,11 +531,11 @@ stopCluster(cl)
 if (boot==0) {
   allsampledf<-as.data.frame(do.call(rbind, allsampledflist))
   if (breakpoint=='True' && alnlenstats=='True') {
-    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments',lxcols, nxcols)
-    statscols<-c("hspidpositions","hsplength","breakpoints","alignments",lxcols,nxcols)
+    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','numsplits',lxcols, nxcols)
+    statscols<-c("hspidpositions","hsplength","breakpoints","alignments","numsplits",lxcols,nxcols)
   } else if (breakpoint=='True') {
-    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments')
-    statscols<-c("hspidpositions","hsplength","breakpoints","alignments")
+    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','numsplits')
+    statscols<-c("hspidpositions","hsplength","breakpoints","alignments","numsplits")
   } else if (alnlenstats=='True') {
     colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength',lxcols,nxcols)
     statscols<-c("hspidpositions","hsplength",lxcols,nxcols)
@@ -470,17 +547,17 @@ if (boot==0) {
   allsampledf<-as.data.frame(do.call(rbind, lapply(allsampledflist, function(l) l[[1]])))
   allsampledfboot<-combinebootfunc(allsampledflist)
   if (breakpoint=='True' && alnlenstats=='True') {
-    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments',lxcols,nxcols)
-    statscols<-c("hspidpositions","hsplength","breakpoints","alignments",lxcols,nxcols)
-    #statscolsboot<-c("hspidpositions","hsplength","breakpoints","alignments") #NO LONGER BOOTSTRAPPING BREAKPOINTS
-    #colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments')
+    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','numsplits',lxcols,nxcols)
+    statscols<-c("hspidpositions","hsplength","breakpoints","alignments","numsplits",lxcols,nxcols)
+    #statscolsboot<-c("hspidpositions","hsplength","breakpoints","alignments","numsplits") #NO LONGER BOOTSTRAPPING BREAKPOINTS
+    #colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','numsplits')
     statscolsboot<-c("hspidpositions","hsplength")
     colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength')
   } else if (breakpoint=='True') {
-    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments')
-    statscols<-c("hspidpositions","hsplength","breakpoints","alignments")
-    #statscolsboot<-c("hspidpositions","hsplength","breakpoints","alignments")
-    #colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments')
+    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','numsplits')
+    statscols<-c("hspidpositions","hsplength","breakpoints","alignments","numsplits")
+    #statscolsboot<-c("hspidpositions","hsplength","breakpoints","alignments","numsplits")
+    #colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','numsplits')
     statscolsboot<-c("hspidpositions","hsplength")
     colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength')
   } else if (alnlenstats=='True') {

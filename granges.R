@@ -93,8 +93,8 @@ pastefunction<-function(x) {
 
 canceldoubletrim<-function(x,y) {
   #x is query, y is subject; return x,y after cancelling double trim
-  xcancel<-y-x
-  ycancel<-x-y
+  xcancel<-x-y
+  ycancel<-y-x
   xcancel[xcancel<0]<-0
   ycancel[ycancel<0]<-0
   return(list(xcancel,ycancel))
@@ -122,6 +122,7 @@ canceldoubletrimwrapper<-function(qaddstart,qminusend,saddstart,sminusend,alldif
 
 
 trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
+  #function first filters alignments to include only those present in both qfinal and sfinal; then trims alignments - trims query alignments based on subject trimming and vice-versa
   #filter alignments of qfinal based on sfinal and vice-versa
   finalhsps<-sort(intersect(mcols(qfinal)$inputhsp,mcols(sfinal)$inputhsp))
   qfinal<-qfinal[mcols(qfinal)$inputhsp %in% finalhsps]
@@ -131,86 +132,90 @@ trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
   qfinal<-qfinal[order(mcols(qfinal)$inputhsp)]
   sfinal<-sfinal[order(mcols(sfinal)$inputhsp)]
   #trim QUERY alignments
-  copyqfinal<-qfinal
   #get addstart/minusend vectors for query and subject
   qaddstart<-start(sfinal)-finalalignments$sstart #based on subject trimming, how much should be trimmed from query 
   qminusend<-finalalignments$send-end(sfinal)
-  saddstart<-start(copyqfinal)-finalalignments$qstart #based on query trimming, how much should be trimmed from subject - need to know this at query trimming stage to avoid double trimming
-  sminusend<-finalalignments$qend-end(copyqfinal)
-  #get indices that require position reassignment
+  saddstart<-start(qfinal)-finalalignments$qstart #based on query trimming, how much should be trimmed from subject - need to know this at query trimming stage to avoid double trimming
+  sminusend<-finalalignments$qend-end(qfinal)
+  #get indices of alignments that require position reassignment
   qmydiffindices<-which((qaddstart > 0 | qminusend > 0)==TRUE)  
   smydiffindices<-which((saddstart > 0 | sminusend > 0)==TRUE)
   alldiffindices<-intersect(qmydiffindices,smydiffindices) #indices where there is trimming on both query and subject - this is used to prevent double trimming
   posindices<-which(mcols(qfinal[alldiffindices])$mystrand=='+') #of the alldiffindices, which are positive strand
   negindices<-which(mcols(qfinal[alldiffindices])$mystrand=='-')
+  #edit addstart/minusend vectors to cancel out double trimming - where an alignment is trimmed from same flank on both query and subject genome - in this case just want to trim to meet the maximal trim
   cancelout<-canceldoubletrimwrapper(qaddstart,qminusend,saddstart,sminusend,alldiffindices,posindices,negindices)
   qaddstart<-cancelout[[1]];qminusend<-cancelout[[2]];saddstart<-cancelout[[3]];sminusend<-cancelout[[4]]
   #calculate new start/end positions
   lenmydiff<-length(qmydiffindices)
-  newstart<-numeric(lenmydiff)
-  newend<-numeric(lenmydiff)
-  strandpos<-which(finalalignments$strand[qmydiffindices]=='+') #of the mydiffindices, which are positive strand; strandpos is for subsetting mydiffindices/indexing newstart/end vectors; mydiffindices is for subsetting alignments
-  lenstrandpos<-length(strandpos)
-  if (lenstrandpos==0) { #all negative
-    newstart<-start(qfinal[qmydiffindices])+qminusend[qmydiffindices]
-    newend<-end(qfinal[qmydiffindices])-qaddstart[qmydiffindices]
-  } else if (lenstrandpos==lenmydiff) { #all positive
-    newstart<-start(qfinal[qmydiffindices])+qaddstart[qmydiffindices]
-    newend<-end(qfinal[qmydiffindices])-qminusend[qmydiffindices]
-  } else {
-    mydiffindicespos<-qmydiffindices[strandpos]
-    mydiffindicesneg<-qmydiffindices[-strandpos] #error - now corrected !  instead of -
-    newstart[strandpos]<-start(qfinal[mydiffindicespos])+qaddstart[mydiffindicespos]
-    newend[strandpos]<-end(qfinal[mydiffindicespos])-qminusend[mydiffindicespos]
-    newstart[-strandpos]<-start(qfinal[mydiffindicesneg])+qminusend[mydiffindicesneg]
-    newend[-strandpos]<-end(qfinal[mydiffindicesneg])-qaddstart[mydiffindicesneg]
+  if (lenmydiff>0) {
+    newstart<-numeric(lenmydiff)
+    newend<-numeric(lenmydiff)
+    strandpos<-which(finalalignments$strand[qmydiffindices]=='+') #of the mydiffindices, which are positive strand; strandpos is for subsetting mydiffindices/indexing newstart/end vectors; mydiffindices is for subsetting alignments
+    lenstrandpos<-length(strandpos)
+    if (lenstrandpos==0) { #all negative
+      newstart<-start(qfinal[qmydiffindices])+qminusend[qmydiffindices]
+      newend<-end(qfinal[qmydiffindices])-qaddstart[qmydiffindices]
+    } else if (lenstrandpos==lenmydiff) { #all positive
+      newstart<-start(qfinal[qmydiffindices])+qaddstart[qmydiffindices]
+      newend<-end(qfinal[qmydiffindices])-qminusend[qmydiffindices]
+    } else {
+      mydiffindicespos<-qmydiffindices[strandpos]
+      mydiffindicesneg<-qmydiffindices[-strandpos]
+      newstart[strandpos]<-start(qfinal[mydiffindicespos])+qaddstart[mydiffindicespos]
+      newend[strandpos]<-end(qfinal[mydiffindicespos])-qminusend[mydiffindicespos]
+      newstart[-strandpos]<-start(qfinal[mydiffindicesneg])+qminusend[mydiffindicesneg]
+      newend[-strandpos]<-end(qfinal[mydiffindicesneg])-qaddstart[mydiffindicesneg]
+    }
+    #set bounds for new start/ends
+    boundnewstartindices<-which(newstart>end(qfinal[qmydiffindices]))
+    if (length(boundnewstartindices)>0) {
+      newstart[boundnewstartindices]<-end(qfinal[qmydiffindices][boundnewstartindices])
+    }
+    start(qfinal)[qmydiffindices]<-newstart #reassign
+    boundnewendindices<-which(newend<start(qfinal[qmydiffindices]))
+    if (length(boundnewendindices)>0) {
+      newend[boundnewendindices]<-start(qfinal[qmydiffindices][boundnewendindices])
+    }
+    end(qfinal)[qmydiffindices]<-newend #reassign
   }
-  #set bounds for new start/ends
-  boundnewstartindices<-which(newstart>end(qfinal[qmydiffindices]))
-  if (length(boundnewstartindices)>0) {
-    newstart[boundnewstartindices]<-end(qfinal[qmydiffindices][boundnewstartindices])
-  }
-  start(qfinal)[qmydiffindices]<-newstart #reassign
-  boundnewendindices<-which(newend<start(qfinal[qmydiffindices]))
-  if (length(boundnewendindices)>0) {
-    newend[boundnewendindices]<-start(qfinal[qmydiffindices][boundnewendindices])
-  }
-  end(qfinal)[qmydiffindices]<-newend #reassign
-  
   if (qtrimonly==FALSE) {
     #trim SUBJECT alignments
     #calculate new start/end positions
     lenmydiff<-length(smydiffindices)
-    newstart<-numeric(lenmydiff)
-    newend<-numeric(lenmydiff)
-    strandpos<-which(finalalignments$strand[smydiffindices]=='+') #strandpos is for subsetting mydiffindices/indexing newstart/end vectors; mydiffindices is for subsetting alignments
-    lenstrandpos<-length(strandpos)
-    if (lenstrandpos==0) { #all negative
-      newstart<-start(sfinal[smydiffindices])+sminusend[smydiffindices]
-      newend<-end(sfinal[smydiffindices])-saddstart[smydiffindices]
-    } else if (lenstrandpos==lenmydiff) { #all positive
-      newstart<-start(sfinal[smydiffindices])+saddstart[smydiffindices]
-      newend<-end(sfinal[smydiffindices])-sminusend[smydiffindices]
-    } else {
-      mydiffindicespos<-smydiffindices[strandpos]
-      mydiffindicesneg<-smydiffindices[-strandpos] #error - now corrected !  instead of -
-      newstart[strandpos]<-start(sfinal[mydiffindicespos])+saddstart[mydiffindicespos]
-      newend[strandpos]<-end(sfinal[mydiffindicespos])-sminusend[mydiffindicespos]
-      newstart[-strandpos]<-start(sfinal[mydiffindicesneg])+sminusend[mydiffindicesneg]
-      newend[-strandpos]<-end(sfinal[mydiffindicesneg])-saddstart[mydiffindicesneg]
+    if (lenmydiff>0) {
+      newstart<-numeric(lenmydiff)
+      newend<-numeric(lenmydiff)
+      strandpos<-which(finalalignments$strand[smydiffindices]=='+') #strandpos is for subsetting mydiffindices/indexing newstart/end vectors; mydiffindices is for subsetting alignments
+      lenstrandpos<-length(strandpos)
+      if (lenstrandpos==0) { #all negative
+	newstart<-start(sfinal[smydiffindices])+sminusend[smydiffindices]
+	newend<-end(sfinal[smydiffindices])-saddstart[smydiffindices]
+      } else if (lenstrandpos==lenmydiff) { #all positive
+	newstart<-start(sfinal[smydiffindices])+saddstart[smydiffindices]
+	newend<-end(sfinal[smydiffindices])-sminusend[smydiffindices]
+      } else {
+	mydiffindicespos<-smydiffindices[strandpos]
+	mydiffindicesneg<-smydiffindices[-strandpos]
+	newstart[strandpos]<-start(sfinal[mydiffindicespos])+saddstart[mydiffindicespos]
+	newend[strandpos]<-end(sfinal[mydiffindicespos])-sminusend[mydiffindicespos]
+	newstart[-strandpos]<-start(sfinal[mydiffindicesneg])+sminusend[mydiffindicesneg]
+	newend[-strandpos]<-end(sfinal[mydiffindicesneg])-saddstart[mydiffindicesneg]
+      }
+      #set bounds for new start/ends
+      boundnewstartindices<-which(newstart>end(sfinal[smydiffindices]))
+      if (length(boundnewstartindices)>0) {
+	newstart[boundnewstartindices]<-end(sfinal[smydiffindices][boundnewstartindices])
+      }
+      start(sfinal)[smydiffindices]<-newstart #reassign
+      boundnewendindices<-which(newend<start(sfinal[smydiffindices]))
+      if (length(boundnewendindices)>0) {
+	newend[boundnewendindices]<-start(sfinal[smydiffindices][boundnewendindices])
+      }
+      end(sfinal)[smydiffindices]<-newend #reassign
     }
-    #set bounds for new start/ends
-    boundnewstartindices<-which(newstart>end(sfinal[smydiffindices]))
-    if (length(boundnewstartindices)>0) {
-      newstart[boundnewstartindices]<-end(sfinal[smydiffindices][boundnewstartindices])
-    }
-    start(sfinal)[smydiffindices]<-newstart #reassign
-    boundnewendindices<-which(newend<start(sfinal[smydiffindices]))
-    if (length(boundnewendindices)>0) {
-      newend[boundnewendindices]<-start(sfinal[smydiffindices][boundnewendindices])
-    }
-    end(sfinal)[smydiffindices]<-newend #reassign
     
+    #after any necessary filtering/trimming, return qfinal (and sfinal if qtrimonly=FALSE)
     mylist<-list("qfinal"=qfinal,"sfinal"=sfinal)
     return(mylist)
   } else {
@@ -496,7 +501,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       myfinaldfbootlist<-list()
       for (z in 1:boot) {
         #stopifnot(sapply(qtrimmed, function(x) length(x))==sapply(strimmed, function(x) length(x)))
-	indices<-lapply(qtrimmed, function(x) sample(1:length(x), replace=T)) #get indices for resampling qtrimmed/strimmed
+        indices<-lapply(qtrimmed, function(x) sample(1:length(x), replace=T)) #get indices for resampling qtrimmed/strimmed
 	qtrimmedboot<-lapply(1:length(qtrimmed), FUN=function(x, list1, list2) list1[[x]][list2[[x]]] , list1=qtrimmed, list2=indices) #resample qtrimmed using indices
 	names(qtrimmedboot)<-names(qtrimmed)
         mystatsboot<-lapply(qtrimmedboot,getstats) #!!!CHANGED
