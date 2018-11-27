@@ -298,46 +298,47 @@ combinebootfunc<-function(x) {
 getalnlenstats<-function(x) {
   alnlens<-rev(sort(width(x)))
   totalalnlen<-sum(alnlens)
-  nxvector<-vector()
-  lxvector<-vector()
   quartiles<-c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9)
-  for (i in 1:length(quartiles)) {
-    quartile<-quartiles[i]
-    lx<-which(cumsum(alnlens)>(totalalnlen*quartile))[1]
-    nx<-alnlens[lx]
-    lxvector[i]<-lx
-    nxvector[i]<-nx
+  numquart<-length(quartiles)
+  nxvector<-integer(numquart)
+  lxvector<-integer(numquart)
+  for (i in seq_len(numquart)) {
+    lxvector[i]<-which(cumsum(alnlens)>(totalalnlen*quartiles[i]))[1]
+    nxvector[i]<-alnlens[lx]
   }
   return(list(lxvector,nxvector))
 }
 
 #final ditance stats calculation functions
 statsfunc<-function(stats, breakpoint,mygenomelen,mymingenomelen,alnlenstats='False') {
-  lxcols<-c('l10','l20','l30','l40','l50','l60','l70','l80','l90')
-  nxcols<-c('n10','n20','n30','n40','n50','n60','n70','n80','n90')
-  d0<-as.numeric(1-(stats["hsplength"]/mygenomelen))
-  d1<-as.numeric(1-(stats["hsplength"]/mymingenomelen))
-  d2<-as.numeric(-log(stats["hsplength"]/mygenomelen))
-  d3<-as.numeric(-log(stats["hsplength"]/mymingenomelen))
-  d4<-as.numeric(1-(stats["hspidpositions"]/stats["hsplength"]))
-  d5<-as.numeric(-log(stats["hspidpositions"]/stats["hsplength"]))
-  d6<-as.numeric(1-(stats["hspidpositions"]/mygenomelen))
-  d7<-as.numeric(1-(stats["hspidpositions"]/mymingenomelen))
-  d8<-as.numeric(-log(stats["hspidpositions"]/mygenomelen))
-  d9<-as.numeric(-log(stats["hspidpositions"]/mymingenomelen))
-  percentid<-as.numeric(stats["hspidpositions"]/stats["hsplength"])
-  covbreadthmin<-as.numeric(stats["hsplength"]/mymingenomelen)
+  hsplength<-stats["hsplength"]
+  hspidpositions<-stats["hspidpositions"]
+  hsplengenlen<-as.numeric(hsplength/mygenomelen)
+  covbreadthmin<-as.numeric(hsplength/mymingenomelen)
+  d0<-as.numeric(1-hsplengenlen)
+  d1<-as.numeric(1-covbreadthmin)
+  d2<-as.numeric(-log(hsplengenlen))
+  d3<-as.numeric(-log(covbreadthmin))
+  percentid<-hspidpositions/hsplength
+  d4<-as.numeric(1-percentid)
+  d5<-as.numeric(-log(percentid))
+  hspidgenlen<-hspidpositions/mygenomelen
+  hspidmingenlen<-hspidpositions/mymingenomelen
+  d6<-as.numeric(1-hspidgenlen)
+  d7<-as.numeric(1-hspidmingenlen)
+  d8<-as.numeric(-log(hspidgenlen))
+  d9<-as.numeric(-log(hspidmingenlen))
   if (breakpoint=='True' && alnlenstats=='True') {
-    bpdist<-bpdistcalc(stats["breakpoints"],stats["alignments"],stats["numsplits"])
     breakpoints<-as.numeric(stats["breakpoints"])
     alignments<-as.numeric(stats["alignments"])
+    bpdist<-bpdistcalc(breakpoints,alignments,stats["numsplits"])
     lxstats<-as.integer(stats[lxcols])
     nxstats<-as.integer(stats[nxcols])
     return(c(d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments,lxstats,nxstats))
   } else if (breakpoint=='True') {
-    bpdist<-bpdistcalc(stats["breakpoints"],stats["alignments"],stats["numsplits"])
     breakpoints<-as.numeric(stats["breakpoints"])
     alignments<-as.numeric(stats["alignments"])
+    bpdist<-bpdistcalc(breakpoints,alignments,stats["numsplits"])
     return(c(d0,d1,d2,d3,d4,d5,d6,d7,d8,d9,percentid,covbreadthmin,bpdist,breakpoints,alignments))
   } else if (alnlenstats=='True') {
     lxstats<-as.integer(stats[lxcols])
@@ -351,7 +352,7 @@ statsfunc<-function(stats, breakpoint,mygenomelen,mymingenomelen,alnlenstats='Fa
 
 mergestats<-function(x,y) {
   merge<-data.frame()
-  for (i in 1:length(colnames(x))) {
+  for (i in seq_along(colnames(x))) {
     mycol<-colnames(x)[i]
     if (mycol=="hspidpositions" || mycol=="hsplength") {
       merge[1,i]<-as.integer(x[i])+as.integer(y[i])
@@ -368,7 +369,7 @@ mergestats<-function(x,y) {
 ###iterate through samples, to get initial raw statistics for sample-pairs
 
 #read seqlength file
-seqlenreport<-read.table(gsubfn('%1',list('%1'=args[1]),'%1/seqlengths.tsv'),sep='\t',header=FALSE)
+seqlenreport<-fread(gsubfn('%1',list('%1'=args[1]),'%1/seqlengths.tsv'))
 colnames(seqlenreport)<-c('sequence','length')
 seqlenreport<-seqlenreport[order(seqlenreport$sequence),]
 
@@ -379,7 +380,7 @@ library('doParallel')
 cl<-makeCluster(as.integer(args[2]))
 registerDoParallel(cl)
 
-samples<-read.table(gsubfn('%1',list('%1'=args[1]),'%1/included.txt'),sep='\t',header=FALSE)
+samples<-fread(gsubfn('%1',list('%1'=args[1]),'%1/included.txt'))
 samples<-as.vector(samples[,1])
 #samples<-samples[1:6]
 allsampledflist<-list()
@@ -390,8 +391,9 @@ nxcols<-c('n10','n20','n30','n40','n50','n60','n70','n80','n90')
 allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRanges','purrr')) %dopar% {
     #read alignmnents file for given sample
     sample<-samples[i]
-    report<-read.table(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),sep='\t',header=FALSE) #same subject, different queries
-    colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
+    report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,7,8,9,10,17)) #same subject, different queries    
+    #colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
+    colnames(report)<-c('qname','sname','pid','qstart','qend','sstart','send','strand')
     #get information for shifting subject ranges where there are multiple contigs (below)
     seqlenreportseqs<-sapply(strsplit(as.vector(seqlenreport$sequence),'|',fixed=T),pastefunction)
     reformattedsname<-as.factor(sapply(strsplit(as.vector(report$sname),"|",fixed=T),pastefunction))
@@ -420,7 +422,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     qalnlen<-width(qgr)
     salnlen<-width(sgr)
     #shift subject ranges where there are multiple contigs
-    for (j in 1:length(samplescontiglens)) {
+    for (j in seq_along(samplescontiglens)) {
       if (j==1) {
         next
       }
@@ -429,7 +431,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       sgr[myindices]<-shift(sgr[myindices],addlen)
     }
     #shift query ranges where there are multiple contigs
-    for (j in 1:length(sampleqcontiglens)) {
+    for (j in seq_along(sampleqcontiglens)) {
       if (j==1) {
         next
       }
@@ -498,25 +500,25 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       print(myfinaldf)
     } else {
       #IF BOOTSTRAPPING, SAVE ALL ALIGNMENT STATS + BOOTSTRAPPED STATS
-      myfinaldfbootlist<-list()
-      for (z in 1:boot) {
+      myfinaldfbootlist<-vector("list",boot)
+      for (z in seq_len(boot)) {
         #stopifnot(sapply(qtrimmed, function(x) length(x))==sapply(strimmed, function(x) length(x)))
         indices<-lapply(qtrimmed, function(x) sample(1:length(x), replace=T)) #get indices for resampling qtrimmed/strimmed
-	qtrimmedboot<-lapply(1:length(qtrimmed), FUN=function(x, list1, list2) list1[[x]][list2[[x]]] , list1=qtrimmed, list2=indices) #resample qtrimmed using indices
-	names(qtrimmedboot)<-names(qtrimmed)
+        qtrimmedboot<-lapply(1:length(qtrimmed), FUN=function(x, list1, list2) list1[[x]][list2[[x]]] , list1=qtrimmed, list2=indices) #resample qtrimmed using indices
+        names(qtrimmedboot)<-names(qtrimmed)
         mystatsboot<-lapply(qtrimmedboot,getstats) #!!!CHANGED
-	mydfboot<-rbindlist(lapply(mystatsboot,as.data.frame.list),idcol="querysample") ##convert list of vectors to dataframe
+        mydfboot<-rbindlist(lapply(mystatsboot,as.data.frame.list),idcol="querysample") ##convert list of vectors to dataframe
         mydfboot<-cbind(subjectsample=rep(sample,nrow(mydfboot)),mydfboot)
-	colnames(mydfboot)<-c('subjectsample','querysample','hspidpositions','hsplength')
+        colnames(mydfboot)<-c('subjectsample','querysample','hspidpositions','hsplength')
         #get breakpoint stats
         #if (breakpoint=='True') {
-	#  strimmedboot<-lapply(1:length(strimmed), FUN=function(x, list1, list2) list1[[x]][list2[[x]]] , list1=strimmed, list2=indices) #resample strimmed using indices
-	#  names(strimmedboot)<-names(strimmed)
+        #  strimmedboot<-lapply(1:length(strimmed), FUN=function(x, list1, list2) list1[[x]][list2[[x]]] , list1=strimmed, list2=indices) #resample strimmed using indices
+        #  names(strimmedboot)<-names(strimmed)
         #  myfinaldfboot<-breakpointcalc(qtrimmedboot,strimmedboot,mydfboot)
         #} else {
         #  myfinaldfboot<-mydfboot
         #}
-	myfinaldfboot<-mydfboot #NO LONGER RESAMPLING BREAKPOINT STATS
+        myfinaldfboot<-mydfboot #NO LONGER RESAMPLING BREAKPOINT STATS
         myfinaldfbootlist[[z]]<-myfinaldfboot
       }
       print(list(myfinaldf, myfinaldfbootlist))
@@ -579,74 +581,68 @@ sampleseqlen<-aggregate(seqlenreport$length, by=list(seqlenreport$sequence), FUN
 colnames(sampleseqlen)<-c('sample','length')
 
 #get final stats
-samples2<-samples
-allsampledflist<-list()
-counter1=0
-for (sample in samples) {
-  #print(sample)
-  sampleaseqlen<-sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"]
-  counter1=counter1+1
-  counter2=0
-  output<-list()
-  for (sampleb in samples2) {
-    if (sample==sampleb) {
-      #counter2=counter2+1 #if you want self-self distances to be included, unhash these two lines
-      #output[[counter2]]<-c(sample,sampleb,0,0,0)
-      next
+cl<-makeCluster(as.integer(args[2]))
+registerDoParallel(cl)
+
+allsampledflist <- vector("list", length(samples))
+allsampledflist<-foreach(i=seq_along(samples)) %dopar% {
+  output<-vector("list", length(samples))
+  samplea<-samples[i]
+  for(j in seq_along(samples)) {
+    #samplea<-samples[i] ##can't seem to move this to outer loop - can now
+    sampleb<-samples[j]
+    sampleaseqlen<-sampleseqlen[which(sampleseqlen[,"sample"]==samplea),"length"]
+    if (i<j) {
+      stats1row<-which(allsampledf[,"querysample"]==samplea & allsampledf[,"subjectsample"]==sampleb)
+      stats2row<-which(allsampledf[,"querysample"]==sampleb & allsampledf[,"subjectsample"]==samplea)
+      if (length(stats1row)>0 || length(stats2row)>0) {
+        samplebseqlen<-sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]
+        mygenomelen<-sampleaseqlen+samplebseqlen
+        mymingenomelen<-min(sampleaseqlen,samplebseqlen)*2
+        if (length(stats1row)==0) {
+          stats<-data.frame(rbind(colSums(allsampledf[stats2row,statscols])),row.names = NULL)
+          if (stats["hsplength"]>mymingenomelen) { #this shouldn't be necessary given that only one genome has alignments
+            stats["hsplength"]<-mymingenomelen
+          }
+          if (stats["hspidpositions"]>mymingenomelen) {
+            stats["hspidpositions"]<-mymingenomelen
+          }
+          statsout<-statsfunc(stats,breakpoint,mygenomelen,mymingenomelen,alnlenstats)
+          
+        } else if (length(stats2row)==0) {
+          stats<-data.frame(rbind(colSums(allsampledf[stats1row,statscols])),row.names = NULL)
+          if (stats["hsplength"]>mymingenomelen) { #this shouldn't be necessary given that only one genome has alignments
+            stats["hsplength"]<-mymingenomelen
+          }
+          if (stats["hspidpositions"]>mymingenomelen) {
+            stats["hspidpositions"]<-mymingenomelen
+          }
+          statsout<-statsfunc(stats,breakpoint,mygenomelen,mymingenomelen,alnlenstats)
+          
+        } else {
+          stats1<-data.frame(rbind(colSums(allsampledf[stats1row,statscols])),row.names = NULL)
+          stats2<-data.frame(rbind(colSums(allsampledf[stats2row,statscols])),row.names = NULL)
+          mergedstats<-mergestats(stats1,stats2)
+          if (mergedstats["hsplength"]>mymingenomelen) {
+            mergedstats["hsplength"]<-mymingenomelen
+          }
+          if (mergedstats["hspidpositions"]>mymingenomelen) {
+            mergedstats["hspidpositions"]<-mymingenomelen
+          }
+          statsout<-statsfunc(mergedstats,breakpoint,mygenomelen,mymingenomelen,alnlenstats)
+          
+        }
+        output[[j]]<-c(samplea,sampleb,sampleaseqlen,samplebseqlen,statsout)
+      }
     }
-    counter2=counter2+1
-    #print(c(sample, sampleb))
-    stats1row<-which(allsampledf[,"querysample"]==sample & allsampledf[,"subjectsample"]==sampleb)
-    stats2row<-which(allsampledf[,"querysample"]==sampleb & allsampledf[,"subjectsample"]==sample)
-    if (length(stats1row)==0 && length(stats2row)==0) {
-      #print(c(sampleb,'no pairwise matches found for this sample'))
-      next
-    }
-    samplebseqlen<-sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]
-    mygenomelen<-sampleaseqlen+samplebseqlen
-    mymingenomelen<-min(sampleaseqlen,samplebseqlen)*2
-    if (length(stats1row)==0) {
-      stats<-data.frame(rbind(colSums(allsampledf[stats2row,statscols])),row.names = NULL)
-      if (stats["hsplength"]>mymingenomelen) { #this shouldn't be necessary given that only one genome has alignments
-        stats["hsplength"]<-mymingenomelen
-      }
-      if (stats["hspidpositions"]>mymingenomelen) {
-        stats["hspidpositions"]<-mymingenomelen
-      }
-      statsout<-statsfunc(stats,breakpoint,mygenomelen,mymingenomelen,alnlenstats)
-
-    } else if (length(stats2row)==0) {
-      stats<-data.frame(rbind(colSums(allsampledf[stats1row,statscols])),row.names = NULL)
-      if (stats["hsplength"]>mymingenomelen) { #this shouldn't be necessary given that only one genome has alignments
-        stats["hsplength"]<-mymingenomelen
-      }
-      if (stats["hspidpositions"]>mymingenomelen) {
-        stats["hspidpositions"]<-mymingenomelen
-      }
-      statsout<-statsfunc(stats,breakpoint,mygenomelen,mymingenomelen,alnlenstats)
-
-    } else { ##combine both
-      stats1<-data.frame(rbind(colSums(allsampledf[stats1row,statscols])),row.names = NULL)
-      stats2<-data.frame(rbind(colSums(allsampledf[stats2row,statscols])),row.names = NULL)
-      mergedstats<-mergestats(stats1,stats2)
-      if (mergedstats["hsplength"]>mymingenomelen) {
-        mergedstats["hsplength"]<-mymingenomelen
-      }
-      if (mergedstats["hspidpositions"]>mymingenomelen) {
-        mergedstats["hspidpositions"]<-mymingenomelen
-      }
-      statsout<-statsfunc(mergedstats,breakpoint,mygenomelen,mymingenomelen,alnlenstats)
-
-    }
-    output[[counter2]]<-c(sample,sampleb,sampleaseqlen,samplebseqlen,statsout)
-
   }
-  finaldf<-as.data.frame(do.call(rbind,output))
-  allsampledflist[[counter1]]<-finaldf
-  samples2<-setdiff(samples2,sample) #this means non-symmetric matrix of distance scores - this is what I want because by using merged stats, I'm averaging over both directions
+  print(as.data.frame(do.call(rbind,output)))
 }
 
+stopCluster(cl)
+
 finaldf<-as.data.frame(do.call(rbind,allsampledflist))
+
 
 if (breakpoint=='True' && alnlenstats=='True') {
   colnames(finaldf)<-c('Sample1','Sample2','Sample1_length','Sample2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth_mingenome','Breakpoint_distance','Breakpoints','Alignments',lxcols,nxcols)
@@ -664,88 +660,80 @@ write.table(finaldf, file=gsubfn('%1',list('%1'=args[1]),'%1/output/distancestat
 ###if there is bootstrapping, need to produce additional stats table - split by bootstrap, apply above code to get stats to each boostrap, then combine
 
 if (boot!=0) {
+  
+  cl<-makeCluster(as.integer(args[2]))
+  registerDoParallel(cl)
 
   allsampledfbootsplit<-split(allsampledfboot, allsampledfboot$bootstrap)
-  finaldflist<-list()
+  finaldflist<-vector("list", as.integer(boot))
   statscols<-statscolsboot
   alnlenstats='False'
   breakpoint='False' #NO LONGER DOING BOOTSTRAPPING OF BREAKPOINTS
 
-  for (i in names(allsampledfbootsplit)){
-    #print(i)
-    allsampledf<-allsampledfbootsplit[[i]]
-    samples2<-samples
-    allsampledflist<-list()
-    counter1=0
-    for (sample in samples) {
-      #print(c(sample,'sample'))
-      sampleaseqlen<-sampleseqlen[which(sampleseqlen[,"sample"]==sample),"length"]
-      counter1=counter1+1
-      counter2=0
-      output<-list()
-      for (sampleb in samples2) {
-	if (sample==sampleb) {
-	  #counter2=counter2+1 #if you want self-self distances to be included, unhash these two lines
-	  #output[[counter2]]<-c(sample,sampleb,0,0,0)
-	  next
-	}
-	counter2=counter2+1
-	stats1row<-which(allsampledf[,"querysample"]==sample & allsampledf[,"subjectsample"]==sampleb)
-	stats2row<-which(allsampledf[,"querysample"]==sampleb & allsampledf[,"subjectsample"]==sample)
-	if (length(stats1row)==0 && length(stats2row)==0) {
-	  #print(c(sampleb,'no pairwise matches found for this sample'))
-	  next
-	}
-	samplebseqlen<-sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]
-	mygenomelen<-sampleaseqlen+samplebseqlen
-	mymingenomelen<-min(sampleaseqlen,samplebseqlen)*2
-	if (length(stats1row)==0) {
-	  stats<-data.frame(rbind(colSums(allsampledf[stats2row,statscols])),row.names = NULL)
-	  if (stats["hsplength"]>mymingenomelen) { #this shouldn't be necessary given that only one genome has alignments
-	    stats["hsplength"]<-mymingenomelen
-	  }
-	  if (stats["hspidpositions"]>mymingenomelen) {
-	    stats["hspidpositions"]<-mymingenomelen
-	  }
-	  statsout<-statsfunc(stats,breakpoint,mygenomelen,mymingenomelen)
+  finaldflist<-foreach(z=names(allsampledfbootsplit)) %dopar% {
+    allsampledf<-allsampledfbootsplit[[z]]
+    allsampledflist<-vector("list", length(samples))
+    for (i in seq_along(samples)) {
+      samplea<-samples[i]
+      sampleaseqlen<-sampleseqlen[which(sampleseqlen[,"sample"]==samplea),"length"]
+      output<-vector("list", length(samples))
+      for (j in seq_along(samples)) {
+	sampleb<-samples[j]
+	if (i < j) {
+	  stats1row<-which(allsampledf[,"querysample"]==samplea & allsampledf[,"subjectsample"]==sampleb)
+	  stats2row<-which(allsampledf[,"querysample"]==sampleb & allsampledf[,"subjectsample"]==samplea)
+	  if (length(stats1row)>0 || length(stats2row)>0) {
+	    samplebseqlen<-sampleseqlen[which(sampleseqlen[,"sample"]==sampleb),"length"]
+	    mygenomelen<-sampleaseqlen+samplebseqlen
+	    mymingenomelen<-min(sampleaseqlen,samplebseqlen)*2
+	    if (length(stats1row)==0) {
+	      stats<-data.frame(rbind(colSums(allsampledf[stats2row,statscols])),row.names = NULL)
+	      if (stats["hsplength"]>mymingenomelen) { #this shouldn't be necessary given that only one genome has alignments
+		stats["hsplength"]<-mymingenomelen
+	      }
+	      if (stats["hspidpositions"]>mymingenomelen) {
+		stats["hspidpositions"]<-mymingenomelen
+	      }
+	      statsout<-statsfunc(stats,breakpoint,mygenomelen,mymingenomelen)
 
-	} else if (length(stats2row)==0) {
-	  stats<-data.frame(rbind(colSums(allsampledf[stats1row,statscols])),row.names = NULL)
-	  if (stats["hsplength"]>mymingenomelen) { #this shouldn't be necessary given that only one genome has alignments
-	    stats["hsplength"]<-mymingenomelen
-	  }
-	  if (stats["hspidpositions"]>mymingenomelen) {
-	    stats["hspidpositions"]<-mymingenomelen
-	  }
-	  statsout<-statsfunc(stats,breakpoint,mygenomelen,mymingenomelen)
+	    } else if (length(stats2row)==0) {
+	      stats<-data.frame(rbind(colSums(allsampledf[stats1row,statscols])),row.names = NULL)
+	      if (stats["hsplength"]>mymingenomelen) { #this shouldn't be necessary given that only one genome has alignments
+		stats["hsplength"]<-mymingenomelen
+	      }
+	      if (stats["hspidpositions"]>mymingenomelen) {
+		stats["hspidpositions"]<-mymingenomelen
+	      }
+	      statsout<-statsfunc(stats,breakpoint,mygenomelen,mymingenomelen)
 
-	} else { ##combine both
-	  stats1<-data.frame(rbind(colSums(allsampledf[stats1row,statscols])),row.names = NULL)
-	  stats2<-data.frame(rbind(colSums(allsampledf[stats2row,statscols])),row.names = NULL)
-	  mergedstats<-mergestats(stats1,stats2)
-	  if (mergedstats["hsplength"]>mymingenomelen) {
-	    mergedstats["hsplength"]<-mymingenomelen
+	    } else { ##combine both
+	      stats1<-data.frame(rbind(colSums(allsampledf[stats1row,statscols])),row.names = NULL)
+	      stats2<-data.frame(rbind(colSums(allsampledf[stats2row,statscols])),row.names = NULL)
+	      mergedstats<-mergestats(stats1,stats2)
+	      if (mergedstats["hsplength"]>mymingenomelen) {
+		mergedstats["hsplength"]<-mymingenomelen
+	      }
+	      if (mergedstats["hspidpositions"]>mymingenomelen) {
+		mergedstats["hspidpositions"]<-mymingenomelen
+	      }
+	      statsout<-statsfunc(mergedstats,breakpoint,mygenomelen,mymingenomelen)
+	    }
+	    output[[j]]<-c(samplea,sampleb,sampleaseqlen,samplebseqlen,statsout)
 	  }
-	  if (mergedstats["hspidpositions"]>mymingenomelen) {
-	    mergedstats["hspidpositions"]<-mymingenomelen
-	  }
-	  statsout<-statsfunc(mergedstats,breakpoint,mygenomelen,mymingenomelen)
 
 	}
-	output[[counter2]]<-c(sample,sampleb,sampleaseqlen,samplebseqlen,statsout)
-
       }
-      finaldf<-as.data.frame(do.call(rbind,output))
-      allsampledflist[[counter1]]<-finaldf
-      samples2<-setdiff(samples2,sample) #this means non-symmetric matrix of distance scores - this is what I want because by using merged stats, I'm averaging over both directions
+      allsampledflist[[i]]<-as.data.frame(do.call(rbind,output))
     }
-    finaldflist[[i]]<-allsampledflist
+    print(allsampledflist)
   }
 
+  stopCluster(cl)
 
 
   finaldflist2<-lapply(finaldflist, function(x) as.data.frame(do.call(rbind,x)))
   finaldfboot<-rbindlist(finaldflist2,idcol = "index")
+  colnames(finaldfboot)<-c('bootstrap','Sample1','Sample2','Sample1_length','Sample2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth_mingenome')
 
   if (breakpoint=='True' && alnlenstats=='True') {
     colnames(finaldfboot)<-c('bootstrap','Sample1','Sample2','Sample1_length','Sample2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth_mingenome','Breakpoint_distance','Breakpoints','Alignments',lxcols,nxcols)
