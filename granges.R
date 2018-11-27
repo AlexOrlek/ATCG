@@ -298,16 +298,20 @@ combinebootfunc<-function(x) {
 getalnlenstats<-function(x) {
   alnlens<-rev(sort(width(x)))
   totalalnlen<-sum(alnlens)
-  quartiles<-c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9)
   numquart<-length(quartiles)
   nxvector<-integer(numquart)
   lxvector<-integer(numquart)
+  quartiles<-c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9)
   for (i in seq_len(numquart)) {
-    lxvector[i]<-which(cumsum(alnlens)>(totalalnlen*quartiles[i]))[1]
-    nxvector[i]<-alnlens[lx]
+    lx<-which(cumsum(alnlens)>(totalalnlen*quartiles[i]))[1]
+    nx<-alnlens[lx]
+    lxvector[i]<-lx
+    nxvector[i]<-nx
   }
   return(list(lxvector,nxvector))
 }
+
+
 
 #final ditance stats calculation functions
 statsfunc<-function(stats, breakpoint,mygenomelen,mymingenomelen,alnlenstats='False') {
@@ -369,7 +373,7 @@ mergestats<-function(x,y) {
 ###iterate through samples, to get initial raw statistics for sample-pairs
 
 #read seqlength file
-seqlenreport<-fread(gsubfn('%1',list('%1'=args[1]),'%1/seqlengths.tsv'))
+seqlenreport<-fread(gsubfn('%1',list('%1'=args[1]),'%1/seqlengths.tsv'),sep='\t')
 colnames(seqlenreport)<-c('sequence','length')
 seqlenreport<-seqlenreport[order(seqlenreport$sequence),]
 
@@ -380,7 +384,7 @@ library('doParallel')
 cl<-makeCluster(as.integer(args[2]))
 registerDoParallel(cl)
 
-samples<-fread(gsubfn('%1',list('%1'=args[1]),'%1/included.txt'))
+samples<-read.table(gsubfn('%1',list('%1'=args[1]),'%1/included.txt'),sep='\t',header=FALSE)
 samples<-as.vector(samples[,1])
 #samples<-samples[1:6]
 allsampledflist<-list()
@@ -388,10 +392,10 @@ allsampledflist<-list()
 lxcols<-c('l10','l20','l30','l40','l50','l60','l70','l80','l90')
 nxcols<-c('n10','n20','n30','n40','n50','n60','n70','n80','n90')
 
-allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRanges','purrr')) %dopar% {
+allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRanges','purrr','data.table')) %dopar% {
     #read alignmnents file for given sample
     sample<-samples[i]
-    report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,7,8,9,10,17)) #same subject, different queries    
+    report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,7,8,9,10,17),sep='\t') #same subject, different queries    
     #colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
     colnames(report)<-c('qname','sname','pid','qstart','qend','sstart','send','strand')
     #get information for shifting subject ranges where there are multiple contigs (below)
