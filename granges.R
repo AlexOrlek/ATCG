@@ -298,10 +298,10 @@ combinebootfunc<-function(x) {
 getalnlenstats<-function(x) {
   alnlens<-rev(sort(width(x)))
   totalalnlen<-sum(alnlens)
+  quartiles<-c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9)
   numquart<-length(quartiles)
   nxvector<-integer(numquart)
   lxvector<-integer(numquart)
-  quartiles<-c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9)
   for (i in seq_len(numquart)) {
     lx<-which(cumsum(alnlens)>(totalalnlen*quartiles[i]))[1]
     nx<-alnlens[lx]
@@ -310,7 +310,6 @@ getalnlenstats<-function(x) {
   }
   return(list(lxvector,nxvector))
 }
-
 
 
 #final ditance stats calculation functions
@@ -323,11 +322,11 @@ statsfunc<-function(stats, breakpoint,mygenomelen,mymingenomelen,alnlenstats='Fa
   d1<-as.numeric(1-covbreadthmin)
   d2<-as.numeric(-log(hsplengenlen))
   d3<-as.numeric(-log(covbreadthmin))
-  percentid<-hspidpositions/hsplength
+  percentid<-as.numeric(hspidpositions/hsplength)
   d4<-as.numeric(1-percentid)
   d5<-as.numeric(-log(percentid))
-  hspidgenlen<-hspidpositions/mygenomelen
-  hspidmingenlen<-hspidpositions/mymingenomelen
+  hspidgenlen<-as.numeric(hspidpositions/mygenomelen)
+  hspidmingenlen<-as.numeric(hspidpositions/mymingenomelen)
   d6<-as.numeric(1-hspidgenlen)
   d7<-as.numeric(1-hspidmingenlen)
   d8<-as.numeric(-log(hspidgenlen))
