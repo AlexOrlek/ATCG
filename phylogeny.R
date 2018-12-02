@@ -14,17 +14,17 @@ distargs=args[4:length(args)]
 
 
 getphy<-function(myreport,distarg,getmatrix=FALSE,getnumsamples=FALSE) {
-  samples1<-as.character(sort(unique(myreport$Sample1)))
-  samples<-sort(unique(c(as.vector(myreport$Sample1),as.vector(myreport$Sample2))))
+  samples1<-as.character(sort(unique(myreport$Genome1)))
+  samples<-sort(unique(c(as.vector(myreport$Genome1),as.vector(myreport$Genome2))))
   numsamples<-length(samples)
   myreportmatrix<-matrix(NA, ncol=length(samples), nrow=length(samples))
   myreportlist<-list()
   
   #first make list of samples1:samples2/scores
   colnamesmyreport<-colnames(myreport)
-  scorecols<-c(which(colnamesmyreport=='Sample2'),which(colnamesmyreport==distarg))
+  scorecols<-c(which(colnamesmyreport=='Genome2'),which(colnamesmyreport==distarg))
   for (mysample in samples1)  {
-    myreportlist[[mysample]]<-myreport[myreport$Sample1==mysample,scorecols]
+    myreportlist[[mysample]]<-myreport[myreport$Genome1==mysample,scorecols]
   }
   
   #make matrix
@@ -81,7 +81,7 @@ getphy<-function(myreport,distarg,getmatrix=FALSE,getnumsamples=FALSE) {
 
 #read distancestats and make sure data is ordered data by sample name
 myreport<-read.table(gsubfn('%1', list('%1'=args[1]),'%1/output/distancestats.tsv'), header = TRUE, sep='\t')
-myreport<-myreport[order(myreport$Sample1,myreport$Sample2),]
+myreport<-myreport[order(myreport$Genome1,myreport$Genome2),]
 
 
 for (distarg in distargs) {
@@ -117,7 +117,7 @@ for (distarg in distargs) {
     #get bootstrapped phylogenies
     myreportboot<-read.table(gsubfn('%1', list('%1'=args[1]),'%1/output/distancestats_bootstrapped.tsv'), header = TRUE, sep='\t')
     myreportbootsplit<-split(myreportboot, myreportboot$bootstrap)
-    myreportbootsplit<-mclapply(myreportbootsplit, function(x) x<-x[order(x$Sample1,x$Sample2),], mc.cores=threads)
+    myreportbootsplit<-mclapply(myreportbootsplit, function(x) x<-x[order(x$Genome1,x$Genome2),], mc.cores=threads)
   
     cl<-makeCluster(as.integer(threads))
     registerDoParallel(cl)
