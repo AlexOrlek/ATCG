@@ -21,7 +21,7 @@ boot=as.integer(args[5])
 #stats functions
 gethspidpositions<-function(x) {
   #returns the number of identical nucleotide alignment positions for a given set of alignments ('HSPs'); it is applied after overlaps have been excluded from the alignment set
-  return(round(sum((width(x)*(x$pid/100))))
+  return(round(sum(width(x)*(x$pid/100))))
 }
 
 gethsplength<-function(x) {
