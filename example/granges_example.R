@@ -315,8 +315,8 @@ getalnlenstats<-function(x) {
 
 #final ditance stats calculation functions
 statsfunc<-function(stats, breakpoint,mygenomelenvector,mygenomelen,mymingenomelen,bootstrap,alnlenstats='False') {
-  hsplength<-stats["hsplength"]
-  hspidpositions<-stats["hspidpositions"]
+  hsplength<-as.numeric(stats$hsplength)
+  hspidpositions<-as.numeric(stats$hspidpositions)
   covbreadth<-as.numeric(hsplength/mygenomelen)
   covbreadthmin<-as.numeric(hsplength/mymingenomelen)
   d0<-as.numeric(1-covbreadth)
@@ -338,15 +338,15 @@ statsfunc<-function(stats, breakpoint,mygenomelenvector,mygenomelen,mymingenomel
   } else {
     sample1len<-mygenomelenvector[1]
     sample2len<-mygenomelenvector[2]
-    sample1hsplengthpretrim<-stats["qhsplengthpretrim"]
-    sample2hsplengthpretrim<-stats["shsplengthpretrim"]
+    sample1hsplengthpretrim<-as.numeric(stats$qhsplengthpretrim)
+    sample2hsplengthpretrim<-as.numeric(stats$shsplengthpretrim)
     sample1covbreadth<-as.numeric(sample1hsplengthpretrim/(2*sample1len))
     sample2covbreadth<-as.numeric(sample2hsplengthpretrim/(2*sample2len))
     returnvector<-c(returnvector,sample1covbreadth,sample2covbreadth)
     if (breakpoint=='True') {
-      breakpoints<-as.numeric(stats["breakpoints"])
-      alignments<-as.numeric(stats["alignments"])
-      bpdist<-bpdistcalc(breakpoints,alignments,stats["numsplits"])
+      breakpoints<-as.numeric(stats$breakpoints)
+      alignments<-as.numeric(stats$alignments)
+      bpdist<-bpdistcalc(breakpoints,alignments,as.numeric(stats$numsplits))
       returnvector<-c(returnvector,bpdist,breakpoints,alignments)
     }
     if (alnlenstats=='True') {
@@ -399,11 +399,11 @@ applystatscalc<-function(mystats,mystatscols,bootstrap='False') {
   } else {
     stats<-mergestats(mystats[1,mystatscols],mystats[2,mystatscols])
   }
-  if (stats["hsplength"]>mymingenomelen) {
-    stats["hsplength"]<-mymingenomelen
+  if (stats$hsplength>mymingenomelen) {
+    stats$hsplength<-mymingenomelen
   }
-  if (stats["hspidpositions"]>mymingenomelen) {
-    stats["hspidpositions"]<-mymingenomelen
+  if (stats$hspidpositions>mymingenomelen) {
+    stats$hspidpositions<-mymingenomelen
   }
   statsout<-statsfunc(stats,breakpoint,mygenomelenvector,mygenomelen,mymingenomelen,bootstrap,alnlenstats)
   return(c(sample1,sample2,mygenomelenvector,statsout))
@@ -632,19 +632,12 @@ colnames(sampleseqlen)<-c('sample','length')
 #get final stats
 allsampledf[c(1,2,5,6)]<-t(apply(allsampledf,1,reorderallsampledf)) #reorder query/subject sample alphabetically; reorder qhsplenpretrim/shsplenpretrim accoringly (N.B. the terms query/subject now lose their meaning)
 splitsampledf<-split(allsampledf, list(allsampledf$querysample,allsampledf$subjectsample),drop=TRUE) #split by pairwise combination
-splitsamplelen<-length(splitsampledf) #chunk pairwise combination list for parLapply
-numchunks<-as.integer(args[2])
-if (numchunks>splitsamplelen) {
-  numchunks<-splitsamplelen
-}
-chunkedsplitsampledf<-split(splitsampledf, ceiling(seq_len(splitsamplelen)/ceiling(splitsamplelen/numchunks)))
 
 cl<-makeCluster(as.integer(args[2]))
 registerDoParallel(cl)
 clusterExport(cl,c("applystatscalc","getseqlens","sampleseqlen","mergestats","statsfunc","breakpoint","alnlenstats","bpdistcalc","lxcols","nxcols"))
 
-#finaldf<-parLapply(cl, splitsampledf,applystatscalc, mystatscols=statscols)
-finaldf<-lapply(chunkedsplitsampledf,function(x) as.data.frame(do.call(rbind,lapply(x,applystatscalc, mystatscols=statscols))))
+finaldf<-parLapply(cl, splitsampledf,applystatscalc, mystatscols=statscols)
 
 stopCluster(cl)
 
