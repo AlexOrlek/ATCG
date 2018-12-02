@@ -1,5 +1,21 @@
 ATCG (Alignment-based Tool for Comparative Genomics) is a command-line tool for comparison of nucleotide sequences; it is intended for small-to-medium-sized datasets (e.g. plasmids; small collections of bacterial genomes). [BLAST](https://www.ncbi.nlm.nih.gov/books/NBK279690/) alignments are analysed to calculate various overall measures of pairwise sequence relatedness. The approach of ATCG is similar to that of a web-based tool called the genome-genome distance calculator ([GGDC](https://ggdc.dsmz.de/ggdc.php#)). However, ATCG provides more flexibility and additional analysis options such as assessment of structural similarity.
 
+
+# Table of contents
+
+* [Introduction](#Introduction)
+* [Requirements](#Requirements)
+* [Installation](#Installation)
+* [Input](#Input)
+* [Quick start](#Quick-start)
+* [Background and methods](#Background-and-methods)
+* [Options and usage](#Options-and-usage)
+* [Output files](#Output-files)
+* [Example](#Example)
+* [FAQ](#FAQ)
+* [License](#License)
+
+
 # Introduction
 
 As input, ATCG can take nucleotide sequence assemblies in [FASTA](https://en.wikipedia.org/wiki/FASTA_format) format; the assemblies can comprise any of the following:
@@ -92,7 +108,10 @@ Alternatively, if all-vs-all comparison is not required, 2 input (multi-)FASTA f
 A paper describing the methods will be written shortly, and further information about the general approach can be found in a [paper](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-60) by Meier-Kolthoff _et al_. describing the similar genome-genome distance calculator tool ([GGDC](https://ggdc.dsmz.de/ggdc.php#)). A brief outline of the steps of ATCG is given below:
 
 1. BLAST is conducted on assembled nucleotide sequences in both directions between each pair of genomes (i.e. genome A vs genome B and genome B vs genome A; that is, with genome A as the [query sequence](https://www.ncbi.nlm.nih.gov/books/NBK1734/) and genome B as the subject database sequence, and vice-versa).
-2. Where alignment ranges overlap at the same region on the query genome or the subject genome, the shorter overlapping alignment is trimmed to eliminate the overlap. Trimming performed on the query/subject genome is applied to the corresponding range on the subject/query genome, accounting for the strand of the alignment. So, if an alignment is '-' strand (a reverse complement alignment), and the alignment range on the query sequence is trimmed from the 5' end, then the corresponding alignment range on the subject sequence will be trimmed by the same length on the 3' end. If an alignment is trimmed from the same flank on both query and subject genome, then a maximal trim is applied i.e. if the alignment trim lengths differ between genomes, then the shorter trim will be extended to match the longer trim. The trimming algorithm used by ATCG is analogous to the "greedy-with-trimming" algorithm described by ]Meier-Kolthoff _et al_](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-60). See the [example](#Example) below for a visual depiction of how alignment trimming works. The rationale for trimming overlapping alignments is explained in the [FAQ](#FAQ) section. 
+2. Where alignment ranges overlap at the same region on the query genome or the subject genome, the shorter overlapping alignment is trimmed to eliminate the overlap.
+    * Trimming performed on the query/subject genome is applied to the corresponding range on the subject/query genome. Furthermore, the strand of the alignment is accounted for. So, if an alignment is '-' strand (a reverse complement alignment), and the alignment range on the query sequence is trimmed from the 5' end, then the corresponding alignment range on the subject sequence will be trimmed by the same length on the 3' end.
+    * If an alignment is trimmed from the same flank on both query and subject genome, then a maximal trim is applied i.e. if the alignment trim lengths differ between genomes, then the shorter trim will be extended to match the longer trim.
+The trimming algorithm used by ATCG is analogous to the "greedy-with-trimming" algorithm described by [Meier-Kolthoff _et al_](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-60). See the [example](#Example) below for a visual depiction of how alignment trimming works. The rationale for trimming overlapping alignments is explained in the [FAQ](#FAQ) section. 
 3. Calculation of distance metrics: Prior to trimming, the alignment coverage breadth on each genome is calculated. After alignment trimming, the trimmed alignments are used to calculate distance metrics; breakpoint distances and alignment length statistics can optionally be calculated using trimmed alignments. A description of the statistics produced by ATCG, and formulae for their calculation are given [here](misc/statistics_calculation.pdf).
 4. If all-vs-all BLAST was run, then a tree is generated using a specified pairwise distance metric; optionally, the tree can be annotated with bootstrap confidence values, which are calculated by resampling trimmed alignments.
 
@@ -159,26 +178,25 @@ Results are produced in the example/output directory. Diagrams below show the al
 
 __Things to note:__<br>
 <br>
-Notice how the red alignment is involved in alignment trimming: it overlaps with the turquoise alignment on sequence B and since the red alignment is longer, the turquoise alignment is trimmed. The red alignment also overlaps with the yellow alignment on sequence A; in this case, it is the shorter of the two alignments, so it is trimmed. However, because it is a '-' strand alignment, it is trimmed from the 3' end on sequence B.  <br>
+Notice how the red alignment is involved in alignment trimming: it overlaps with the blue alignment on sequence B and since the red alignment is longer, the blue alignment is trimmed. The red alignment also overlaps with the green alignment on sequence A; in this case, it is the shorter of the two alignments, so it is trimmed. However, because it is a '-' strand alignment, it is trimmed from the 3' end on sequence B.<br>
 
-The breakpoint distance is 1 meaning there were no pairs of sequences found to be adjacent and in the same relative order in sequence A and sequence B. While the red and yellow alignments are adjacent in both sequence A and B, one is '+' strand and the other is '-' strand so they are not in the same relative order.  <br>
+The orange alignment overlaps with the longer pink alignment on the same flank in both genome A and B. In this case, maximal trimming is applied, as described in the [Background and methods](#Background-and-methods) section.<br>
 
-For the percent identity calculation, the numerator and denominator are multiplied by 2. This is because the numer of identical basepairs (numerator) and the alignment length (denominator) is the same in both BLAST directions. However, BLAST is not always symmetric; this is the rationale for aggregating across both BLAST directions. 
+The breakpoint distance is 1 meaning there were no pairs of sequences found to be adjacent and in the same relative order in sequence A and sequence B. While the green and red alignments are adjacent in both sequence A and B, one is '+' strand and the other is '-' strand so they are not in the same relative order.<br>
+
+For the percent identity calculation, the numerator and denominator are multiplied by 2. This is because the number of identical basepairs (numerator) and the alignment length (denominator) are the same in both BLAST directions. However, BLAST is not always symmetric; this is the rationale for aggregating across both BLAST directions. 
 
 # FAQ
 
-* Why is it necessary to trim overlaps prior to calculating distance metrics?<br>
-Overlapping alignments may reflect a scenario where mutliple duplicate stretches of repeat sequence from one genome map to a single homologous stretch in the other genome (as in the pink and orange alignments in the [example](#Example) above). Trimming overlapping alignments therefore reduces bias from repetitive sequences. [Previous authors](https://academic.oup.com/bioinformatics/article/21/10/2329/205556) have shown that trimming overlapping alignments improves distance-based species delimitation.
-<br>
-* What happens if there are no BLAST alignments between two genomes?<br>
-Pairwise comparisons yielding no BLAST alignments will not be included in the output, but will be recorded in the excluded.txt file
-<br>
-* Which distance metric should be used?<br>
-Different distance metrics reflect different distance concepts. Some distance scores focus on coverage breadth (d0-d3); others focus on percent identiy (d4,d5); while others reflect both percent identity and coverage breadth (d6-d9). In addition, there are two over-arching distance concepts by which the scores can be categorised: [resemblance and containment](https://genomeinformatics.github.io/mash-screen/). Briefly, resemblance is not robust to genome size difference, so if a smaller genome matches exactly to part of a larger genome, the distance will be >0, but according to containment, the distance score should be 0. Scores d0, d2, d6, and d8 represent resemblance, while scores d1, d3, d7, and d9 represent containment.
-<br>
-* What are the advantages of ATCG compared with other comparative genomics tools?<br>
-ATCG measures structural similarity which is not possible when using (faster) alignment-free approaches. Although GGDC is also a BLAST alignment-based approach, a structural similarity metric is not provided. Other advantages of ATCG compared with GGDC are:
-    * ATCG is standalone command line tool, so it can be used with a computer cluster; there is no limit to the number of input genomes; output can be flexibly specified in the command-line. 
+* **Why is it necessary to trim overlaps prior to calculating distance metrics?**
+Overlapping alignments may reflect a scenario where mutliple duplicate stretches of repeat sequence from one genome map to a single homologous stretch in the other genome (as in the orange and pink alignments in the [example](#Example) above). Trimming overlapping alignments therefore reduces bias from repetitive sequences. [Previous authors](https://academic.oup.com/bioinformatics/article/21/10/2329/205556) have shown that trimming overlapping alignments improves distance-based species delimitation.
+* **What happens if there are no BLAST alignments between two genomes?**
+Pairwise comparisons yielding no BLAST alignments will not be included in the output. Genome(s) with no BLAST alignments to any other genome(s) will be recorded in the excluded.txt file.
+* **Which distance metric should be used?**
+Different distance metrics reflect different distance concepts. Some distance scores focus on coverage breadth (d0-d3); others focus on percent identiy (d4,d5); while others reflect both percent identity and coverage breadth (d6-d9). In addition, there are two overarching distance concepts by which the scores can be categorised: [resemblance and containment](https://genomeinformatics.github.io/mash-screen). Resemblance is not robust to genome size difference, so if a smaller genome matches exactly to part of a larger genome, the distance will be >0, but according to containment, the distance score should be 0. Scores d0, d2, d6, and d8 represent resemblance, while scores d1, d3, d7, and d9 represent containment.
+* **What are the advantages of ATCG compared with other comparative genomics tools?**
+ATCG measures structural similarity which is not possible when using (faster) alignment-free approaches. Although GGDC is also a BLAST alignment-based approach, a structural similarity metric is not provided. Other advantages of ATCG compared with GGDC are as follows:
+    * ATCG is a standalone command-line tool, so it can be used with a computer cluster; there is no limit to the number of input genomes; output can be flexibly specified in the command-line. 
     * ATCG produces all described distance scores d0-d9 whereas the web GGDC only provides a subset. ATCG also generates additional more easily interpretable metrics: percent identity and pre-trimming coverage breadth of each genome.
 
 
