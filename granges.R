@@ -522,8 +522,11 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,SIMPLIFY = F)) #!ADDED
       qtrimmed<-trimmedalignments$qfinal
       strimmed<-trimmedalignments$sfinal
+      qtrimmed<-qtrimmed[lapply(qtrimmed,length)>0]
+      strimmed<-strimmed[lapply(strimmed,length)>0]
     } else {
       qtrimmed<-mapply(trimalignments,qfinal,sfinal,qtrimonly=TRUE)
+      qtrimmed<-qtrimmed[lapply(qtrimmed,length)>0]
     }
     #trimmedalignments<-mapply(trimalignments,qfinal,sfinal)
     #trimmedalignments<-lapply(split(1:nrow(trimmedalignments), rownames(trimmedalignments)), function(i) trimmedalignments[i,])  #!!!ADDED
