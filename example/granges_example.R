@@ -442,7 +442,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     sample<-samples[i]
     report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,4,7,8,9,10,17),sep='\t') #same subject, different queries    
     #colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
-    colnames(report)<-c('qname','sname','alnlen','pid','qstart','qend','sstart','send','strand')
+    colnames(report)<-c('qname','sname','pid','alnlen','qstart','qend','sstart','send','strand')
     #get information for shifting subject ranges where there are multiple contigs (below)
     seqlenreportseqs<-sapply(strsplit(as.vector(seqlenreport$sequence),'|',fixed=T),pastefunction)
     reformattedsname<-as.factor(sapply(strsplit(as.vector(report$sname),"|",fixed=T),pastefunction))
