@@ -95,12 +95,12 @@ isolate2|plasmid2
 
 For all-vs-all comparison, the tool can be run by providing a single multi-FASTA file using the `-s` flag; pairwise distance scores will be recorded and a tree will be generated.
 
-`atcg.py -s genomes.fasta -o output-directory -t 8`
+`atcg.py -s genomes.fasta -o output-directory`
 
 
 Alternatively, if all-vs-all comparison is not required, 2 input (multi-)FASTA files can be provided using flags `-s1` and `-s2`; pairwise comparisons will be conducted between but not amongst sequence(s) in each file; pairwise distances will be recorded but a tree will not be generated since distances are not available for all pairwise combinations. The order in which the FASTA files are provided to the -s1/-s2 flags will not affect results, however the sequences in the two files must be non-overlapping (ATCG will check this based on examination of the FASTA header identifiers).
 
-`atcg.py -s1 query.fasta -s2 genomes.fasta -o output-directory -t 8`
+`atcg.py -s1 query.fasta -s2 genomes.fasta -o output-directory`
 
 
 # Background and methods

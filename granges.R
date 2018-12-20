@@ -39,9 +39,12 @@ getstats<-function(x) {
 
 #trimming functions
 reducefunction<-function(x) {
-  #reduces (joins contiguous) disjoint ranges, after splitting by input hsp   
+  #reduces (joins contiguous) disjoint ranges, after splitting by input hsp; if there are discontiguous ranges (due to alignment being split in two - if it's longer on query/subject but is considered suboptimal according to blast table alignment length) selects longest range
   myinputhsp<-unique(mcols(x)$inputhsp)
   output<-reduce(x)
+  if (length(output)>1) {
+    output<-output[which.max(width(output)),]
+  }
   mcols(output)$inputhsp<-myinputhsp
   return(output)
 }
@@ -436,9 +439,9 @@ nxcols<-c('n10','n20','n30','n40','n50','n60','n70','n80','n90')
 allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRanges','purrr','data.table')) %dopar% {
     #read alignmnents file for given sample
     sample<-samples[i]
-    report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,7,8,9,10,17),sep='\t') #same subject, different queries    
+    report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,4,7,8,9,10,17),sep='\t') #same subject, different queries    
     #colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
-    colnames(report)<-c('qname','sname','pid','qstart','qend','sstart','send','strand')
+    colnames(report)<-c('qname','sname','alnlen','pid','qstart','qend','sstart','send','strand')
     #get information for shifting subject ranges where there are multiple contigs (below)
     seqlenreportseqs<-sapply(strsplit(as.vector(seqlenreport$sequence),'|',fixed=T),pastefunction)
     reformattedsname<-as.factor(sapply(strsplit(as.vector(report$sname),"|",fixed=T),pastefunction))
@@ -460,12 +463,12 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     ###disjoin method trimming
     pid<-report$pid
     snames<-report$sname #!!!ADDDED
-    #alnlen<-report$alnlen
+    alnlen<-report$alnlen
     mystrand<-report$strand  #strand info is lost after disjoin - need to retain strand info for toppid
     qgr<-GRanges(seqnames = report$qname, ranges = IRanges(start=(report$qstart), end = (report$qend)), strand=(report$strand))
     sgr<-GRanges(seqnames = report$qname, ranges = IRanges(start=(report$sstart), end= (report$send)), strand = (report$strand))
-    qalnlen<-width(qgr)
-    salnlen<-width(sgr)
+    #qalnlen<-width(qgr)
+    #salnlen<-width(sgr)
     #shift subject ranges where there are multiple contigs
     for (j in seq_along(samplescontiglens)) {
       if (j==1) {
@@ -496,7 +499,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #query disjoin
     gr2<-disjoin(qgr,with.revmap=TRUE,ignore.strand=TRUE)
     revmap<-gr2$revmap
-    tophsp<-unlist(lapply(revmap, function(x) x[which.max(qalnlen[x])]))
+    tophsp<-unlist(lapply(revmap, function(x) x[which.max(alnlen[x])])) ##!changed qalnlen[x] to alnlen[x] - improves agreement between query/subject trimming in terms of which alignments are retained, avoiding excessive alignment filtering when finalhsps are selected as an intersection of query/subject hsps.
     mcols(gr2)$inputhsp<-tophsp
     mcols(gr2)$revmap<-NULL
     grsplit<-split(gr2,seqnames(gr2)) #split by seqnames i.e. one list per paired sample                                            
@@ -504,7 +507,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #subject disjoin
     gr2<-disjoin(sgr,with.revmap=TRUE,ignore.strand=TRUE)
     revmap<-gr2$revmap
-    tophsp<-unlist(lapply(revmap, function(x) x[which.max(salnlen[x])]))
+    tophsp<-unlist(lapply(revmap, function(x) x[which.max(alnlen[x])])) ##!changed salnlen[x] to alnlen[x]
     mcols(gr2)$inputhsp<-tophsp
     mcols(gr2)$revmap<-NULL
     grsplit<-split(gr2,seqnames(gr2)) #split by seqnames i.e. one list per paired sample
@@ -522,8 +525,9 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,SIMPLIFY = F)) #!ADDED
       qtrimmed<-trimmedalignments$qfinal
       strimmed<-trimmedalignments$sfinal
-      qtrimmed<-qtrimmed[lapply(qtrimmed,length)>0]
-      strimmed<-strimmed[lapply(strimmed,length)>0]
+      includedalignmentindices<-lapply(qtrimmed,length)>0 & lapply(strimmed,length)>0 #safeguards against bug due to empty list element (probably unecessary)
+      qtrimmed<-qtrimmed[includedalignmentindices]
+      strimmed<-strimmed[includedalignmentindices]
     } else {
       qtrimmed<-mapply(trimalignments,qfinal,sfinal,qtrimonly=TRUE)
       qtrimmed<-qtrimmed[lapply(qtrimmed,length)>0]
