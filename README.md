@@ -27,10 +27,10 @@ As input, ATCG can take nucleotide sequence assemblies in [FASTA](https://en.wik
 ATCG is appropriate if you want to:
 * Compare sequences in terms of overall relatedness metrics (genome-genome distances, percentage identity, coverage breadth)
 * Use pairwise genome-genome distance scores to build a [distance-based](https://en.wikipedia.org/wiki/Distance_matrices_in_phylogeny) tree.
-* Compare sequences in terms of their structural similarity (using the breakpoint distance metric; see [Henz _et al_. 2004](https://www.ncbi.nlm.nih.gov/pubmed/15166018))
+* Compare sequences in terms of their structural similarity (using breakpoint distance metrics; see [Sankoff _et al_. 2000](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.2.8200&rank=2) and Auch _et al_. 2006](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-7-350) for background information).
 
 ATCG is __not__ appropriate if you want to:
-* Analyse many large genomes - alignment-based approaches are too time-consuming for this (instead, use locus-based typing methods such as [MLST](https://pubmlst.org/general.shtml) OR alignment-free comparative genomic tools such as [FastANI](https://github.com/ParBLiSS/FastANI))
+* Analyse many large genomes; alignment-based approaches are too time-consuming for this (instead, use locus-based typing methods such as [MLST](https://pubmlst.org/general.shtml) OR alignment-free comparative genomic tools such as [FastANI](https://github.com/ParBLiSS/FastANI))
 * Generate a whole-genome multiple alignment (instead, use [progressiveMauve](http://darlinglab.org/mauve/user-guide/progressivemauve.html) or similar tool)
 
 
@@ -111,9 +111,9 @@ A paper describing the methods will be written shortly, and further information 
 2. Where alignment ranges overlap at the same region on the query genome or the subject genome, the shorter overlapping alignment is trimmed to eliminate the overlap.
     * Trimming performed on the query/subject genome is applied to the corresponding range on the subject/query genome. Furthermore, the strand of the alignment is accounted for. So, if an alignment is '-' strand (a reverse complement alignment), and the alignment range on the query sequence is trimmed from the 5' end, then the corresponding alignment range on the subject sequence will be trimmed by the same length on the 3' end.
     * If an alignment is trimmed from the same flank on both query and subject genome, then a maximal trim is applied i.e. if the alignment trim lengths differ between genomes, then the shorter trim will be extended to match the longer trim.
-The trimming algorithm used by ATCG is analogous to the "greedy-with-trimming" algorithm described by [Meier-Kolthoff _et al_](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-60). See the [example](#Example) below for a visual depiction of how alignment trimming works. The rationale for trimming overlapping alignments is explained in the [FAQ](#FAQ) section. 
+    * The trimming algorithm used by ATCG is analogous to the "greedy-with-trimming" algorithm described by [Meier-Kolthoff _et al_](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-60). See the [example](#Example) below for a visual depiction of how alignment trimming works. The rationale for trimming overlapping alignments is explained in the [FAQ](#FAQ) section. 
 3. Calculation of distance metrics: Prior to trimming, the alignment coverage breadth on each genome is calculated. After alignment trimming, the trimmed alignments are used to calculate distance metrics; breakpoint distances and alignment length statistics can optionally be calculated using trimmed alignments. A description of the statistics produced by ATCG, and formulae for their calculation are given [here](misc/statistics_calculation.pdf).
-4. If all-vs-all BLAST was run, then a tree is generated using a specified pairwise distance metric; optionally, the tree can be annotated with bootstrap confidence values, which are calculated by resampling trimmed alignments.
+4. If all-vs-all BLAST was run, then tree(s) are built according to specified distance metric(s).
 
 
 # Options and usage
@@ -121,16 +121,17 @@ The trimming algorithm used by ATCG is analogous to the "greedy-with-trimming" a
 `atcg.py --help` produces a summary of all the options.
 
 By default, the number of threads is 1, but multi-threading is recommended to reduce computing time; the number of threads to use is specified using the `-t` flag; the value must not exceed the number of threads available on your machine. 
-By default, breakpoint distance and alignment length distribution statistics are not calculated; bootstrap confidence values are also not calculated by default.
-To conduct bootstrapping, the number of replicates is specified using the `-b` flag; trimmed alignments will be resampled with replacement to produce replicate distance scores, from which replicate trees are produced, allowing bootstrap confidence values to be shown on the original tree.
-Calculation of breakpoint distance (a measure of structural similarity) is specified using the `--breakpoint` flag.
+By default, breakpoint distances and alignment length distribution statistics are not calculated.
+Calculation of breakpoint distances (measuring structural similarity) is specified using the `--breakpoint` flag.
 Calculation of alignment length distribution statistics is specified using the `--alnlenstats` flag. The alignment length statistics provide information on the distribution of BLAST alignment lengths and are analogous to the widely used [assembly contiguity statistics](https://www.molecularecologist.com/2017/03/whats-n50/) e.g N50/L50.
 
-`atcg.py -s genomes.fasta -o output-directory -t 8 -b 100 --breakpoint --alnlenstats` runs the pipeline using 8 threads, with 100 bootstrap replicates, and calculation of breakpoint distance and alignment length distribution statistics.
+`atcg.py -s genomes.fasta -o output-directory -t 8 --breakpoint --alnlenstats` runs the pipeline using 8 threads, with calculation of breakpoint distances and alignment length distribution statistics.
 
 To better understand the calculation of the various statistics, it may help to take a look at the [example](#Example) below.
 
+__Generating bootstrap confidence values (not recommended)__<br>
 
+[Previous authors](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-60) describe a procedure for calculating confidence intervals for distance scores. Specifically, trimmed alignments are bootstrap-resampled (resampled with replacement) to produce replicate distance scores. If all-vs-all comparison is conducted, replicate trees are produced from the replicate distance scores, allowing bootstrap confidence values to be shown on the original tree. However, as the authors note, in-depth asessment of the bootstrapping procedure is lacking, so it should be used cautiously. By default, bootstrap confidence values are not calculated by ATCG, but can be specified using the `-b` flag. `-b 100` would run the pipeline with 100 bootstrap replicates.
 
 
 # Output files
@@ -163,11 +164,14 @@ To clarify the calculation of statistics, the alignment trimming and statistics 
 
 `Rscript granges_example.R`
 
-Results are produced in the example/output directory. Diagrams below show the alignments before trimming and after trimming; calculation of the statistics in the output directory can be done manually for the benefit of understanding, as is shown below for the calculation of percent identity.
+Results are produced in the example/output directory. Diagrams below show the alignments at different stages during the pipeline: 1) "Untrimmed alignments" produced by BLAST. "Disjoint alignments"; overlaps have been trimmed to produce a non-overlapping set of alignments on each sequence. "Trimmed alignments"; overlap trimming on the query/subject sequence is applied to the corresponding range on the subject/query sequence. Calculation of the statistics in the output directory can be done manually for the benefit of understanding, as is shown below for the calculation of percent identity.
 
 <br>
 <p align="center">Untrimmed alignments</p>
 <p align="center"><img src="example/images/untrimmed.JPG" alt="untrimmed" width="600"></p>
+<br>
+<p align="center">Disjoint alignments</p>
+<p align="center"><img src="example/images/disjoint.JPG" alt="trimmed" width="600"></p>
 <br>
 <p align="center">Trimmed alignments</p>
 <p align="center"><img src="example/images/trimmed.JPG" alt="trimmed" width="600"></p>
@@ -182,9 +186,18 @@ Notice how the red alignment is involved in alignment trimming: it overlaps with
 
 The orange alignment overlaps with the longer pink alignment on the same flank in both genome A and B. In this case, maximal trimming is applied, as described in the [Background and methods](#Background-and-methods) section.<br>
 
-The breakpoint distance is 0.8 because there are 4 breakpoints and 5 pairs of alignments (6 total alignments). Except for the orange and pink alignments, there were no pairs of alignments found to be adjacent and in the same relative order in sequence A and sequence B. While the green and red alignments are adjacent in both sequence A and B, one is '+' strand and the other is '-' strand so they are not in the same relative order.<br>
+The breakpoint distance d0 is 0.8 because there are 4 breakpoints and 5 pairs of alignments (6 total alignments). Except for the orange and pink alignments, there were no pairs of alignments found to be adjacent and in the same relative order in sequence A and sequence B. While the green and red alignments are adjacent in both sequence A and B, one is '+' strand and the other is '-' strand so they are not in the same relative order.<br>
 
 For the percent identity calculation, the numerator and denominator are multiplied by 2. This is because the number of identical basepairs (numerator) and the alignment length (denominator) are the same in both BLAST directions. However, BLAST is not always symmetric; this is the rationale for aggregating across both BLAST directions. 
+
+
+###Additional example: contig input
+
+An additional example is provided in the example2 directory, to demonstrate handling of input sequences comprising contigs. The example can be run by typing `Rscript granges_example.R` from within the example2 directory.
+
+In this example, genomes A and B each comprise 3 contig sequences: A|1;A|2;A|3 and B|1;B|2;B|3, respectively. Each contig from genome A matches sequence A from the main example, and each contig from genome B matches sequence B of the main example. Therefore, as expected, the distance scores and breakpoint scores calculated in example2 match scores from the main example. 
+
+
 
 # FAQ
 
@@ -194,6 +207,8 @@ Overlapping alignments may reflect a scenario where mutliple duplicate stretches
 Pairwise comparisons yielding no BLAST alignments will not be included in the output. Genome(s) with no BLAST alignments to any other genome(s) will be recorded in the excluded.txt file.
 * **Which distance metric should be used?**
 Different distance metrics reflect different distance concepts. Some distance scores focus on coverage breadth (d0-d3); others focus on percent identiy (d4,d5); while others reflect both percent identity and coverage breadth (d6-d9). In addition, there are two overarching distance concepts by which the scores can be categorised: [resemblance and containment](https://genomeinformatics.github.io/mash-screen). Resemblance is not robust to genome size difference, so if a smaller genome matches exactly to part of a larger genome, the distance will be >0, but according to containment, the distance score should be 0. Scores d0, d2, d6, and d8 represent resemblance, while scores d1, d3, d7, and d9 represent containment.
+* **Which breakpoint distance metric should be used?**
+Breakpoint distance d1 is recommended; distance d0 is provided since it has been used by previous authors. The breakpoint distance concept was originally established for gene order data (e.g. see [Sankoff _et al_. 2000](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.2.8200&rank=2)); broadly, it has been defined as the number of breakpoints relative to the number of genes. Breakpoint distance d0 reflects this definition, as applied to the alignment order data handled by ATCG. However, in the case of alignment data, there is potential for bias due to heterogenous alignment lengths: one can imagine a situation where 2 genomes are for the most part syntenic, but exhibit exhibit extensive rearrangement outdide the syntenic block; this could result in one long alignment, plus numerous short alignment exhibiting many breakpoints. In this case, breakpoint distance would be spuriously large, according to breakpoint distance d0. Breakpoint distance d1 is robust to the potential bias from alignment length heterogeneity, since the number of breakpoints is expressed per kb rather than relative to the number of alignments.
 * **What are the advantages of ATCG compared with other comparative genomics tools?**
 ATCG measures structural similarity which is not possible when using (faster) alignment-free approaches. Although GGDC is also a BLAST alignment-based approach, a structural similarity metric is not provided. Other advantages of ATCG compared with GGDC are as follows:
     * ATCG is a standalone command-line tool, so it can be used with a computer cluster; there is no limit to the number of input genomes; output can be flexibly specified in the command-line. 

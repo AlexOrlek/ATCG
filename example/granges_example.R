@@ -269,10 +269,11 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
     out<-mapply(BPfunc,qcontigsplit[[qname]],scontigsplit[[qname]]) #apply breakpoint function to sublists
     bpcount<-sum(unlist((out["bpcount",]))) #sum across subject contig splits to get count per query
     alncount<-sum(unlist((out["alncount",])))
-    bpout[[qname]]<-c(bpcount,alncount,numsplits)
+    pairscount<-alncount-numsplits #ADDED
+    bpout[[qname]]<-c(bpcount,alncount,pairscount)
   }
   mydfbp<-as.data.frame(do.call(rbind, bpout))
-  colnames(mydfbp)<-c('breakpoints','alignments','numsplits')
+  colnames(mydfbp)<-c('breakpoints','alignments','pairs')
   mydfbp<-cbind(querysample=rownames(mydfbp),subjectsample=rep(sample,nrow(mydfbp)),mydfbp)
   #merge dataframes
   myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"))
@@ -280,11 +281,11 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
 }
 
 
-bpdistcalc<-function(bps,alns,numsplits) {
-  if ((alns-numsplits)==0) {
+bpdistcalc<-function(bps,pairs) {
+  if (pairs==0) {
     return(as.numeric(0))
   } else {
-    return(as.numeric(bps/(alns-numsplits)))
+    return(as.numeric(bps/pairs))
   }
 }
 
@@ -350,8 +351,10 @@ statsfunc<-function(stats, breakpoint,mygenomelenvector,mygenomelen,mymingenomel
     if (breakpoint=='True') {
       breakpoints<-as.numeric(stats$breakpoints)
       alignments<-as.numeric(stats$alignments)
-      bpdist<-bpdistcalc(breakpoints,alignments,as.numeric(stats$numsplits))
-      returnvector<-c(returnvector,bpdist,breakpoints,alignments)
+      pairs<-as.numeric(stats$pairs)
+      bpdist<-bpdistcalc(breakpoints,pairs)
+      bpdist2<-as.numeric(breakpoints/as.numeric((hsplength/2000)))#express per kb
+      returnvector<-c(returnvector,bpdist,bpdist2,breakpoints,alignments,pairs)
     }
     if (alnlenstats=='True') {
       lxstats<-as.integer(stats[lxcols])
@@ -471,7 +474,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #qalnlen<-width(qgr)
     #salnlen<-width(sgr)
     #shift subject ranges where there are multiple contigs
-    for (j in seq_along(samplescontiglens)) {
+    for (j in seq_len(nrow(samplescontiglens))) {
       if (j==1) {
         next
       }
@@ -480,7 +483,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       sgr[myindices]<-shift(sgr[myindices],addlen)
     }
     #shift query ranges where there are multiple contigs
-    for (j in seq_along(sampleqcontiglens)) {
+    for (j in seq_len(nrow(sampleqcontiglens))) {
       if (j==1) {
         next
       }
@@ -489,11 +492,11 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       qgr[myindices]<-shift(qgr[myindices],addlen)
     }
     #overwrite report with shifted forward ranges
-    if (length(samplescontiglens)>1) {
+    if (nrow(samplescontiglens)>1) {
        report$sstart<-start(sgr)
        report$send<-end(sgr)
     }
-    if (length(sampleqcontiglens)>1) {
+    if (nrow(sampleqcontiglens)>1) {
        report$qstart<-start(qgr)
        report$qend<-end(qgr)
     }
@@ -588,11 +591,11 @@ stopCluster(cl)
 if (boot==0) {
   allsampledf<-as.data.frame(do.call(rbind, allsampledflist))
   if (breakpoint=='True' && alnlenstats=='True') {
-    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','numsplits',lxcols, nxcols)
-    statscols<-c('hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','numsplits',lxcols,nxcols)
+    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','pairs',lxcols, nxcols)
+    statscols<-c('hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','pairs',lxcols,nxcols)
   } else if (breakpoint=='True') {
-    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','numsplits')
-    statscols<-c('hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','numsplits')
+    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','pairs')
+    statscols<-c('hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','pairs')
   } else if (alnlenstats=='True') {
     colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim',lxcols,nxcols)
     statscols<-c('hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim',lxcols,nxcols)
@@ -604,17 +607,17 @@ if (boot==0) {
   allsampledf<-as.data.frame(do.call(rbind, lapply(allsampledflist, function(l) l[[1]])))
   allsampledfboot<-combinebootfunc(allsampledflist)
   if (breakpoint=='True' && alnlenstats=='True') {
-    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','numsplits',lxcols,nxcols)
-    statscols<-c('hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','numsplits',lxcols,nxcols)
-    #statscolsboot<-c('hspidpositions','hsplength','breakpoints','alignments','numsplits') #NO LONGER BOOTSTRAPPING BREAKPOINTS
-    #colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','numsplits')
+    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','pairs',lxcols,nxcols)
+    statscols<-c('hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','pairs',lxcols,nxcols)
+    #statscolsboot<-c('hspidpositions','hsplength','breakpoints','alignments','pairs') #NO LONGER BOOTSTRAPPING BREAKPOINTS
+    #colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','pairs')
     statscolsboot<-c('hspidpositions','hsplength')
     colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength')
   } else if (breakpoint=='True') {
-    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','numsplits')
-    statscols<-c('hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','numsplits')
-    #statscolsboot<-c('hspidpositions','hsplength','breakpoints','alignments','numsplits')
-    #colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','numsplits')
+    colnames(allsampledf)<-c('querysample','subjectsample','hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','pairs')
+    statscols<-c('hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','breakpoints','alignments','pairs')
+    #statscolsboot<-c('hspidpositions','hsplength','breakpoints','alignments','pairs')
+    #colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength','breakpoints','alignments','pairs')
     statscolsboot<-c('hspidpositions','hsplength')
     colnames(allsampledfboot)<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength')
   } else if (alnlenstats=='True') {
@@ -654,9 +657,9 @@ finaldf<-as.data.frame(do.call(rbind,finaldf))
 
 #N.B 'Genome1'/'Genome2' are used for column names of distancestats.tsv/distancestats_bootstrapped.tsv files, but in code in this script the term 'sample' instead of 'genome' is used
 if (breakpoint=='True' && alnlenstats=='True') {
-  colnames(finaldf)<-c('Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth','Coverage_breadth_mingenome','Coverage_breadth_Genome1','Coverage_breadth_Genome2','Breakpoint_distance','Breakpoints','Alignments',lxcols,nxcols)
+  colnames(finaldf)<-c('Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth','Coverage_breadth_mingenome','Coverage_breadth_Genome1','Coverage_breadth_Genome2','Breakpoint_distance_d0','Breakpoint_distance_d1','Breakpoints','Alignments','Alignment_pairs',lxcols,nxcols)
 } else if (breakpoint=='True') {
-  colnames(finaldf)<-c('Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth','Coverage_breadth_mingenome','Coverage_breadth_Genome1','Coverage_breadth_Genome2','Breakpoint_distance','Breakpoints','Alignments')
+  colnames(finaldf)<-c('Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth','Coverage_breadth_mingenome','Coverage_breadth_Genome1','Coverage_breadth_Genome2','Breakpoint_distance_d0','Breakpoint_distance_d1','Breakpoints','Alignments','Alignment_pairs')
 } else if (alnlenstats=='True') {
   colnames(finaldf)<-c('Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth','Coverage_breadth_mingenome','Coverage_breadth_Genome1','Coverage_breadth_Genome2',lxcols,nxcols)
 } else {
@@ -693,9 +696,9 @@ if (boot!=0) {
   finaldfboot<-rbindlist(finaldflist,idcol = "index")
 
   if (breakpoint=='True' && alnlenstats=='True') {
-    colnames(finaldfboot)<-c('bootstrap','Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth','Coverage_breadth_mingenome','Breakpoint_distance','Breakpoints','Alignments',lxcols,nxcols)
+    colnames(finaldfboot)<-c('bootstrap','Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth','Coverage_breadth_mingenome','Breakpoint_distance_d0','Breakpoint_distance_d1','Breakpoints','Alignments','Alignment_pairs',lxcols,nxcols)
   } else if (breakpoint=='True') {
-    colnames(finaldfboot)<-c('bootstrap','Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth','Coverage_breadth_mingenome','Breakpoint_distance','Breakpoints','Alignments')
+    colnames(finaldfboot)<-c('bootstrap','Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth','Coverage_breadth_mingenome','Breakpoint_distance_d0','Breakpoint_distance_d1','Breakpoints','Alignments','Alignment_pairs')
   } else if (alnlenstats=='True') {
     colnames(finaldfboot)<-c('bootstrap','Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth','Coverage_breadth_mingenome',lxcols,nxcols)  
   } else {
