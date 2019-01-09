@@ -34,6 +34,7 @@ parser.add_argument('-w','--wordsize', help='BLAST word size (default: 38)', def
 parser.add_argument('-t','--threads', help='Number of threads to use (default: 1)', default=1, type=int)
 parser.add_argument('-b','--boot', help='Number of bootstraps to run (default: no bootstrapping)', default=0, type=positiveint)
 parser.add_argument('-d','--distscore', help='Distance score to use to construct tree (can specify multiple parameters; default: DistanceScore_d8 DistanceScore_d9)', nargs='+', default=['DistanceScore_d8', 'DistanceScore_d9'], choices=['DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9'], metavar='',type=str)
+parser.add_argument('-m','--treemethod', help='Tree building method (can specify dendrogram and/or phylogeny, or none (i.e. no tree will be plotted); default: dendrogram)', nargs='+', default=['dendrogram'], choices=['dendrogram','phylogeny','none'], metavar='',type=str)
 parser.add_argument('--breakpoint', action='store_true', help='Calculate breakpoint statistics (default: do not calculate)')
 parser.add_argument('--alnlenstats', action='store_true', help='Calculate alignment length distribution statistics (default: do not calculate)')
 args = parser.parse_args()
@@ -146,12 +147,22 @@ runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads),
 laterruntime=runtime()
 print(laterruntime-startruntime, 'runtime; finished trimming alignments')
 if blasttype=='allvallpairwise':
-    linecount=int(runsubprocess(['wc -l < %s/included.txt'%outputpath],shell=True))
-    if linecount < 3:
-        print('Warning: there are only %i samples: a dendrogram cannot be constructed'%linecount)
-    else:
-        phyargs=['Rscript','%s/phylogeny.R'%sourcedir,outputpath,str(args.threads),str(args.boot)]
-        phyargs.extend(args.distscore)
-        runsubprocess(phyargs)
-        laterruntime=runtime()
-        print(laterruntime-startruntime, 'runtime; finished plotting phylogeny using distance score(s): %s'%args.distscore)
+    if 'none' not in args.treemethod:
+      if 'dendrogram' in args.treemethod:
+          dendrogram='True'
+      else:
+          dendrogram='False'
+      if 'phylogeny' in args.treemethod:
+          phylogeny='True'
+      else:
+          phylogeny='False'
+          
+      linecount=int(runsubprocess(['wc -l < %s/included.txt'%outputpath],shell=True))
+      if linecount < 3:
+          print('Warning: there are only %i samples: a tree cannot be constructed'%linecount)
+      else:
+          treeargs=['Rscript','%s/tree.R'%sourcedir,outputpath,str(args.threads),str(args.boot),dendrogram,phylogeny]
+          treeargs.extend(args.distscore)
+          runsubprocess(treeargs)
+          laterruntime=runtime()
+          print(laterruntime-startruntime, 'runtime; finished plotting tree(s) using distance score(s): %s'%args.distscore)

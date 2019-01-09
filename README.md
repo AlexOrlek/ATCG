@@ -123,8 +123,8 @@ A paper describing the methods will be written shortly, and further information 
 By default, the number of threads is 1, but multi-threading is recommended to reduce computing time; the number of threads to use is specified using the `-t` flag; the value must not exceed the number of threads available on your machine. 
 By default, breakpoint distances and alignment length distribution statistics are not calculated.
 Calculation of breakpoint distances (measuring structural similarity) is specified using the `--breakpoint` flag.
-Calculation of alignment length distribution statistics is specified using the `--alnlenstats` flag. The alignment length statistics provide information on the distribution of BLAST alignment lengths and are analogous to the widely used [assembly contiguity statistics](https://www.molecularecologist.com/2017/03/whats-n50/) e.g N50/L50.
-For all-vs-all comparison, the distance metric(s) used to build tree(s) can be specified in a space-separated list using the `-d` flag; by default, DistanceScore_d8 and DistanceScore_d9 are used, producing 2 correpsonding trees.
+Calculation of alignment length distribution statistics is specified using the `--alnlenstats` flag. The alignment length statistics provide information on the distribution of BLAST alignment lengths and are analogous to the widely used [assembly contiguity statistics](https://www.molecularecologist.com/2017/03/whats-n50/) e.g N50/L50.<br>
+For all-vs-all comparison, the distance metric(s) used to build tree(s) can be specified in a space-separated list using the `-d` flag; by default, DistanceScore_d8 and DistanceScore_d9 are used, producing 2 corresponding trees. The tree building method(s) can be specified using the `-m` flag; options are: 'dendrogram', 'phylogeny', 'none'. By default, a dendrogram is built using [hierarchical clustering](https://www.rdocumentation.org/packages/fastcluster/versions/1.1.25/topics/hclust) with the complete linkage method. If the phylogeny option is provided, a phylogenetic tree will be built using the balanced minimum evolution method ([Desper and Gascuel 2002](https://www.ncbi.nlm.nih.gov/pubmed/12487758)). If the none optiion is specified, then no trees will be built. If both dendrogram and phylogeny options are provided in a space-separated list, then trees will be constructed using both methods.
 
 `atcg.py -s genomes.fasta -o output-directory -t 8 --breakpoint --alnlenstats` runs the pipeline using 8 threads, with calculation of breakpoint distances and alignment length distribution statistics.
 
@@ -150,13 +150,14 @@ blastdbfilepaths.tsv   | genomes and corresponding BLAST database file paths
 seqlengths.tsv         | genomes and their lengths in bp
 output/		       | directory containing output files described below
 distancestats.tsv      | columns of distance statistics for each unique pairwise combination of genomes
-tree_[score].pdf       | tree generated using a specified distance score column from the distancestats.tsv file; plotted as a pdf
-tree_[score].rds       | as above, but stored as an [rds file](https://stat.ethz.ch/R-manual/R-devel/library/base/html/readRDS.html) which can be read, and the tree replotted 
+dend_[score].pdf       | tree generated using a specified distance score column from the distancestats.tsv file; plotted as a pdf
+dend_[score].rds       | as above, but stored as an [rds file](https://stat.ethz.ch/R-manual/R-devel/library/base/html/readRDS.html) which can be read, and the tree replotted 
 distobject_[score].rds | a "dist" object distance matrix derived from distancestats.tsv, stored as an rds file
 
-If bootstrapping is specified, a pdf showing the original tree with bootstrap confidence values (tree\_[score]\_bootstrapped.pdf) is produced instead of tree_[score].pdf. Also, the following additional files will be generated in the output directory:<br>
-A file containing distance statistics for each bootstrap replicate (distancestats_bootstrapped.tsv)<br>
-A list of replicate trees, that were used to calculate confidence values for the original tree, stored as an rds file (tree\_[score]\_bootstrapped.rds)
+* If bootstrapping is specified, a pdf showing the original tree with bootstrap confidence values (dend\_[score]\_bootstrapped.pdf) is produced instead of tree_[score].pdf. Also, the following additional files will be generated in the output directory:<br>
+    * A file containing distance statistics for each bootstrap replicate (distancestats_bootstrapped.tsv)<br>
+    * A list of replicate trees, that were used to calculate confidence values for the original tree, stored as an rds file (dend\_[score]\_bootstrapped.rds)
+* If 'phylogeny' is specified as the tree building method, then files with the phylo_ prefix will be produced, where currently the dend_ prefix is shown
 
 
 # Example

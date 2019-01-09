@@ -10,10 +10,12 @@ library('doParallel')
 threads=as.integer(args[2])
 boot=as.integer(args[3])
 #network=as.character(args[4]) #true or false
-distargs=args[4:length(args)]
+dendrogram=as.character(args[4]) #true or false
+phylogeny=as.character(args[5]) #true or false
+distargs=args[6:length(args)]
 
 
-getphy<-function(myreport,distarg,getmatrix=FALSE,getnumsamples=FALSE) {
+getdist<-function(myreport,distarg,getnumsamples=TRUE) {
   samples1<-as.character(sort(unique(myreport$Genome1)))
   samples<-sort(unique(c(as.vector(myreport$Genome1),as.vector(myreport$Genome2))))
   numsamples<-length(samples)
@@ -27,7 +29,7 @@ getphy<-function(myreport,distarg,getmatrix=FALSE,getnumsamples=FALSE) {
     myreportlist[[mysample]]<-myreport[myreport$Genome1==mysample,scorecols]
   }
   
-  #make matrix
+  #make distance matrix
   maxdist<-2*(max(myreport[,distarg]))
   
   for(i in 1:length(samples)) {
@@ -59,25 +61,30 @@ getphy<-function(myreport,distarg,getmatrix=FALSE,getnumsamples=FALSE) {
   rownames(myreportmatrix)<-samples
   myreportmatrix[upper.tri(myreportmatrix, diag=F)]<-NA #assign upper triangle values (excluding diagonals) to NA
   diag(myreportmatrix)<-0 #assign diagnonals to 0 distance
-  d<-as.dist(myreportmatrix) #convert distance matrix to dist structure that can be used as input for neighbornet or phylogeny
+  d<-as.dist(myreportmatrix) #convert distance matrix to dist structure that can be used as input for tree
 
-  #make phylogeny
-  myphy<-fastme.bal(d, nni = TRUE, spr = TRUE, tbr = TRUE)
-
-  if (getmatrix==TRUE && getnumsamples==TRUE) {
-     return(list(myphy,d,numsamples))
-  } else if (getmatrix==TRUE) {
-     return(list(myphy,d))
-  } else if (getnumsamples==TRUE) {
-    return(list(myphy,numsamples))
+  if (getnumsamples==TRUE) {
+    return(list(d,numsamples))
   } else {
-    return(myphy)
+    return(d)
   }
+
 }
 
 
+getdend<-function(d) {
+  mydend<-as.phylo(hclust(d)) #complete linkage used by default
+  return(mydend)
+}
+
+getphy<-function(d) {
+  myphylo<-fastme.bal(d, nni = TRUE, spr = TRUE, tbr = TRUE)
+  myphylo$edge.length[myphylo$edge.length<0]<-0
+  return(myphylo)
+}
+
 #if no bootstrapping is specified, plot tree using distancestats.tsv data, otherwise use bootstrapped distance scores in order to plot distancestats.tsv tree + bootstrap confidence values
-#if phylogenetic network is specified, plot network in addition to tree using matrix from distancestats.tsv
+
 
 #read distancestats and make sure data is ordered data by sample name
 myreport<-read.table(gsubfn('%1', list('%1'=args[1]),'%1/output/distancestats.tsv'), header = TRUE, sep='\t')
@@ -85,16 +92,14 @@ myreport<-myreport[order(myreport$Genome1,myreport$Genome2),]
 
 
 for (distarg in distargs) {
-  #get original phylogeny
-  phyout<-getphy(myreport,distarg,getmatrix=TRUE,getnumsamples=TRUE)
-  originalphy<-phyout[[1]]
-  originalphy$edge.length[originalphy$edge.length<0]<-0
-  mymatrix=phyout[[2]]
-  numsamples<-phyout[[3]]
-
+  #get distance matrix and save as rds
+  distout<-getdist(myreport,distarg)
+  distobj=distout[[1]]
+  numsamples<-distout[[2]]
   writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/distobject_%2.rds')
-  saveRDS(mymatrix,writefilepath)
+  saveRDS(distobj,writefilepath)
 
+  #set plotting dimensions based on number of samples                                                                                                                                                       
   height=(numsamples%/%5)*5
   width=(numsamples%/%5)*3
   if (height<15) {
@@ -103,15 +108,36 @@ for (distarg in distargs) {
   if (width<10) {
     width=10
   }
+
+  #get original dendrogram/phylogeny
+  if (dendrogram=='True') {
+    originaldend<-getdend(distobj)
+  }
+
+  if (phylogeny=='True') {
+    originalphy<-getphy(distobj)
+  }
   
   if (boot==0) {
-    writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/tree_%2.pdf')
-    pdf(writefilepath,width,height)
-    par(mar = c(5,2,2,10)) #bottom left top right N.B this must come below pdf command 
-    plot(originalphy)
-    dev.off()
-    writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/tree_%2.rds')
-    saveRDS(originalphy,writefilepath)
+    if (dendrogram=='True') {
+      writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/dend_%2.pdf')
+      pdf(writefilepath,width,height)
+      par(mar = c(5,2,2,10)) #bottom left top right N.B this must come below pdf command 
+      plot(originaldend)
+      dev.off()
+      writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/dend_%2.rds')
+      saveRDS(originaldend,writefilepath)
+    }
+
+    if (phylogeny=='True') {
+      writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/phylo_%2.pdf')
+      pdf(writefilepath,width,height)
+      par(mar = c(5,2,2,10)) #bottom left top right N.B this must come below pdf command 
+      plot(originalphy)
+      dev.off()
+      writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/phylo_%2.rds')
+      saveRDS(originalphy,writefilepath)
+    }
 
   } else {
     #get bootstrapped phylogenies
@@ -122,32 +148,53 @@ for (distarg in distargs) {
     cl<-makeCluster(as.integer(threads))
     registerDoParallel(cl)
 
-    bootphys<-foreach(i=1:length(names(myreportbootsplit)), .packages=c('ape')) %dopar% {
+    bootdists<-foreach(i=1:length(names(myreportbootsplit)), .packages=c('ape')) %dopar% {
       bootname<-names(myreportbootsplit)[i]
-      phyout<-getphy(myreportbootsplit[[bootname]],distarg,getnumsamples=FALSE)
-      print(list(phyout))
+      distout<-getdist(myreportbootsplit[[bootname]],distarg,getnumsamples=FALSE)
+      print(distout)
     }
 
     stopCluster(cl)
-    names(bootphys)<-names(myreportbootsplit)
-    bootphys<-lapply(bootphys, function(l) l[[1]])
-
-    boot.clades<-prop.clades(originalphy, bootphys) #if a clade of the original tree is not represented in any of the bootstrap trees, the node support value will be 'NA'; convert to 0; express values as percentage; then re-convert 0s + convert other low values to NA
-    boot.clades[is.na(boot.clades)]<-0
-    boot.clades<-round(boot.clades/boot,2)*100 #express as percentage
-    boot.clades[boot.clades<50]<-NA
     
-    writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/tree_%2_bootstrapped.pdf')
-    pdf(writefilepath,width,height)
-    par(mar = c(5,2,2,10)) 
-    plot(originalphy)
-    nodelabels(boot.clades,bg="white",frame="none",cex=0.8,adj=c(1.1,-0.4))
-    dev.off()
-    writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/tree_%2.rds')
-    saveRDS(originalphy,writefilepath)
-    writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/tree_%2_bootstrapped.rds')
-    saveRDS(boot.clades,writefilepath)
+    names(bootdists)<-names(myreportbootsplit)
 
+    if (dendrogram=='True') {
+      bootdends<-lapply(bootdists, getdend)
+      boot.clades<-prop.clades(originaldend, bootdends) #if a clade of the original tree is not represented in any of the bootstrap trees, the node support value will be 'NA'; convert to 0; express values as percentage; then re-convert 0s + convert other low values to NA
+      boot.clades[is.na(boot.clades)]<-0
+      boot.clades<-round(boot.clades/boot,2)*100 #express as percentage
+      boot.clades[boot.clades<50]<-NA
+
+      writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/dend_%2_bootstrapped.pdf')
+      pdf(writefilepath,width,height)
+      par(mar = c(5,2,2,10)) 
+      plot(originaldend)
+      nodelabels(boot.clades,bg="white",frame="none",cex=0.8,adj=c(1.1,-0.4))
+      dev.off()
+      writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/dend_%2.rds')
+      saveRDS(originaldend,writefilepath)
+      writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/dend_%2_bootstrapped.rds')
+      saveRDS(boot.clades,writefilepath)
+    }
+
+    if (phylogeny=='True') {
+      bootphys<-lapply(bootdists, getphy)
+      boot.clades<-prop.clades(originalphy, bootphys) #if a clade of the original tree is not represented in any of the bootstrap trees, the node support value will be 'NA'; convert to 0; express values as percentage; then re-convert 0s + convert other low values to NA
+      boot.clades[is.na(boot.clades)]<-0
+      boot.clades<-round(boot.clades/boot,2)*100 #express as percentage
+      boot.clades[boot.clades<50]<-NA
+
+      writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/phylo_%2_bootstrapped.pdf')
+      pdf(writefilepath,width,height)
+      par(mar = c(5,2,2,10)) 
+      plot(originalphy)
+      nodelabels(boot.clades,bg="white",frame="none",cex=0.8,adj=c(1.1,-0.4))
+      dev.off()
+      writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/phylo_%2.rds')
+      saveRDS(originalphy,writefilepath)
+      writefilepath=gsubfn('%1|%2', list('%1'=args[1],'%2'=distarg), '%1/output/phylo_%2_bootstrapped.rds')
+      saveRDS(boot.clades,writefilepath)
+    }
 
   }
 }
