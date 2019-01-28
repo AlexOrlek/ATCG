@@ -124,7 +124,7 @@ By default, the number of threads is 1, but multi-threading is recommended to re
 By default, breakpoint distances and alignment length distribution statistics are not calculated.
 Calculation of breakpoint distances (measuring structural similarity) is specified using the `--breakpoint` flag.
 Calculation of alignment length distribution statistics is specified using the `--alnlenstats` flag. The alignment length statistics provide information on the distribution of BLAST alignment lengths and are analogous to the widely used [assembly contiguity statistics](https://www.molecularecologist.com/2017/03/whats-n50/) e.g N50/L50.<br>
-For all-vs-all comparison, the distance metric(s) used to build tree(s) can be specified in a space-separated list using the `-d` flag; by default, DistanceScore_d8 and DistanceScore_d9 are used, producing 2 corresponding trees. The tree building method(s) can be specified using the `-m` flag; options are: 'dendrogram', 'phylogeny', 'none'. By default, a dendrogram is built using [hierarchical clustering](https://www.rdocumentation.org/packages/fastcluster/versions/1.1.25/topics/hclust) with the complete linkage method. If the phylogeny option is provided, a phylogenetic tree will be built using the balanced minimum evolution method ([Desper and Gascuel 2002](https://www.ncbi.nlm.nih.gov/pubmed/12487758)). If the none optiion is specified, then no trees will be built. If both dendrogram and phylogeny options are provided in a space-separated list, then trees will be constructed using both methods.
+For all-vs-all comparison, the distance metric(s) used to build tree(s) can be specified in a space-separated list using the `-d` flag; by default, DistanceScore_d8 and DistanceScore_d9 are used, producing 2 corresponding trees. The tree building method(s) can be specified using the `-m` flag; options are: 'dendrogram', 'phylogeny', 'none'. By default, a dendrogram is built using [hierarchical clustering](https://www.rdocumentation.org/packages/fastcluster/versions/1.1.25/topics/hclust) with the complete linkage method. If the phylogeny option is provided, a phylogenetic tree will be built using the balanced minimum evolution method ([Desper and Gascuel 2002](https://www.ncbi.nlm.nih.gov/pubmed/12487758)). If the none option is specified, then no trees will be built. If both dendrogram and phylogeny options are provided in a space-separated list, then trees will be constructed using both methods.
 
 `atcg.py -s genomes.fasta -o output-directory -t 8 --breakpoint --alnlenstats` runs the pipeline using 8 threads, with calculation of breakpoint distances and alignment length distribution statistics.
 
@@ -145,9 +145,9 @@ splitfastas/           | directory containing FASTA files (and corresponding BLA
 blast/		       | directory containing tsv files of blast alignments for each genome
 included.txt           | names of genomes with detected blast alignments, that will therefore appear in the distancestats.tsv file
 excluded.txt	       | names of any genomes with no detected blast alignments (this file may well be blank)
-fastafilepaths.tsv     | genomes and corresponding FASTA file paths
-blastdbfilepaths.tsv   | genomes and corresponding BLAST database file paths
-seqlengths.tsv         | genomes and their lengths in bp
+fastafilepaths.tsv     | genome names and corresponding FASTA file paths
+blastdbfilepaths.tsv   | genome names and corresponding BLAST database file paths
+seqlengths.tsv         | genome names and their lengths in bp
 output/		       | directory containing output files described below
 distancestats.tsv      | columns of distance statistics for each unique pairwise combination of genomes
 dend_[score].pdf       | tree generated using a specified distance score column from the distancestats.tsv file; plotted as a pdf

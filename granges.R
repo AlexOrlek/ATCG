@@ -14,6 +14,9 @@ cores=as.integer(args[2])
 breakpoint=as.character(args[3])
 alnlenstats=as.character(args[4])
 boot=as.integer(args[5])
+alnrankmethod=as.character(args[6])
+lengthfilter=as.integer(args[7])
+
 
 ###define functions
 
@@ -81,6 +84,7 @@ addcols<-function(x) {
   mcols(x)$pid<-pid[myinputhsps]
   mcols(x)$mystrand<-mystrand[myinputhsps]
   mcols(x)$snames<-snames[myinputhsps] #!!!ADDED
+  mcols(x)$alnlen<-alnlen[myinputhsps] #added so that short alignments can be filtered prior to breakpoint calculation
   return(x)
 }
 
@@ -257,6 +261,13 @@ BPfunc<-function(x,y) {  #apply to granges objects
 
 
 breakpointcalc<-function(qtrimmed,strimmed,mydf) {
+  #first filter short alignments
+  qtrimmed<-lapply(qtrimmed, filtershortalignments)
+  strimmed<-lapply(qtrimmed, filtershortalignments)
+  includedindices<-lapply(qtrimmed,length)>0
+  qtrimmed<-qtrimmed[includedindices]
+  strimmed<-strimmed[includedindices]
+  #split by contig
   qcontigsplit<-lapply(qtrimmed, function(x) split(x,bpsplit[mcols(x)$inputhsp])) 
   scontigsplit<-lapply(strimmed, function(x) split(x,bpsplit[mcols(x)$inputhsp])) #nested lists- need to split by query and subject contigs before calculating breakpoints
   bpout<-list()
@@ -274,9 +285,16 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
   mydfbp<-as.data.frame(do.call(rbind, bpout))
   colnames(mydfbp)<-c('breakpoints','alignments','pairs')
   mydfbp<-cbind(querysample=rownames(mydfbp),subjectsample=rep(sample,nrow(mydfbp)),mydfbp)
-  #merge dataframes
-  myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"))
+  #merge dataframes; replace missing breakpoint data with NA where necessary (if all alignments have been filtered due to filtered) - use all=TRUE argument to achieve NA missing cell replacement
+  myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"),all=TRUE)
   return(myfinaldf)
+}
+
+
+
+filtershortalignments<-function(x,lengthfilter) {
+  includedindices<-mcols(x)$alnlen>lengthfilter
+  return(x[includedindices])
 }
 
 
@@ -351,8 +369,13 @@ statsfunc<-function(stats, breakpoint,mygenomelenvector,mygenomelen,mymingenomel
       breakpoints<-as.numeric(stats$breakpoints)
       alignments<-as.numeric(stats$alignments)
       pairs<-as.numeric(stats$pairs)
-      bpdist<-bpdistcalc(breakpoints,pairs)
-      bpdist2<-as.numeric(breakpoints/as.numeric((hsplength/2000)))#express per kb
+      if (is.na(breakpoints) || is.na(pairs)) {
+        bpdist=NA
+        bpdist2=NA
+      } else {
+         bpdist<-bpdistcalc(breakpoints,pairs)
+         bpdist2<-as.numeric(breakpoints/as.numeric((hsplength/2000)))#express per kb
+      }
       returnvector<-c(returnvector,bpdist,bpdist2,breakpoints,alignments,pairs)
     }
     if (alnlenstats=='True') {
@@ -439,12 +462,13 @@ allsampledflist<-list()
 lxcols<-c('l10','l20','l30','l40','l50','l60','l70','l80','l90')
 nxcols<-c('n10','n20','n30','n40','n50','n60','n70','n80','n90')
 
+
 allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRanges','purrr','data.table')) %dopar% {
     #read alignmnents file for given sample
     sample<-samples[i]
-    report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,4,7,8,9,10,17),sep='\t') #same subject, different queries    
+    report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,4,7,8,9,10,12,17),sep='\t') #same subject, different queries    
     #colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
-    colnames(report)<-c('qname','sname','pid','alnlen','qstart','qend','sstart','send','strand')
+    colnames(report)<-c('qname','sname','pid','alnlen','qstart','qend','sstart','send','bitscore','strand')
     #get information for shifting subject ranges where there are multiple contigs (below)
     seqlenreportseqs<-sapply(strsplit(as.vector(seqlenreport$sequence),'|',fixed=T),pastefunction)
     reformattedsname<-as.factor(sapply(strsplit(as.vector(report$sname),"|",fixed=T),pastefunction))
@@ -502,7 +526,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #query disjoin
     gr2<-disjoin(qgr,with.revmap=TRUE,ignore.strand=TRUE)
     revmap<-gr2$revmap
-    tophsp<-unlist(lapply(revmap, function(x) x[which.max(alnlen[x])])) ##!changed qalnlen[x] to alnlen[x] - improves agreement between query/subject trimming in terms of which alignments are retained, avoiding excessive alignment filtering when finalhsps are selected as an intersection of query/subject hsps.
+    tophsp<-unlist(lapply(revmap, function(x) x[which.max(report[alnrankmethod][x])])) ##!changed alnlen[x] to alnrankmethod for flexibility; !changed qalnlen[x] to alnlen[x] - improves agreement between query/subject trimming in terms of which alignments are retained, avoiding excessive alignment filtering when finalhsps are selected as an intersection of query/subject hsps.
     mcols(gr2)$inputhsp<-tophsp
     mcols(gr2)$revmap<-NULL
     grsplit<-split(gr2,seqnames(gr2)) #split by seqnames i.e. one list per paired sample                                            
@@ -510,12 +534,12 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #subject disjoin
     gr2<-disjoin(sgr,with.revmap=TRUE,ignore.strand=TRUE)
     revmap<-gr2$revmap
-    tophsp<-unlist(lapply(revmap, function(x) x[which.max(alnlen[x])])) ##!changed salnlen[x] to alnlen[x]
+    tophsp<-unlist(lapply(revmap, function(x) x[which.max(report[alnrankmethod][x])]))
     mcols(gr2)$inputhsp<-tophsp
     mcols(gr2)$revmap<-NULL
     grsplit<-split(gr2,seqnames(gr2)) #split by seqnames i.e. one list per paired sample
     sreducedoutput<-lapply(grsplit, function(x) x=splitreducecombine(x))
-    #add pid, strand, and subject name
+    #add pid, strand, subject name, and alignment length
     qfinal<-lapply(qreducedoutput, function(x) x=addcols(x))
     sfinal<-lapply(sreducedoutput, function(x) x=addcols(x))
     #get pre-trimmmed hsplength
