@@ -40,6 +40,45 @@ getstats<-function(x) {
 }
 
 
+#range shifting function
+rangeshifting<-function(reformattedname, seqlenreport, seqlenreportseqs) {  #reformatted name is seqnames in sample|contig format; seqlenreport is original seqlen report; seqlenreportseqs are the sequences in sample|contig format from the seqlenreport
+  genomes<-as.factor(sapply(strsplit(as.vector(reformattedname),'|',fixed=T), function(x) x[1]))
+  genomesplit<-split(reformattedname,genomes)
+  
+  #get samplecontiglenslist and sampleindiceslist; nested lists; for each genome, gives the contig lengths per unique contig name, ordered according to sampleindices 
+  samplecontiglenslist<-list()
+  sampleindiceslist<-list()
+  for (i in 1:length(genomesplit)) {
+    samplename<-as.vector(genomesplit[[i]])
+    samplecontigs<-unique(samplename)
+    samplecontiglens<-as.vector(unlist(seqlenreport[seqlenreportseqs %in% samplecontigs,2]))
+    sampleindices<-as.numeric(as.factor(samplename))
+    samplecontiglenslist[[i]]<-samplecontiglens
+    sampleindiceslist[[i]]<-sampleindices
+  }
+  #get vector of add lengths from nested per genome lists of contig lengths and indices
+  addlens<-vector()
+  for (i in 1:length(samplecontiglenslist)) {
+    samplecontiglens<-samplecontiglenslist[[i]]
+    sampleindices<-sampleindiceslist[[i]]
+    for (j in 1:length(samplecontiglens)) {
+      if (j==1) {
+        myindices<-which(sampleindices==j)
+        addlen<-0
+        addlen<-rep(addlen,length(myindices))
+        addlens<-c(addlens,addlen)
+        next
+      }  
+      myindices<-which(sampleindices==j)
+      addlen<-sum(samplecontiglens[c(1:(j-1))])
+      addlen<-rep(addlen,length(myindices))
+      addlens<-c(addlens,addlen)
+    }
+  }
+  return(addlens)
+}
+
+
 #trimming functions
 reducefunction<-function(x) {
   #reduces (joins contiguous) disjoint ranges, after splitting by input hsp; if there are discontiguous ranges (due to alignment being split in two - if it's longer on query/subject but is considered suboptimal according to blast table alignment length) selects longest range
@@ -262,8 +301,8 @@ BPfunc<-function(x,y) {  #apply to granges objects
 
 breakpointcalc<-function(qtrimmed,strimmed,mydf) {
   #first filter short alignments
-  qtrimmed<-lapply(qtrimmed, filtershortalignments)
-  strimmed<-lapply(qtrimmed, filtershortalignments)
+  qtrimmed<-lapply(qtrimmed, filtershortalignments, lengthfilter=lengthfilter)
+  strimmed<-lapply(strimmed, filtershortalignments, lengthfilter=lengthfilter)
   includedindices<-lapply(qtrimmed,length)>0
   qtrimmed<-qtrimmed[includedindices]
   strimmed<-strimmed[includedindices]
@@ -469,17 +508,12 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,4,7,8,9,10,12,17),sep='\t') #same subject, different queries    
     #colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
     colnames(report)<-c('qname','sname','pid','alnlen','qstart','qend','sstart','send','bitscore','strand')
-    #get information for shifting subject ranges where there are multiple contigs (below)
+    #get information for shifting query and subject ranges where there are multiple contigs)
     seqlenreportseqs<-sapply(strsplit(as.vector(seqlenreport$sequence),'|',fixed=T),pastefunction)
-    reformattedsname<-as.factor(sapply(strsplit(as.vector(report$sname),"|",fixed=T),pastefunction))
-    samplescontigs<-levels(reformattedsname)
-    samplescontiglens<-seqlenreport[seqlenreportseqs %in% samplescontigs,2]
-    samplesindices<-as.numeric(reformattedsname)
-    #get information for shifting query ranges where there are multiple contigs (below)
     reformattedqname<-as.factor(sapply(strsplit(as.vector(report$qname),"|",fixed=T),pastefunction))
-    sampleqcontigs<-levels(reformattedqname)
-    sampleqcontiglens<-seqlenreport[seqlenreportseqs %in% sampleqcontigs,2]
-    sampleqindices<-as.numeric(reformattedqname)
+    reformattedsname<-as.factor(sapply(strsplit(as.vector(report$sname),"|",fixed=T),pastefunction))
+    addqlens<-rangeshifting(reformattedqname, seqlenreport, seqlenreportseqs)
+    addslens<-rangeshifting(reformattedsname, seqlenreport, seqlenreportseqs)
     #
     if (breakpoint=='True') {
         bpsplit<-paste(reformattedqname,reformattedsname,sep='_') #required for breakpoint calculation
@@ -496,37 +530,22 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     sgr<-GRanges(seqnames = report$qname, ranges = IRanges(start=(report$sstart), end= (report$send)), strand = (report$strand))
     #qalnlen<-width(qgr)
     #salnlen<-width(sgr)
-    #shift subject ranges where there are multiple contigs
-    for (j in seq_len(nrow(samplescontiglens))) {
-      if (j==1) {
-        next
-      }
-      myindices<-which(samplesindices==j)
-      addlen<-sum(samplescontiglens[c(1:(j-1))])
-      sgr[myindices]<-shift(sgr[myindices],addlen)
-    }
-    #shift query ranges where there are multiple contigs
-    for (j in seq_len(nrow(sampleqcontiglens))) {
-      if (j==1) {
-        next
-      }
-      myindices<-which(sampleqindices==j)
-      addlen<-sum(sampleqcontiglens[c(1:(j-1))])
-      qgr[myindices]<-shift(qgr[myindices],addlen)
-    }
+    #shift query and subject ranges where there are multiple contigs
+    qgr<-shift(qgr,addqlens)
+    sgr<-shift(sgr,addslens)
     #overwrite report with shifted forward ranges
-    if (nrow(samplescontiglens)>1) {
+    if (sum(addslens)>0) {
        report$sstart<-start(sgr)
        report$send<-end(sgr)
     }
-    if (nrow(sampleqcontiglens)>1) {
+    if (sum(addqlens)>0) {
        report$qstart<-start(qgr)
        report$qend<-end(qgr)
     }
     #query disjoin
     gr2<-disjoin(qgr,with.revmap=TRUE,ignore.strand=TRUE)
     revmap<-gr2$revmap
-    tophsp<-unlist(lapply(revmap, function(x) x[which.max(report[alnrankmethod][x])])) ##!changed alnlen[x] to alnrankmethod for flexibility; !changed qalnlen[x] to alnlen[x] - improves agreement between query/subject trimming in terms of which alignments are retained, avoiding excessive alignment filtering when finalhsps are selected as an intersection of query/subject hsps.
+    tophsp<-unlist(lapply(revmap, function(x) x[which.max(report[,get(alnrankmethod)][x])])) ##!changed alnlen[x] to alnrankmethod for flexibility; !changed qalnlen[x] to alnlen[x] - improves agreement between query/subject trimming in terms of which alignments are retained, avoiding excessive alignment filtering when finalhsps are selected as an intersection of query/subject hsps.
     mcols(gr2)$inputhsp<-tophsp
     mcols(gr2)$revmap<-NULL
     grsplit<-split(gr2,seqnames(gr2)) #split by seqnames i.e. one list per paired sample                                            
@@ -534,7 +553,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #subject disjoin
     gr2<-disjoin(sgr,with.revmap=TRUE,ignore.strand=TRUE)
     revmap<-gr2$revmap
-    tophsp<-unlist(lapply(revmap, function(x) x[which.max(report[alnrankmethod][x])]))
+    tophsp<-unlist(lapply(revmap, function(x) x[which.max(report[,get(alnrankmethod)][x])]))
     mcols(gr2)$inputhsp<-tophsp
     mcols(gr2)$revmap<-NULL
     grsplit<-split(gr2,seqnames(gr2)) #split by seqnames i.e. one list per paired sample
