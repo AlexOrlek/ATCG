@@ -39,6 +39,7 @@ parser.add_argument('-m','--treemethod', help='Tree building method (can specify
 parser.add_argument('-r','--alnrankmethod', help='Parameter used for selecting best alignment; default: bitscore)', default=['bitscore'], choices=['bitscore','alnlen','pid'], metavar='',type=str)
 parser.add_argument('--breakpoint', action='store_true', help='Calculate breakpoint statistics (default: do not calculate)')
 parser.add_argument('--alnlenstats', action='store_true', help='Calculate alignment length distribution statistics (default: do not calculate)')
+parser.add_argument('--trimmedalignments', action='store_true', help='Write to file trimmed alignments for each sample (default: do not output)')
 args = parser.parse_args()
 outputpath=os.path.relpath(args.out, cwdir)
 
@@ -103,8 +104,8 @@ if args.sequences==None:
     overlap=len(set(s1fastas).intersection(set(s2fastas)))
     if overlap>0:
         parser.error('there must be no overlap between fasta identifiers contained within the fasta files provided using the -s1 and -s2 flags')
-    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastadir1, fastafiles1, str(args.threads)])
-    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastadir2, fastafiles2, str(args.threads)])
+    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastadir1, fastafiles1, str(args.threads),sourcedir])
+    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastadir2, fastafiles2, str(args.threads),sourcedir])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished creating blast databases')
     p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, str(args.sequences1), blastdbs2, str(args.evalue), str(args.wordsize), str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -138,14 +139,14 @@ if args.sequences==None:
     blastdbs='%s/blastdbfilepaths_combined.tsv'%outputpath
     runsubprocess(['cat %s %s | sort -k1,1V > %s'%(blastdbs1,blastdbs2,blastdbs)],shell=True)
 
-    runsubprocess(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath,blastdbs])
+    runsubprocess(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath,blastdbs,sourcedir])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
     runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences1),str(args.sequences2)])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
 
-runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter)])
+runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.trimmedalignments)])
 laterruntime=runtime()
 print(laterruntime-startruntime, 'runtime; finished trimming alignments')
 if blasttype=='allvallpairwise':

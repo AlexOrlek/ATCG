@@ -16,7 +16,7 @@ alnlenstats=as.character(args[4])
 boot=as.integer(args[5])
 alnrankmethod=as.character(args[6])
 lengthfilter=as.integer(args[7])
-
+outputtrimmedalignments=as.character(args[8])
 
 ###define functions
 
@@ -79,6 +79,21 @@ rangeshifting<-function(reformattedname, seqlenreport, seqlenreportseqs) {  #ref
 }
 
 
+
+#function to convert qtrimmed/strimmed lists to list of single dataframes which can then be written to file
+
+grtodf<-function(qtrimmed,strimmed) {
+  myqdf<-as.data.frame(qtrimmed)
+  mysdf<-as.data.frame(strimmed)
+  colnames(myqdf)<-c('seqnames','qstart','qend', 'qwidth', 'strand',names(mcols(qtrimmed)))
+  colnames(mysdf)<-c('seqnames','sstart','send', 'swidth', 'strand',names(mcols(strimmed)))
+  trimmeddf<-cbind(myqdf[c("seqnames","qcontignames","snames","scontignames","inputhsp","alnlen","pid","mystrand","qstart","qend","qwidth")],mysdf[c("sstart","send","swidth")])
+  colnames(trimmeddf)<-c("qname","qcontig","sname","scontig","originalhspindex","originalalnlen","pid","strand","qstart","qend","qwidth","sstart","send","swidth")
+  return(trimmeddf)
+}
+
+
+
 #trimming functions
 reducefunction<-function(x) {
   #reduces (joins contiguous) disjoint ranges, after splitting by input hsp; if there are discontiguous ranges (due to alignment being split in two - if it's longer on query/subject but is considered suboptimal according to blast table alignment length) selects longest range
@@ -124,6 +139,8 @@ addcols<-function(x) {
   mcols(x)$mystrand<-mystrand[myinputhsps]
   mcols(x)$snames<-snames[myinputhsps] #!!!ADDED
   mcols(x)$alnlen<-alnlen[myinputhsps] #added so that short alignments can be filtered prior to breakpoint calculation
+  mcols(x)$qcontignames<-qcontignames[myinputhsps]
+  mcols(x)$scontignames<-scontignames[myinputhsps]
   return(x)
 }
 
@@ -518,7 +535,9 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     if (breakpoint=='True') {
         bpsplit<-paste(reformattedqname,reformattedsname,sep='_') #required for breakpoint calculation
     }
-    #remove any contig information
+    #remove any contig information; save contig info to variables first
+    qcontignames<-sapply(strsplit(as.vector(report$qname),"|",fixed=T),function(x) x=x[2])
+    scontignames<-sapply(strsplit(as.vector(report$sname),"|",fixed=T),function(x) x=x[2])
     report$qname<-sapply(strsplit(as.vector(report$qname),"|",fixed=T),function(x) x=x[1]) #!!!ADDED
     report$sname<-sapply(strsplit(as.vector(report$sname),"|",fixed=T),function(x) x=x[1])   
     ###disjoin method trimming
@@ -567,7 +586,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     colnames(qhsplenpretrim)<-'qhsplenpretrim'
     colnames(shsplenpretrim)<-'shsplenpretrim'
     #trim alignments
-    if (breakpoint=='True') {
+    if (breakpoint=='True' || outputtrimmedalignments=='True') {
       trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,SIMPLIFY = F)) #!ADDED
       qtrimmed<-trimmedalignments$qfinal
       strimmed<-trimmedalignments$sfinal
@@ -578,8 +597,12 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       qtrimmed<-mapply(trimalignments,qfinal,sfinal,qtrimonly=TRUE)
       qtrimmed<-qtrimmed[lapply(qtrimmed,length)>0]
     }
-    #trimmedalignments<-mapply(trimalignments,qfinal,sfinal)
-    #trimmedalignments<-lapply(split(1:nrow(trimmedalignments), rownames(trimmedalignments)), function(i) trimmedalignments[i,])  #!!!ADDED
+    #write trimmed alignments to file
+    if (outputtrimmedalignments=='True') {
+      trimmeddflist<-mapply(grtodf, qtrimmed, strimmed, SIMPLIFY = FALSE)
+      trimmeddf<-do.call(rbind,trimmeddflist)
+      write.table(trimmeddf, file=gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/output/trimmedalignments_%2.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
+    }
     #get hsp id stats
     mystats<-lapply(qtrimmed,getstats) #!!!CHANGED
     mydf<-as.data.frame(do.call(rbind, mystats)) #convert list of vectors to dataframe
