@@ -1,5 +1,6 @@
 #args = commandArgs(trailingOnly=TRUE)
-args=c('.',1,'True','True',0,'alnlen',1) #arg1: outputpath (current directory); arg2: threads; arg3: run breakpoint calculation; arg4: calculate alignment length statistics; arg5: bootstrapping (0, not running); arg6: best alignment selection parameter; arg7: alignment length filtering threshold 
+args=c('.',1,'True','True',0,'alnlen',1,'True') #arg1: outputpath (current directory); arg2: threads; arg3: run breakpoint calculation; arg4: calculate alignment length statistics; arg5: bootstrapping (0, not running); arg6: best alignment selection parameter; arg7: alignment length filtering threshold; arg[8] output trimmed alignments
+
 library('gsubfn')
 library('GenomicRanges')
 library('purrr')
@@ -9,7 +10,7 @@ library(data.table)
 rbindlist<-data.table::rbindlist
 transpose<-purrr::transpose
 
-#args[1] is filepath to pipeline output folder; args[2] is threads; args[3] is breakpoint stats; args[4] is bootstrap number
+#args[1] is filepath to pipeline output folder; args[2] is threads; args[3] is breakpoint stats; args[4] is alignment length stats; arg[5] is bootstrap number; arg[6] is best alignment selection criterion; arg[7] is length threshold for filtering alignments prior to breakpoint calculation; arg[8] is trimmed alignment output
 
 cores=as.integer(args[2])
 breakpoint=as.character(args[3])
@@ -17,7 +18,7 @@ alnlenstats=as.character(args[4])
 boot=as.integer(args[5])
 alnrankmethod=as.character(args[6])
 lengthfilter=as.integer(args[7])
-
+outputtrimmedalignments=as.character(args[8])
 
 ###define functions
 
@@ -42,42 +43,63 @@ getstats<-function(x) {
 
 
 #range shifting function
-rangeshifting<-function(reformattedname, seqlenreport, seqlenreportseqs) {  #reformatted name is seqnames in sample|contig format; seqlenreport is original seqlen report; seqlenreportseqs are the sequences in sample|contig format from the seqlenreport
+rangeshifting<-function(reformattedname, seqlenreport, seqlenreportseqs) { #reformatted name is seqnames in sample|contig format; seqlenreport is original seqlen report; seqlenreportseqs are the sequences in sample|contig format from the seqlenreport
   genomes<-as.factor(sapply(strsplit(as.vector(reformattedname),'|',fixed=T), function(x) x[1]))
   genomesplit<-split(reformattedname,genomes)
-  
-  #get samplecontiglenslist and sampleindiceslist; nested lists; for each genome, gives the contig lengths per unique contig name, ordered according to sampleindices 
+  #get contiglens and indices
   samplecontiglenslist<-list()
   sampleindiceslist<-list()
-  for (i in 1:length(genomesplit)) {
-    samplename<-as.vector(genomesplit[[i]])
-    samplecontigs<-unique(samplename)
-    samplecontiglens<-as.vector(unlist(seqlenreport[seqlenreportseqs %in% samplecontigs,2]))
-    sampleindices<-as.numeric(as.factor(samplename))
-    samplecontiglenslist[[i]]<-samplecontiglens
-    sampleindiceslist[[i]]<-sampleindices
+  for (a in 1:length(genomesplit)) {
+    samplename<-as.factor(as.vector(genomesplit[[a]]))  #!need to convert to vector first
+    samplecontigs<-levels(samplename)
+    sampleindices<-as.numeric(samplename)
+    samplecontiglens<-numeric(length(samplecontigs))
+    for (b in 1:length(samplecontigs)) {
+      mycontig<-samplecontigs[b]
+      contiglen<-as.vector(unlist(seqlenreport[which(seqlenreportseqs==mycontig),2]))
+      samplecontiglens[b]<-contiglen
+    }
+    samplecontiglenslist[[a]]<-samplecontiglens
+    sampleindiceslist[[a]]<-sampleindices
   }
-  #get vector of add lengths from nested per genome lists of contig lengths and indices
-  addlens<-vector()
-  for (i in 1:length(samplecontiglenslist)) {
-    samplecontiglens<-samplecontiglenslist[[i]]
-    sampleindices<-sampleindiceslist[[i]]
-    for (j in 1:length(samplecontiglens)) {
-      if (j==1) {
-        myindices<-which(sampleindices==j)
+  #get vector of lengths to add from nested per genome lists of contig lengths and indices 
+  alladdlens<-numeric()
+  for (x in 1:length(samplecontiglenslist)) {
+    samplecontiglens<-samplecontiglenslist[[x]]
+    sampleindices<-sampleindiceslist[[x]]
+    addlens<-numeric(length(sampleindices))
+    for (y in 1:length(samplecontiglens)) {
+      if (y==1) {
         addlen<-0
-        addlen<-rep(addlen,length(myindices))
-        addlens<-c(addlens,addlen)
+        myindices<-which(sampleindices==y)
+        addlens[myindices]<-addlen
         next
       }  
-      myindices<-which(sampleindices==j)
-      addlen<-sum(samplecontiglens[c(1:(j-1))])
-      addlen<-rep(addlen,length(myindices))
-      addlens<-c(addlens,addlen)
+      myindices<-which(sampleindices==y)
+      #addlen<-sum(samplecontiglens[c(1:(y-1))])+1 #!NO this is incorrect
+      addlen<-sum(samplecontiglens[c(1:(y-1))])
+      addlens[myindices]<-addlen
     }
+    alladdlens<-c(alladdlens,addlens)  #append addlens from each genome
   }
-  return(addlens)
+  return(alladdlens)
 }
+
+
+
+
+#function to convert qtrimmed/strimmed lists to list of single dataframes which can then be written to file
+
+grtodf<-function(qtrimmed,strimmed) {
+  myqdf<-as.data.frame(qtrimmed)
+  mysdf<-as.data.frame(strimmed)
+  colnames(myqdf)<-c('seqnames','qstart','qend', 'qwidth', 'strand',names(mcols(qtrimmed)))
+  colnames(mysdf)<-c('seqnames','sstart','send', 'swidth', 'strand',names(mcols(strimmed)))
+  trimmeddf<-cbind(myqdf[c("seqnames","qcontignames","snames","scontignames","inputhsp","alnlen","pid","mystrand","qstart","qend","qwidth")],mysdf[c("sstart","send","swidth")])
+  colnames(trimmeddf)<-c("qname","qcontig","sname","scontig","originalhspindex","originalalnlen","pid","strand","qstart","qend","qwidth","sstart","send","swidth")
+  return(trimmeddf)
+}
+
 
 
 #trimming functions
@@ -125,6 +147,8 @@ addcols<-function(x) {
   mcols(x)$mystrand<-mystrand[myinputhsps]
   mcols(x)$snames<-snames[myinputhsps] #!!!ADDED
   mcols(x)$alnlen<-alnlen[myinputhsps] #added so that short alignments can be filtered prior to breakpoint calculation
+  mcols(x)$qcontignames<-qcontignames[myinputhsps]
+  mcols(x)$scontignames<-scontignames[myinputhsps]
   return(x)
 }
 
@@ -519,7 +543,9 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     if (breakpoint=='True') {
         bpsplit<-paste(reformattedqname,reformattedsname,sep='_') #required for breakpoint calculation
     }
-    #remove any contig information
+    #remove any contig information; save contig info to variables first
+    qcontignames<-sapply(strsplit(as.vector(report$qname),"|",fixed=T),function(x) x=x[2])
+    scontignames<-sapply(strsplit(as.vector(report$sname),"|",fixed=T),function(x) x=x[2])
     report$qname<-sapply(strsplit(as.vector(report$qname),"|",fixed=T),function(x) x=x[1]) #!!!ADDED
     report$sname<-sapply(strsplit(as.vector(report$sname),"|",fixed=T),function(x) x=x[1])   
     ###disjoin method trimming
@@ -568,7 +594,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     colnames(qhsplenpretrim)<-'qhsplenpretrim'
     colnames(shsplenpretrim)<-'shsplenpretrim'
     #trim alignments
-    if (breakpoint=='True') {
+    if (breakpoint=='True' || outputtrimmedalignments=='True') {
       trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,SIMPLIFY = F)) #!ADDED
       qtrimmed<-trimmedalignments$qfinal
       strimmed<-trimmedalignments$sfinal
@@ -579,8 +605,12 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       qtrimmed<-mapply(trimalignments,qfinal,sfinal,qtrimonly=TRUE)
       qtrimmed<-qtrimmed[lapply(qtrimmed,length)>0]
     }
-    #trimmedalignments<-mapply(trimalignments,qfinal,sfinal)
-    #trimmedalignments<-lapply(split(1:nrow(trimmedalignments), rownames(trimmedalignments)), function(i) trimmedalignments[i,])  #!!!ADDED
+    #write trimmed alignments to file
+    if (outputtrimmedalignments=='True') {
+      trimmeddflist<-mapply(grtodf, qtrimmed, strimmed, SIMPLIFY = FALSE)
+      trimmeddf<-do.call(rbind,trimmeddflist)
+      write.table(trimmeddf, file=gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/output/trimmedalignments_%2.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
+    }
     #get hsp id stats
     mystats<-lapply(qtrimmed,getstats) #!!!CHANGED
     mydf<-as.data.frame(do.call(rbind, mystats)) #convert list of vectors to dataframe

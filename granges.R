@@ -8,7 +8,7 @@ library(data.table)
 rbindlist<-data.table::rbindlist
 transpose<-purrr::transpose
 
-#args[1] is filepath to pipeline output folder; args[2] is threads; args[3] is breakpoint stats; args[4] is bootstrap number
+#args[1] is filepath to pipeline output folder; args[2] is threads; args[3] is breakpoint stats; args[4] is alignment length stats; arg[5] is bootstrap number; arg[6] is best alignment selection criterion; arg[7] is length threshold for filtering alignments prior to breakpoint calculation; arg[8] is trimmed alignment output
 
 cores=as.integer(args[2])
 breakpoint=as.character(args[3])
@@ -41,42 +41,48 @@ getstats<-function(x) {
 
 
 #range shifting function
-rangeshifting<-function(reformattedname, seqlenreport, seqlenreportseqs) {  #reformatted name is seqnames in sample|contig format; seqlenreport is original seqlen report; seqlenreportseqs are the sequences in sample|contig format from the seqlenreport
+rangeshifting<-function(reformattedname, seqlenreport, seqlenreportseqs) { #reformatted name is seqnames in sample|contig format; seqlenreport is original seqlen report; seqlenreportseqs are the sequences in sample|contig format from the seqlenreport
   genomes<-as.factor(sapply(strsplit(as.vector(reformattedname),'|',fixed=T), function(x) x[1]))
   genomesplit<-split(reformattedname,genomes)
-  
-  #get samplecontiglenslist and sampleindiceslist; nested lists; for each genome, gives the contig lengths per unique contig name, ordered according to sampleindices 
+  #get contiglens and indices
   samplecontiglenslist<-list()
   sampleindiceslist<-list()
-  for (i in 1:length(genomesplit)) {
-    samplename<-as.vector(genomesplit[[i]])
-    samplecontigs<-unique(samplename)
-    samplecontiglens<-as.vector(unlist(seqlenreport[seqlenreportseqs %in% samplecontigs,2]))
-    sampleindices<-as.numeric(as.factor(samplename))
-    samplecontiglenslist[[i]]<-samplecontiglens
-    sampleindiceslist[[i]]<-sampleindices
+  for (a in 1:length(genomesplit)) {
+    samplename<-as.factor(as.vector(genomesplit[[a]]))  #!need to convert to vector first
+    samplecontigs<-levels(samplename)
+    sampleindices<-as.numeric(samplename)
+    samplecontiglens<-numeric(length(samplecontigs))
+    for (b in 1:length(samplecontigs)) {
+      mycontig<-samplecontigs[b]
+      contiglen<-as.vector(unlist(seqlenreport[which(seqlenreportseqs==mycontig),2]))
+      samplecontiglens[b]<-contiglen
+    }
+    samplecontiglenslist[[a]]<-samplecontiglens
+    sampleindiceslist[[a]]<-sampleindices
   }
-  #get vector of add lengths from nested per genome lists of contig lengths and indices
-  addlens<-vector()
-  for (i in 1:length(samplecontiglenslist)) {
-    samplecontiglens<-samplecontiglenslist[[i]]
-    sampleindices<-sampleindiceslist[[i]]
-    for (j in 1:length(samplecontiglens)) {
-      if (j==1) {
-        myindices<-which(sampleindices==j)
+  #get vector of lengths to add from nested per genome lists of contig lengths and indices 
+  alladdlens<-numeric()
+  for (x in 1:length(samplecontiglenslist)) {
+    samplecontiglens<-samplecontiglenslist[[x]]
+    sampleindices<-sampleindiceslist[[x]]
+    addlens<-numeric(length(sampleindices))
+    for (y in 1:length(samplecontiglens)) {
+      if (y==1) {
         addlen<-0
-        addlen<-rep(addlen,length(myindices))
-        addlens<-c(addlens,addlen)
+        myindices<-which(sampleindices==y)
+        addlens[myindices]<-addlen
         next
       }  
-      myindices<-which(sampleindices==j)
-      addlen<-sum(samplecontiglens[c(1:(j-1))])
-      addlen<-rep(addlen,length(myindices))
-      addlens<-c(addlens,addlen)
+      myindices<-which(sampleindices==y)
+      #addlen<-sum(samplecontiglens[c(1:(y-1))])+1 #!NO this is incorrect
+      addlen<-sum(samplecontiglens[c(1:(y-1))])
+      addlens[myindices]<-addlen
     }
+    alladdlens<-c(alladdlens,addlens)  #append addlens from each genome
   }
-  return(addlens)
+  return(alladdlens)
 }
+
 
 
 

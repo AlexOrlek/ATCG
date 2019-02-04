@@ -12,7 +12,7 @@ def default_sigpipe():
 
 def positiveint(x):
     x = int(x)
-    if x <= 0:
+    if x < 0:
          raise argparse.ArgumentTypeError("%s is an invalid positive int value" %x)
     return x
 
@@ -36,7 +36,7 @@ parser.add_argument('-b','--boot', help='Number of bootstraps to run (default: n
 parser.add_argument('-l','--lengthfilter', help='Length threshold (in basepairs) used to filter alignments prior to calculating breakpoint distance (default: 800)', default=800, type=positiveint)
 parser.add_argument('-d','--distscore', help='Distance score to use to construct tree (can specify multiple parameters; default: DistanceScore_d8 DistanceScore_d9)', nargs='+', default=['DistanceScore_d8', 'DistanceScore_d9'], choices=['DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9'], metavar='',type=str)
 parser.add_argument('-m','--treemethod', help='Tree building method (can specify dendrogram and/or phylogeny, or none (i.e. no tree will be plotted); default: dendrogram)', nargs='+', default=['dendrogram'], choices=['dendrogram','phylogeny','none'], metavar='',type=str)
-parser.add_argument('-r','--alnrankmethod', help='Parameter used for selecting best alignment; default: bitscore)', default=['bitscore'], choices=['bitscore','alnlen','pid'], metavar='',type=str)
+parser.add_argument('-r','--alnrankmethod', help='Parameter used for selecting best alignment; default: bitscore)', default='bitscore', choices=['bitscore','alnlen','pid'], metavar='',type=str)
 parser.add_argument('--breakpoint', action='store_true', help='Calculate breakpoint statistics (default: do not calculate)')
 parser.add_argument('--alnlenstats', action='store_true', help='Calculate alignment length distribution statistics (default: do not calculate)')
 parser.add_argument('--trimmedalignments', action='store_true', help='Write to file trimmed alignments for each sample (default: do not output)')
