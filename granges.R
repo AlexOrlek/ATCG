@@ -42,14 +42,15 @@ getstats<-function(x) {
 
 #range shifting function
 rangeshifting<-function(reformattedname, seqlenreport, seqlenreportseqs) { #reformatted name is seqnames in sample|contig format; seqlenreport is original seqlen report; seqlenreportseqs are the sequences in sample|contig format from the seqlenreport
-  genomes<-as.factor(sapply(strsplit(as.vector(reformattedname),'|',fixed=T), function(x) x[1]))
+  genomes<-as.vector(sapply(strsplit(as.vector(reformattedname),'|',fixed=T), function(x) x[1]))
+  genomes<-factor(genomes,levels=unique(genomes)) #query genomes not necessarily ordered alphabeticlally so need to specify factor level ordering to match actual order before using factor levels to split
   genomesplit<-split(reformattedname,genomes)
   #get contiglens and indices
   samplecontiglenslist<-list()
   sampleindiceslist<-list()
   for (a in 1:length(genomesplit)) {
     samplename<-as.factor(as.vector(genomesplit[[a]]))  #!need to convert to vector first
-    samplecontigs<-levels(samplename)
+    samplecontigs<-levels(samplename) #levels (corresponding to contigs of a genome) are ordered alphabetically; rangeshifting will follow this alphabetical order through the contigs
     sampleindices<-as.numeric(samplename)
     samplecontiglens<-numeric(length(samplecontigs))
     for (b in 1:length(samplecontigs)) {
@@ -327,6 +328,11 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
   qtrimmed<-lapply(qtrimmed, filtershortalignments, lengthfilter=lengthfilter)
   strimmed<-lapply(strimmed, filtershortalignments, lengthfilter=lengthfilter)
   includedindices<-lapply(qtrimmed,length)>0
+  if (all(includedindices==FALSE)) { #if no alignments remain across all queries after applying length filter, fill dataframe with NAs
+    mydfbp<-cbind(querysample=rownames(mydf),subjectsample=rep(sample,nrow(mydf)),breakpoints=rep(NA,nrow(mydf)),alignments=rep(NA,nrow(mydf)),pairs=rep(NA,nrow(mydf)))
+    myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"),all=TRUE) #all=TRUE is redundant here
+    return(myfinaldf)
+  }
   qtrimmed<-qtrimmed[includedindices]
   strimmed<-strimmed[includedindices]
   #split by contig
@@ -348,7 +354,7 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
   colnames(mydfbp)<-c('breakpoints','alignments','pairs')
   mydfbp<-cbind(querysample=rownames(mydfbp),subjectsample=rep(sample,nrow(mydfbp)),mydfbp)
   #merge dataframes; replace missing breakpoint data with NA where necessary (if all alignments have been filtered due to filtered) - use all=TRUE argument to achieve NA missing cell replacement
-  myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"),all=TRUE)
+  myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"),all=TRUE) #all=TRUE means keep all and fill with NAs
   return(myfinaldf)
 }
 
