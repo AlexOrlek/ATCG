@@ -24,27 +24,42 @@ def runtime():
     return(float(runtime))
 
 
-parser = argparse.ArgumentParser(description='Run pipeline scripts')
-parser.add_argument('-s','--sequences', help='Sequences, for all-vs-all pairwise comparison', required=False)
-parser.add_argument('-s1','--sequences1', help='First set of sequence(s), for pairwise comparison against second set', required=False)
-parser.add_argument('-s2','--sequences2', help='Second set of sequence(s), for pairwise comparison against first set', required=False)
-parser.add_argument('-o','--out', help='Output directory (required)', required=True)
-parser.add_argument('-e','--evalue', help='BLAST e-value cutoff (default: 1e-8)', default=1e-8, type=float) #1e-8 is used in ggdc web pipeline - see Meier-Kolthoff 2014
-parser.add_argument('-w','--wordsize', help='BLAST word size (default: 38)', default=38, type=int) #38 is used in ggdc web pipleine?
-parser.add_argument('-t','--threads', help='Number of threads to use (default: 1)', default=1, type=int)
-parser.add_argument('-b','--boot', help='Number of bootstraps to run (default: no bootstrapping)', default=0, type=positiveint)
-parser.add_argument('-l','--lengthfilter', help='Length threshold (in basepairs) used to filter alignments prior to calculating breakpoint distance (default: 800)', default=800, type=positiveint)
-parser.add_argument('-d','--distscore', help='Distance score to use to construct tree (can specify multiple parameters; default: DistanceScore_d8 DistanceScore_d9)', nargs='+', default=['DistanceScore_d8', 'DistanceScore_d9'], choices=['DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9'], metavar='',type=str)
-parser.add_argument('-m','--treemethod', help='Tree building method (can specify dendrogram and/or phylogeny, or none (i.e. no tree will be plotted); default: dendrogram)', nargs='+', default=['dendrogram'], choices=['dendrogram','phylogeny','none'], metavar='',type=str)
-parser.add_argument('-r','--alnrankmethod', help='Parameter used for selecting best alignment; default: bitscore)', default='bitscore', choices=['bitscore','alnlen','pid'], metavar='',type=str)
-parser.add_argument('--breakpoint', action='store_true', help='Calculate breakpoint statistics (default: do not calculate)')
-parser.add_argument('--alnlenstats', action='store_true', help='Calculate alignment length distribution statistics (default: do not calculate)')
-parser.add_argument('--trimmedalignments', action='store_true', help='Write to file trimmed alignments for each sample (default: do not output)')
+parser = argparse.ArgumentParser(description="ATCG: Alignment Based Tool for Comparative Genomics",add_help=False)
+#Help options
+help_group = parser.add_argument_group('Help')
+help_group.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help='Show this help message and exit.')
+#Input options                                                               
+input_group = parser.add_argument_group('Input')
+input_group.add_argument('-s','--sequences', help='Sequences, for all-vs-all pairwise comparison (required if -1 and -2 flags not provided)', required=False)
+input_group.add_argument('-1','--sequences1', help='First set of sequence(s), for pairwise comparison against second set (required if -s flag not provided)', required=False)
+input_group.add_argument('-2','--sequences2', help='Second set of sequence(s), for pairwise comparison against first set (required if -s flag not provided)', required=False)
+#Output options                                               
+output_group = parser.add_argument_group('Output')
+output_group.add_argument('-o','--out', help='Output directory (required)', required=True)
+output_group.add_argument('-d','--distscore', help='Distance score to use to construct tree; can specify multiple parameters (default: DistanceScore_d8 DistanceScore_d9)', nargs='+', default=['DistanceScore_d8', 'DistanceScore_d9'], choices=['DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9'], metavar='', type=str)
+output_group.add_argument('-m','--treemethod', help='Tree building method; can specify dendrogram and/or phylogeny, or none (i.e. no tree will be plotted); (default: dendrogram)', nargs='+', default=['dendrogram'], choices=['dendrogram','phylogeny','none'], metavar='', type=str)
+output_group.add_argument('--breakpoint', action='store_true', help='If flag is provided, calculate breakpoint statistics (default: do not calculate)')
+output_group.add_argument('--alnlenstats', action='store_true', help='If flag is provided, calculate alignment length distribution statistics (default: do not calculate)')
+output_group.add_argument('--trimmedalignments', action='store_true', help='If flag is provided, write to file trimmed alignments for each sample (default: do not output)')
+#BLAST options                                  
+blast_group = parser.add_argument_group('BLAST options')
+blast_group.add_argument('--evalue', help='BLAST e-value cutoff (default: 1e-8)', default=1e-8, type=float) #1e-8 is used in ggdc web pipeline - see Meier-Kolthoff 2014
+blast_group.add_argument('--wordsize', help='BLAST word size (ATCG default for blastn: 38; ATCG default for dc-megablast: 12)', type=int) #38 is used in ggdc web pipleine?                 
+blast_group.add_argument('--task', help='BLAST task (default: blastn)', default='blastn', choices=['blastn','dc-megablast'], type=str)
+#Alignment filtering options                                                   
+alignment_group = parser.add_argument_group('Alignment filtering options')
+alignment_group.add_argument('-l','--lengthfilter', help='Length threshold (in basepairs) used to filter alignments prior to calculating breakpoint distance (default: 800)', default=800, type=positiveint)
+alignment_group.add_argument('-r','--alnrankmethod', help='Parameter used for selecting best alignment (default: bitscore)', default='bitscore', choices=['bitscore','alnlen','pid'], type=str)
+#Other options
+other_group = parser.add_argument_group('Other')
+other_group.add_argument('-t','--threads', help='Number of threads to use (default: 1)', default=1, type=int)
+other_group.add_argument('-b','--boot', help='Number of bootstraps to run (default: no bootstrapping)', default=0, type=positiveint)
 args = parser.parse_args()
 outputpath=os.path.relpath(args.out, cwdir)
 
-
 startruntime=runtime()
+
+#check sequence input flags used correctly
 if args.sequences==None and args.sequences1==None and args.sequences2==None:
     parser.error('as input, you must either provide --sequences or both --sequences1 and --sequences2')
 if args.sequences!=None and args.sequences1!=None and args.sequences2!=None:
@@ -52,7 +67,21 @@ if args.sequences!=None and args.sequences1!=None and args.sequences2!=None:
 if (args.sequences1==None and args.sequences2!=None) or (args.sequences1!=None and args.sequences2==None):
     parser.error('as input, you must either provide --sequences or both --sequences1 and --sequences2')
 
+#set default word sizes if none provided; check word size is within allowed limits for the blast task
+if args.wordsize==None:
+    if args.task=='blastn':
+        args.wordsize=int(38)
+    if args.task=='dc-megablastn':
+        args.wordsize=int(12)
+else:
+    if args.task=='dc-megablast':
+        if args.wordsize>int(12) or args.wordsize<int(11):
+            parser.error('if using dc-megablast, word size must be either 11 or 12')
+    if args.task=='blastn':
+        if args.wordsize<int(4):
+            parser.error('if using blastn, word size must be at least 4, and a higher value would be sensible, to reduce computation time when running genome-genome searches')
 
+    
 if args.sequences!=None:
     blasttype='allvallpairwise'
     fastadir='%s/splitfastas'%outputpath
@@ -63,7 +92,7 @@ if args.sequences!=None:
     runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastadir, fastafiles, str(args.threads),sourcedir])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished creating blast databases')
-    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, str(args.sequences), blastdbs, str(args.evalue), str(args.wordsize), str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, str(args.sequences), blastdbs, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     try:
         print('{} {}'.format(stdout.decode(), 'stdout'))
@@ -108,7 +137,7 @@ if args.sequences==None:
     runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastadir2, fastafiles2, str(args.threads),sourcedir])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished creating blast databases')
-    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, str(args.sequences1), blastdbs2, str(args.evalue), str(args.wordsize), str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, str(args.sequences1), blastdbs2, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     try:
         print('{} {}'.format(stdout.decode(), 'stdout'))
@@ -120,7 +149,7 @@ if args.sequences==None:
         pass
     if p.returncode!=0:
         sys.exit()
-    p=subprocess.Popen(['bash','runblast.sh',outputpath, str(args.sequences2), blastdbs1, str(args.evalue), str(args.wordsize), str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p=subprocess.Popen(['bash','runblast.sh',outputpath, str(args.sequences2), blastdbs1, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     try:
         print('{} {}'.format(stdout.decode(), 'stdout'))
@@ -169,3 +198,25 @@ if blasttype=='allvallpairwise':
           runsubprocess(treeargs)
           laterruntime=runtime()
           print(laterruntime-startruntime, 'runtime; finished plotting tree(s) using distance score(s): %s'%args.distscore)
+
+
+
+
+
+#OLD CODE
+# parser = argparse.ArgumentParser(description='Run pipeline scripts')
+# parser.add_argument('-s','--sequences', help='Sequences, for all-vs-all pairwise comparison', required=False)
+# parser.add_argument('-s1','--sequences1', help='First set of sequence(s), for pairwise comparison against second set', required=False)
+# parser.add_argument('-s2','--sequences2', help='Second set of sequence(s), for pairwise comparison against first set', required=False)
+# parser.add_argument('-o','--out', help='Output directory (required)', required=True)
+# parser.add_argument('-e','--evalue', help='BLAST e-value cutoff (default: 1e-8)', default=1e-8, type=float) #1e-8 is used in ggdc web pipeline - see Meier-Kolthoff 2014
+# parser.add_argument('-w','--wordsize', help='BLAST word size (default: 38)', default=38, type=int) #38 is used in ggdc web pipleine?
+# parser.add_argument('-t','--threads', help='Number of threads to use (default: 1)', default=1, type=int)
+# parser.add_argument('-b','--boot', help='Number of bootstraps to run (default: no bootstrapping)', default=0, type=positiveint)
+# parser.add_argument('-l','--lengthfilter', help='Length threshold (in basepairs) used to filter alignments prior to calculating breakpoint distance (default: 800)', default=800, type=positiveint)
+# parser.add_argument('-d','--distscore', help='Distance score to use to construct tree (can specify multiple parameters; default: DistanceScore_d8 DistanceScore_d9)', nargs='+', default=['DistanceScore_d8', 'DistanceScore_d9'], choices=['DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9'], metavar='',type=str)
+# parser.add_argument('-m','--treemethod', help='Tree building method (can specify dendrogram and/or phylogeny, or none (i.e. no tree will be plotted); default: dendrogram)', nargs='+', default=['dendrogram'], choices=['dendrogram','phylogeny','none'], metavar='',type=str)
+# parser.add_argument('-r','--alnrankmethod', help='Parameter used for selecting best alignment; default: bitscore)', default='bitscore', choices=['bitscore','alnlen','pid'], metavar='',type=str)
+# parser.add_argument('--breakpoint', action='store_true', help='Calculate breakpoint statistics (default: do not calculate)')
+# parser.add_argument('--alnlenstats', action='store_true', help='Calculate alignment length distribution statistics (default: do not calculate)')
+# parser.add_argument('--trimmedalignments', action='store_true', help='Write to file trimmed alignments for each sample (default: do not output)')
