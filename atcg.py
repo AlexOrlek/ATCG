@@ -109,7 +109,7 @@ if args.sequences!=None:
     runsubprocess(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath,blastdbs,sourcedir])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
-    runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences)])
+    runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences),sourcedir])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
     
@@ -171,7 +171,7 @@ if args.sequences==None:
     runsubprocess(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath,blastdbs,sourcedir])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
-    runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences1),str(args.sequences2)])
+    runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences1),str(args.sequences2),sourcedir])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
 
