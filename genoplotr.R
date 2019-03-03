@@ -232,10 +232,10 @@ reformatgff<-function(gff,annotationtagname=annotationtxtname,defaultoutlinecol=
   name[is.na(name)]<-''
   name<-as.character(name)
   #apply inclusion/exlusion criteria
-  if (exclusioncriteria!='placeholder') {
+  if (exclusioncriteria[1]!='placeholder') {
     name<-applyexclincl(name,exclusioncriteria,casesen,'exclusion')
   }
-  if (inclusioncriteria!='placeholder') {
+  if (inclusioncriteria[1]!='placeholder') {
     name<-applyexclincl(name,inclusioncriteria,casesen,'inclusion')
   }
   start<-as.integer(gff$start)
@@ -431,6 +431,47 @@ assignInNamespace("colour_ramp", function(colors, na.color = NA, alpha = TRUE){
 
 
 
+###annotation legend functions
+
+genetypetoshape<-function(genetype) {
+  blockindices<-which(genetype=='blocks')
+  arrowindices<-which(genetype=='arrowsgrob')
+  genetype[blockindices]<-22
+  genetype[arrowindices]<-24
+  if (length(c(blockindices,arrowindices))==0) {
+    genetype[1:length(genetype)]<-21
+  } else {
+    genetype[-c(blockindices,arrowindices)]<-21
+  }
+  return(as.numeric(genetype))
+}
+
+
+getallannotations<-function(annotations) {  #gets annotations to be plotted on legend (i.e. annottions that have customised outline/fill/gene_type); need to deduplicate by annotation name prior to plotting
+  annotationtext<-annotations$name
+  annotationindices<-annotations$col!=annotationoutlinecol | annotations$gene_type!=annotationgenetype | annotations$fill!=annotationfillcol
+  annotations<-annotations[annotationindices,]
+  annotationtext<-annotationtext[annotationindices]
+  return(list(annotations,annotationtext))
+}
+
+getannotationlegendplot<-function(annotation,annotationtext) {
+  dummydf<-data.frame(column1=rep(1,length(annotationtext)),column2=rep(1,length(annotationtext)),gene_type=annotation$gene_type,fill=annotation$fill,outline=annotation$col,annotationtext,stringsAsFactors = F)
+  p<-ggplot(dummydf,aes(x=column1,y=column2,fill=as.character(1:nrow(dummydf)),colour=as.character(1:nrow(dummydf)))) + geom_point() +  
+    scale_colour_manual(values=dummydf$outline,labels=annotationtext) + 
+    scale_fill_manual(values=dummydf$fill,labels=annotationtext) + 
+    guides(colour=guide_legend(override.aes=list(shape=genetypetoshape(dummydf$gene_type)))) +  #doesn't matter whether colour or fill legend is overridden 
+    labs(fill="Gene annotations",colour="Gene annotations") + 
+    theme(legend.text.align = NULL,legend.text = element_text(size=rel(0.7)),legend.title=element_text(size=rel(0.7)),legend.position = c(0.5,0.5),legend.key.size = unit(30,"pt"))
+  annotationlegend<-get_legend(p)
+  return(annotationlegend)
+}
+
+
+###
+
+
+
 #custom grobs
 
 arrow_coord <- function(x1, x2, y=0.5, strand=NULL, width=1, head_len=100){
@@ -503,6 +544,10 @@ for (i in 1:nrow(comparisonfile)) {
   subject<-as.character(comparison$subject)
   queries<-as.character(comparison$queries)
   queryvec<-unlist(strsplit(queries,',',fixed=T))
+  #initialise annotation lists for legend
+  annotlgndcounter=0
+  alllegendannotationtexts<-list()
+  alllegendannotations<-list()
   ###get xlims
   xlim_subject<-getxlims(seqlengths[seqlengths$names==subject,3])  #seqlengths must be ordered by contig in the same way as in rangeshifting
   xlim_queries<-vector("list",length(queryvec))
@@ -553,11 +598,17 @@ for (i in 1:nrow(comparisonfile)) {
     subject_annotations<-reformatgff(sbj_gff)
     subject_seg<-rbind(subject_seq,subject_annotations)
     subject_seg<-dna_seg(subject_seg)
+    #get annotation text - for legend
+    annotlgndcounter<-annotlgndcounter+1
+    legendannotationlist<-getallannotations(subject_annotations)
+    legendannotation<-legendannotationlist[[1]];legendtext<-legendannotationlist[[2]]
+    alllegendannotations[[annotlgndcounter]]<-legendannotation;alllegendannotationtexts[[annotlgndcounter]]<-legendtext
   } else {
     subject_seg<-dna_seg(subject_seq)
   }
-  
-  #get annotation text; if there are no annotations, annotation will be blank ("")
+
+
+  #get annotation text - for genoplotr plot; if there are no annotations, annotation will be blank ("")
   cellpresentbool<-cellpresent(comparison[i,6]) #plot subject text annotations?
   if (cellpresentbool==TRUE && featurespresent=='featurespresent') {
     mid_pos<-middle(subject_seg)[1:nrow(subject_seg)]
@@ -627,6 +678,11 @@ for (i in 1:nrow(comparisonfile)) {
         query_seg<-rbind(query_seq,query_annotations)
         query_seg<-dna_seg(query_seg)
         query_segs[[j]]<-query_seg
+	#get annotation text - for legend
+        annotlgndcounter<-annotlgndcounter+1
+        legendannotationlist<-getallannotations(query_annotations)
+        legendannotation<-legendannotationlist[[1]];legendtext<-legendannotationlist[[2]]
+        alllegendannotations[[annotlgndcounter]]<-legendannotation;alllegendannotationtexts[[annotlgndcounter]]<-legendtext
       } else {
         query_seg<-dna_seg(query_seq)
         query_segs[[j]]<-query_seg	
@@ -636,7 +692,7 @@ for (i in 1:nrow(comparisonfile)) {
       query_segs[[j]]<-query_seg	
     }
     
-    #get annotation text; if there are no annotations this will be blank ("")
+    #get annotation text - for genoplotr plot; if there are no annotations this will be blank ("")
     cellpresentbool<-cellpresent(comparison[i,7]) #plot query text annotations?
     if (cellpresentbool==TRUE && featurespresent=='featurespresent') {
       if (nchar(querytxtannotationfiles[j])>0) { #annotations to plot are provided in a comma-sep string, so a blank (nchar=0) means don't plot annotations for this query
@@ -657,7 +713,30 @@ for (i in 1:nrow(comparisonfile)) {
   dna_segs<-c(list(subject_seg),query_segs)
   names(dna_segs)<-c(subject,queryvec)
   annotationtexts<-c(list(subjectannot),query_annotation_texts)
-  
+
+
+  ###plot annotation legend
+  alllegendannotations<-do.call(rbind,alllegendannotations)
+  alllegendannotationtexts<-do.call(c,alllegendannotationtexts) 
+  if (nrow(alllegendannotations)>0) {
+    #deduplicate annotation data - currently data include all annotations with customised outline/fill/gene_type
+    uniqueannotationindices<-!duplicated(alllegendannotationtexts)
+    alllegendannotationtexts<-alllegendannotationtexts[uniqueannotationindices]
+    alllegendannotations<-alllegendannotations[uniqueannotationindices,]
+    #remove annotations that have blank text i.e. removed by inclusion/exclusion criteria
+    nonblankindices<-!nchar(alllegendannotationtexts)==0
+    alllegendannotationtexts<-alllegendannotationtexts[nonblankindices]
+    alllegendannotations<-alllegendannotations[nonblankindices,]
+    if (nrow(alllegendannotations)>0) {
+      #plot
+      writefilepath=gsubfn('%1|%2', list('%1'=outdir,'%2'=outputname), '%1/%2_annotationlegend.pdf')
+      pdf(writefilepath)
+      mylegend<-getannotationlegendplot(alllegendannotations,alllegendannotationtexts)
+      plot(plot_grid(mylegend))
+      dev.off()
+    }
+  }
+
   ###get tree; input can be a nexus or newick tree or a phylo object saved as an rds file
   treepresentbool<-cellpresent(comparison[i,8])
   if (treepresentbool==TRUE) {
@@ -767,7 +846,7 @@ for (i in 1:nrow(comparisonfile)) {
     dev.off()
     
     #plot legends
-    writefilepath=gsubfn('%1|%2', list('%1'=outdir,'%2'=outputname), '%1/%2_legends.pdf')
+    writefilepath=gsubfn('%1|%2', list('%1'=outdir,'%2'=outputname), '%1/%2_alignmentlegend.pdf')
     pdf(writefilepath)
     allcomparisons<-do.call(rbind,comparisons)
     mylegends<-getlegendcols(allcomparisons,legendorientation,poscolvec,negcolvec,colonly=FALSE)
@@ -878,7 +957,7 @@ for (i in 1:nrow(comparisonfile)) {
     dev.off()
     
     #plot legends
-    writefilepath=gsubfn('%1|%2', list('%1'=outdir,'%2'=outputname), '%1/%2_legends.pdf')
+    writefilepath=gsubfn('%1|%2', list('%1'=outdir,'%2'=outputname), '%1/%2_alignmentlegend.pdf')
     pdf(writefilepath)
     allcomparisons<-do.call(rbind,comparisons)
     mylegends<-getlegendcols(allcomparisons,legendorientation,poscolvec,negcolvec,colonly=FALSE)
