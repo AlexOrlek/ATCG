@@ -266,9 +266,9 @@ Optionally, a feature input directory can be provided, containing feature annota
 
 A comparison file must be provided to specify which comparisons to visualise and an output name. The file can also be used to specify which annotations to visualise; which annotation text to visualise; and whether or not a tree should be plotted alongside the comparison plot. Each row in the comparison file specifies one set of comparisons and an associated plot (multiple rows can be provided). The columns are interpreted in the following order: subject/query genome comparisons; output name; subject/query annotations; subject/query text annotation text; tree name. A blank cell or "-" indicates that a particular genome or plotting object should be ommitted from the comparison. As an example, take the following columns:
 
- |      |                |          |      |                |      |             |           |
- | ---- | -------------- | -------- | ---- | -------------- | ---- | ----------- | --------- |
- | sbj1 | qry1,qry2,qry3 | out-name | sbj1 | qry1,qry2,qry3 | sbj1 | qry1,-,qry3 | tree-name |
+      |                |          |      |                |      |             |           
+ ---- | -------------- | -------- | ---- | -------------- | ---- | ----------- | --------- 
+ sbj1 | qry1,qry2,qry3 | out-name | sbj1 | qry1,qry2,qry3 | sbj1 | qry1,-,qry3 | tree-name 
 
 This specifies that comparisons should be shown between subject1 and query genomes 1,2,3 in that order. Gene annotations should be plotted, and these annotations should be accompanied by corresponding text, with the exception of query genome 2. A tree should also be plotted. Note that annotation text will only be plotted if corresponding annotations are specified.
 
