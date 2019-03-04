@@ -339,7 +339,7 @@ Finally, visualise the alignments. Note that the attributes field of the gff3 co
 <p align="center"><img src="example_visualisation/images/plasmids.PNG" alt="plasmid_comparison" width="600"></p>
 <br>
 
-
+Note that the plot differs slightly from Fig.4A in the paper, due to differences in assembly methods and BLAST settings.
 
 
 ## 2.7 FAQ
