@@ -287,7 +287,7 @@ The `getfeatureinput.py` script converts Genbank and prokka annotation files to 
 
 The following command will plot a simple visualisation of two genomes
 
-`visualise.py -i input-directory -s trimmedalignments_GENOMENAME.tsv -l seqlengths.tsv -c comparisons.tsv`
+`visualise.py -i input-directory -s trimmedalignments_GENOMENAME.tsv -l seqlengths.tsv -c comparisons.tsv -o output-directory`
 
 
 ## 2.3 Background and methods

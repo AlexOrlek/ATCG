@@ -48,6 +48,7 @@ if (featurespresent=='featurespresent') { #there is a feature input directory pr
   #annotationcex=as.character(args[19]) #default: auto or numeric
 } else {
   annotationtxtheight=0
+  annotationgenetype='side_bars'
 }
 
 
@@ -717,26 +718,27 @@ for (i in 1:nrow(comparisonfile)) {
 
   ###plot annotation legend
   alllegendannotations<-do.call(rbind,alllegendannotations)
-  alllegendannotationtexts<-do.call(c,alllegendannotationtexts) 
-  if (nrow(alllegendannotations)>0) {
-    #deduplicate annotation data - currently data include all annotations with customised outline/fill/gene_type
-    uniqueannotationindices<-!duplicated(alllegendannotationtexts)
-    alllegendannotationtexts<-alllegendannotationtexts[uniqueannotationindices]
-    alllegendannotations<-alllegendannotations[uniqueannotationindices,]
-    #remove annotations that have blank text i.e. removed by inclusion/exclusion criteria
-    nonblankindices<-!nchar(alllegendannotationtexts)==0
-    alllegendannotationtexts<-alllegendannotationtexts[nonblankindices]
-    alllegendannotations<-alllegendannotations[nonblankindices,]
+  alllegendannotationtexts<-do.call(c,alllegendannotationtexts)
+  if (is.null(alllegendannotations)==FALSE) {
     if (nrow(alllegendannotations)>0) {
-      #plot
-      writefilepath=gsubfn('%1|%2', list('%1'=outdir,'%2'=outputname), '%1/%2_annotationlegend.pdf')
-      pdf(writefilepath)
-      mylegend<-getannotationlegendplot(alllegendannotations,alllegendannotationtexts)
-      plot(plot_grid(mylegend))
-      dev.off()
+      #deduplicate annotation data - currently data include all annotations with customised outline/fill/gene_type
+      uniqueannotationindices<-!duplicated(alllegendannotationtexts)
+      alllegendannotationtexts<-alllegendannotationtexts[uniqueannotationindices]
+      alllegendannotations<-alllegendannotations[uniqueannotationindices,]
+      #remove annotations that have blank text i.e. removed by inclusion/exclusion criteria
+      nonblankindices<-!nchar(alllegendannotationtexts)==0
+      alllegendannotationtexts<-alllegendannotationtexts[nonblankindices]
+      alllegendannotations<-alllegendannotations[nonblankindices,]
+      if (nrow(alllegendannotations)>0) {
+	#plot
+	writefilepath=gsubfn('%1|%2', list('%1'=outdir,'%2'=outputname), '%1/%2_annotationlegend.pdf')
+	pdf(writefilepath)
+	mylegend<-getannotationlegendplot(alllegendannotations,alllegendannotationtexts)
+	plot(plot_grid(mylegend))
+	dev.off()
+      }
     }
   }
-
   ###get tree; input can be a nexus or newick tree or a phylo object saved as an rds file
   treepresentbool<-cellpresent(comparison[i,8])
   if (treepresentbool==TRUE) {
