@@ -94,8 +94,8 @@ grtodf<-function(qtrimmed,strimmed) {
   mysdf<-as.data.frame(strimmed)
   colnames(myqdf)<-c('seqnames','qstart','qend', 'qwidth', 'strand',names(mcols(qtrimmed)))
   colnames(mysdf)<-c('seqnames','sstart','send', 'swidth', 'strand',names(mcols(strimmed)))
-  trimmeddf<-cbind(myqdf[c("seqnames","qcontignames","snames","scontignames","inputhsp","alnlen","pid","mystrand","qstart","qend","qwidth")],mysdf[c("sstart","send","swidth")])
-  colnames(trimmeddf)<-c("qname","qcontig","sname","scontig","originalhspindex","originalalnlen","pid","strand","qstart","qend","qwidth","sstart","send","swidth")
+  trimmeddf<-cbind(myqdf[c("seqnames","qcontignames","snames","scontignames","inputhsp","alnlen","pid","bitscore","mystrand","qstart","qend","qwidth")],mysdf[c("sstart","send","swidth")])
+  colnames(trimmeddf)<-c("qname","qcontig","sname","scontig","originalhspindex","originalalnlen","pid","bitscore","strand","qstart","qend","qwidth","sstart","send","swidth")
   return(trimmeddf)
 }
 
@@ -143,6 +143,7 @@ addcols<-function(x) {
   #add pid, strand, and subject names to reduced output (apply to each list element i.e. each qname split)     
   myinputhsps<-mcols(x)$inputhsp
   mcols(x)$pid<-pid[myinputhsps]
+  mcols(x)$bitscore<-bitscore[myinputhsps]
   mcols(x)$mystrand<-mystrand[myinputhsps]
   mcols(x)$snames<-snames[myinputhsps] #!!!ADDED
   mcols(x)$alnlen<-alnlen[myinputhsps] #added so that short alignments can be filtered prior to breakpoint calculation
@@ -294,6 +295,13 @@ trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
   }
 }
 
+
+reformattrimmeddf<-function(trimmeddf) {  #trimmeddf has separate genome/contig columns - merge these into a single column
+  trimmeddf$qname<-ifelse(is.na(trimmeddf$qcontig), trimmeddf$qname, paste(trimmeddf$qname,trimmeddf$qcontig,sep='|'))
+  trimmeddf$sname<-ifelse(is.na(trimmeddf$scontig), trimmeddf$sname, paste(trimmeddf$sname,trimmeddf$scontig,sep='|'))
+  trimmeddf<-trimmeddf[c("qname","sname","originalhspindex","originalalnlen","pid","strand","qstart","qend","qwidth","sstart","send","swidth")]
+  return(trimmeddf)
+}
 
 
 #breakpoint caluclation functions
@@ -534,9 +542,10 @@ nxcols<-c('n10','n20','n30','n40','n50','n60','n70','n80','n90')
 allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRanges','purrr','data.table')) %dopar% {
     #read alignmnents file for given sample
     sample<-samples[i]
-    report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,4,7,8,9,10,12,17),sep='\t') #same subject, different queries    
+    #report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,4,7,8,9,10,12,17),sep='\t') #same subject, different queries
+    report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c('qname','sname','pid','alnlen','qstart','qend','sstart','send','bitscore','strand'),header=TRUE,sep='\t')
     #colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
-    colnames(report)<-c('qname','sname','pid','alnlen','qstart','qend','sstart','send','bitscore','strand')
+    #colnames(report)<-c('qname','sname','pid','alnlen','qstart','qend','sstart','send','bitscore','strand')
     #get information for shifting query and subject ranges where there are multiple contigs)
     seqlenreportseqs<-sapply(strsplit(as.vector(seqlenreport$sequence),'|',fixed=T),pastefunction)
     reformattedqname<-as.factor(sapply(strsplit(as.vector(report$qname),"|",fixed=T),pastefunction))
@@ -554,6 +563,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     report$sname<-sapply(strsplit(as.vector(report$sname),"|",fixed=T),function(x) x=x[1])   
     ###disjoin method trimming
     pid<-report$pid
+    bitscore<-report$bitscore
     snames<-report$sname #!!!ADDDED
     alnlen<-report$alnlen
     mystrand<-report$strand  #strand info is lost after disjoin - need to retain strand info for toppid
@@ -613,6 +623,14 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     if (outputtrimmedalignments=='True') {
       trimmeddflist<-mapply(grtodf, qtrimmed, strimmed, SIMPLIFY = FALSE)
       trimmeddf<-do.call(rbind,trimmeddflist)
+      #shift back query/subject positions and reformat df so genome/contig columns are merged to single column
+      minusqlens<-addqlens[trimmeddf$originalhspindex]
+      minusslens<-addslens[trimmeddf$originalhspindex]
+      trimmeddf$qstart<-trimmeddf$qstart-minusqlens
+      trimmeddf$qend<-trimmeddf$qend-minusqlens
+      trimmeddf$sstart<-trimmeddf$sstart-minusslens
+      trimmeddf$send<-trimmeddf$send-minusslens
+      trimmeddf<-reformattrimmeddf(trimmeddf)
       write.table(trimmeddf, file=gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/output/trimmedalignments_%2.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
     }
     #get hsp id stats

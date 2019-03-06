@@ -169,7 +169,7 @@ pKPC-CAD1_2	Prodigal:2.60	CDS	69846	70625	0	+	0	ID=KEHPLGBG_00082;Parent=KEHPLGB
 pKPC-CAD1_2	prokka	gene	69846	70625	0	+	0	ID=KEHPLGBG_00082_gene;locus_tag=KEHPLGBG_00082
 pKPC-CAD1_2	Prodigal:2.60	CDS	70622	70861	0	+	0	ID=KEHPLGBG_00083;Parent=KEHPLGBG_00083_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00083;product=hypothetical protein
 pKPC-CAD1_2	prokka	gene	70622	70861	0	+	0	ID=KEHPLGBG_00083_gene;locus_tag=KEHPLGBG_00083
-pKPC-CAD1_2	Prodigal:2.60	CDS	70913	71794	0	+	0	ID=KEHPLGBG_00084;Parent=KEHPLGBG_00084_gene;eC_number=3.5.2.6;Name=bla_1;gene=bla_1;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q9F663;locus_tag=KEHPLGBG_00084;product=Carbapenem-hydrolyzing beta-lactamase KPC;gene_type=arrows;outline=red;fill=blue
+pKPC-CAD1_2	Prodigal:2.60	CDS	70913	71794	0	+	0	ID=KEHPLGBG_00084;Parent=KEHPLGBG_00084_gene;eC_number=3.5.2.6;Name=bla_1;gene=bla_1;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q9F663;locus_tag=KEHPLGBG_00084;product=Carbapenem-hydrolyzing beta-lactamase KPC;gene_type=arrowheads;outline=red;fill=blue
 pKPC-CAD1_2	prokka	gene	70913	71794	0	+	0	ID=KEHPLGBG_00084_gene;Name=bla_1;gene=bla_1;locus_tag=KEHPLGBG_00084
 pKPC-CAD1_2	Prodigal:2.60	CDS	72044	73363	0	-	0	ID=KEHPLGBG_00085;Parent=KEHPLGBG_00085_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISKpn6;locus_tag=KEHPLGBG_00085;product=IS1182 family transposase ISKpn6
 pKPC-CAD1_2	prokka	gene	72044	73363	0	-	0	ID=KEHPLGBG_00085_gene;locus_tag=KEHPLGBG_00085
@@ -547,7 +547,7 @@ pKPC-CAD2_2	Prodigal:2.60	CDS	54932	55420	0	-	0	ID=KEHPLGBG_00271;Parent=KEHPLGB
 pKPC-CAD2_2	prokka	gene	54932	55420	0	-	0	ID=KEHPLGBG_00271_gene;locus_tag=KEHPLGBG_00271
 pKPC-CAD2_2	Prodigal:2.60	CDS	55699	57018	0	+	0	ID=KEHPLGBG_00272;Parent=KEHPLGBG_00272_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISKpn6;locus_tag=KEHPLGBG_00272;product=IS1182 family transposase ISKpn6
 pKPC-CAD2_2	prokka	gene	55699	57018	0	+	0	ID=KEHPLGBG_00272_gene;locus_tag=KEHPLGBG_00272
-pKPC-CAD2_2	Prodigal:2.60	CDS	57268	58149	0	-	0	ID=KEHPLGBG_00273;Parent=KEHPLGBG_00273_gene;eC_number=3.5.2.6;Name=bla_3;gene=bla_3;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q9F663;locus_tag=KEHPLGBG_00273;product=Carbapenem-hydrolyzing beta-lactamase KPC;gene_type=arrows;outline=red;fill=blue
+pKPC-CAD2_2	Prodigal:2.60	CDS	57268	58149	0	-	0	ID=KEHPLGBG_00273;Parent=KEHPLGBG_00273_gene;eC_number=3.5.2.6;Name=bla_3;gene=bla_3;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q9F663;locus_tag=KEHPLGBG_00273;product=Carbapenem-hydrolyzing beta-lactamase KPC;gene_type=arrowheads;outline=red;fill=blue
 pKPC-CAD2_2	prokka	gene	57268	58149	0	-	0	ID=KEHPLGBG_00273_gene;Name=bla_3;gene=bla_3;locus_tag=KEHPLGBG_00273
 pKPC-CAD2_2	Prodigal:2.60	CDS	58201	58440	0	-	0	ID=KEHPLGBG_00274;Parent=KEHPLGBG_00274_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00274;product=hypothetical protein
 pKPC-CAD2_2	prokka	gene	58201	58440	0	-	0	ID=KEHPLGBG_00274_gene;locus_tag=KEHPLGBG_00274
