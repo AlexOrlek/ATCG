@@ -108,7 +108,7 @@ You should find the executable scripts (`distance.py` `getfeatureinput.py` `visu
 
 ## 1.1 Input
 
-Sequences are provided in FASTA format, a flexibly-defined format comprising header lines (prefixed by ">") and sequences. Here, we follow the common convention where the header line is permitted to have two parts, separated by a space: the identifier and an optional comment after the first space. Information in the header identifier must be delineated using vertical bar(s) "|" and adhere to the format: `unit of analysis|subunit`. The `subunit` is only necessary when indicating affiliation of e.g. contigs with genomes, or of bacterial plasmids with bacterial isolates.
+Sequences are provided in FASTA format, a flexibly-defined format comprising header lines (prefixed by ">") and sequences. Here, I follow the common convention where the header line is permitted to have two parts, separated by a space: the identifier and an optional comment after the first space. Information in the header identifier must be delineated using vertical bar(s) "|" and adhere to the format: `genome|contig`. The `contig` is only necessary for incomplete genome assemblies, to indicate affiliation of contigs with genomes.
 
 If comparing complete genomes, FASTA headers could be formatted as follows:<br>
 genome1 additional information provided after the first space<br>
@@ -121,7 +121,7 @@ genome1|contig2|additional information can also be provided in the identifier af
 genome2|contig1<br>
 genome3|contig1
 
-If comparing isolates in terms of their overall plasmid genetic content, FASTA headers could be formatted as follows:<br>
+ATCG could also be used to compare bacterial isolates in terms of their overall plasmid genetic content. In this case, FASTA headers could be formatted as follows:<br>
 isolate1|plasmid1 additional information provided after the first space<br>
 isolate1|plasmid2|additional information can also be provided in the identifier after isolate|plasmid|<br>
 isolate2|plasmid1<br>
@@ -156,11 +156,10 @@ A paper describing the methods will be written shortly, and further information 
 
 `distance.py --help` produces a summary of all the options.
 
-By default, the number of threads is 1, but multi-threading is recommended to reduce computing time; the number of threads to use is specified using the `-t` flag; the value must not exceed the number of threads available on your machine. 
-By default, breakpoint distances and alignment length distribution statistics are not calculated.
-Calculation of breakpoint distances (measuring structural similarity) is specified using the `--breakpoint` flag.
-Calculation of alignment length distribution statistics is specified using the `--alnlenstats` flag. The alignment length statistics provide information on the distribution of BLAST alignment lengths and are analogous to the widely used [assembly contiguity statistics](https://www.molecularecologist.com/2017/03/whats-n50/) e.g N50/L50.<br>
-For all-vs-all comparison, the distance metric(s) used to build tree(s) can be specified in a space-separated list using the `-d` flag; by default, DistanceScore_d8 and DistanceScore_d9 are used, producing 2 corresponding trees. The tree building method(s) can be specified using the `-m` flag; options are: 'dendrogram', 'phylogeny', 'none'. By default, a dendrogram is built using [hierarchical clustering](https://www.rdocumentation.org/packages/fastcluster/versions/1.1.25/topics/hclust) with the complete linkage method. If the phylogeny option is provided, a phylogenetic tree will be built using the balanced minimum evolution method ([Desper and Gascuel 2002](https://www.ncbi.nlm.nih.gov/pubmed/12487758)). If the none option is specified, then no trees will be built. If both dendrogram and phylogeny options are provided in a space-separated list, then trees will be constructed using both methods.
+By default, the number of threads is 1, but multi-threading is recommended to reduce computing time; the number of threads to use is specified using the `-t` flag; the value must not exceed the number of threads available on your machine.<br>
+By default, breakpoint distances and alignment length distribution statistics are not calculated. Calculation of breakpoint distances (measuring structural similarity) is specified using the `--breakpoint` flag. Calculation of alignment length distribution statistics is specified using the `--alnlenstats` flag. The alignment length statistics provide information on the distribution of BLAST alignment lengths and are analogous to the widely used [assembly contiguity statistics](https://www.molecularecologist.com/2017/03/whats-n50/) e.g N50/L50.<br>
+For all-vs-all comparison, the distance metric(s) used to build tree(s) can be specified in a space-separated list using the `-d` flag; by default, DistanceScore_d8 and DistanceScore_d9 are used, producing 2 corresponding trees. The tree building method(s) can be specified using the `-m` flag; options are: 'dendrogram', 'phylogeny', 'none'. By default, a dendrogram is built using [hierarchical clustering](https://www.rdocumentation.org/packages/fastcluster/versions/1.1.25/topics/hclust) with the complete linkage method. If the phylogeny option is provided, a phylogenetic tree will be built using the balanced minimum evolution method ([Desper and Gascuel 2002](https://www.ncbi.nlm.nih.gov/pubmed/12487758)). If the none option is specified, then no trees will be built. If both dendrogram and phylogeny options are provided in a space-separated list, then trees will be constructed using both methods.<br>
+If you only want to obtain pairwise blast output, not distance statistics the `--blastonly` flag should be provided.
 
 `distance.py -s genomes.fasta -o output-directory -t 8 --breakpoint --alnlenstats` runs the pipeline using 8 threads, with calculation of breakpoint distances and alignment length distribution statistics.
 
@@ -177,7 +176,7 @@ The below table shows the most important outputs from running the pipeline with 
 
 File/Directory         | Description                                                                                       
 ---------------------- | -------------------------------------------------------------------------------------------------
-splitfastas/           | directory containing FASTA files (and corresponding BLAST databases), derived from the input multi-FASTA, split by unit of analysis i.e. genome (or metagenome)
+splitfastas/           | directory containing FASTA files (and corresponding BLAST databases), derived from the input multi-FASTA, split by genome
 blast/		       | directory containing tsv files of blast alignments for each genome
 included.txt           | names of genomes with detected blast alignments, that will therefore appear in the distancestats.tsv file
 excluded.txt	       | names of any genomes with no detected blast alignments (this file may well be blank)
@@ -258,7 +257,7 @@ Breakpoint distance d1 is recommended; breakpoint distance d0 is provided since 
 
 ## 2.1 Input
 
-Sequence names in the __alignment file(s)__, __sequence length file__, and __feature file(s)__ (see below) must follow the convention outlined in section [1.1 Input](#11-input) where contigs are affiliated to genomes using a two-part format: `unit of analysis|subunit`.<br>
+Sequence names in the __alignment file(s)__, __sequence length file__, and __feature file(s)__ (see below) must follow the convention outlined in section [1.1 Input](#11-input) where contigs are affiliated to genomes using a two-part format: `genome|contig`.<br>
 
 A main input directory containing one or more __alignment files__ must be provided. Each alignment file contains alignments between a given subject genome and one or more query genomes. To specify the location of alignment files within the main input directory, a consistent file name or file path syntax must be adopted, and is specified using the `-s` flag. Each alignment file must include a header with at least the following column names: sstart, send, qstart, qend, strand, pid (i.e. start/end positions on the subject and query genome sequences, strand orientation [+ or -], and percent identity).<br>
 
@@ -301,7 +300,7 @@ The following command will plot a simple visualisation of two genomes
 The `visualisation.py` script primarily uses the [genoPlotR](http://genoplotr.r-forge.r-project.org/) software to visualise comparisons. genoPlotR outputs similar plots to those produced by the widely-used [Artemis Comparison Tool (ACT)](https://www.sanger.ac.uk/science/tools/artemis-comparison-tool-act), but is more flexible. The downside is that genoPlotR requires users to write R scripts, and in my experience, a considerable amount of time may be required to write a script producing a high-quality visualisation. ATCG-based visualisation addresses limitations of existing software thanks to the following methodological advantages:
 * The output alignment files produced by the `distance.py` script can be used directly as input for the `visualisation.py` script, and annotation input files can be obtained easily, thanks to the `getfeatureinput.py` script.
 * A short command can produce a high-quality visualisation, whilst numerous optional flags, as well as gff3 attribute tag names, can be used to achieve a high-level of customisation if desired.
-* ATCG visualisation offers additional functionality (see for example the `--comparisontype` option in the [Options and usage](#24-Options-and-usage) section). 
+* ATCG visualisation offers additional functionality (see the [Options and usage](#24-Options-and-usage) section).
 * ATCG can represent comparisons between incompletely assembled genomes (comprising multiple contigs). It does so by transposing start and end positions of contigs and their alignments, such that the contigs are laid out from left to right in adjacent linear orientation. The sequence length file is used to determine position shifts. In addition to transposing sequence and alignment position data, the sequence length file is also used to transpose annotation positions.
 
 
@@ -312,13 +311,14 @@ The `visualisation.py` script primarily uses the [genoPlotR](http://genoplotr.r-
 Some flags are identical to arguments from the genoPlotR `plot_gene_map` function, so the [genoPlotR manual](http://genoplotr.r-forge.r-project.org/pdfs/genoPlotR_manual.pdf) provides a useful reference. Here, the key ATCG-specific options are described.<br>
 `--comparisontype` specifies whether comparisons are between a single reference and a set of queries, or if instead, a sequential chain of comparisons are to be visualised (i.e. the reference is the previous sequence in the chain). The latter is the default, and is also the only option offered by the Artemis Comparison Tool.<br>
 `--rightmargin` specifies the right-hand-side margin. This margin allows for long annotation names that might otherwise be cut off (if text rotation is angled towards the right).<br>
+`--sequencecols` specifies the colour(s) of sequences. If a genome comprises multiple contigs, then comma-separated colours can be used to indicate colours of adjacent contig sequences. Space-separated colour terms indicate colour(s) for each genome. If there are more contig sequences/genomes than comma-separated colours/space-separated colour terms, then the colour values will be recycled so that each sequence is assigned a colour. For example, `white` will colour all sequences white; `lightgray,darkgray lightblue,darkblue` will colour sequences in the first genome grayscale and sequences in the second genome blue shades.<br> 
 `--positivecols` and `--negativecols` define a colour scale gradient reflecting percent identity of positive and negative orientation alignments, respectively. At least two arguments must be provided. If `red red` is provided then all alignments will be coloured red regardless of percent identity. On the other hand, a rainbow colour gradient could be defined (`red orange yellow green blue violet`). Note that colours will be made transparent to support visualisation of criss-crossing alignments, and this will make specified colours appear a slightly lighter shade.<br>
 `--annotationtxt_exclusion` and `annotationtxt_inclusion` are used to define exclusion and inclusion criteria for text annotations. E.g. --annotationtxt_exclusion "hypothetical protein". Note that a term that includes a space must be enclosed in quotes. Multiple criteria can be provided on the command-line, separated by spaces. Alternatively, equivalent flags with the _file suffix can be used to read in criteria from the first column of a file.<br>
 `--output_height` and `--output_width` define the output dimensions. By default, these are automatically calculated and printed to screen. By printing the automatically calculated dimensions, this helps a user to fine-tune output dimensions if necessary.<br>
 
-Note that colours can be provided either as [hexadecimals](https://www.w3schools.com/colors/colors_hexadecimal.asp) or as text descriptions that will be [recognised by R](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf). If the latter, you must ensure that multi-word colours are enclosed in quotes e.g. "light gray".<br>
+Note that colours can be provided either as [hexadecimals](https://www.w3schools.com/colors/colors_hexadecimal.asp) or as text descriptions that will be [recognised by R](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf).<br>
 
-Note that the default `--annotation_gene_type` is `side_bars`. These are tick marks divided into a top and bottom row to represent +ve and -ve strand gene annotations, respectively. `--annotation_outline_col` (default: "light gray") determines the colour of the tick marks (the side_bar tick marks have no fill colour setting, but other gene_type symbols have a fill colour, controlled by `--annotation_fill_col`). The default annotation symbol settings can be overridden in the gff3 file, as decribed in the [2.1 Input](#21-input) section.
+Note that the default `--annotation_gene_type` is `side_bars`. These are tick marks divided into a top and bottom row to represent +ve and -ve strand gene annotations, respectively. `--annotation_outline_col` (default: "lightgray") determines the colour of the tick marks (the side_bar tick marks have no fill colour setting, but other gene_type symbols have a fill colour, controlled by `--annotation_fill_col`). The default annotation symbol settings can be overridden in the gff3 file, as decribed in the [2.1 Input](#21-input) section.
 
 
 ## 2.5 Output files

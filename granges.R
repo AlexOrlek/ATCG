@@ -96,6 +96,7 @@ grtodf<-function(qtrimmed,strimmed) {
   colnames(mysdf)<-c('seqnames','sstart','send', 'swidth', 'strand',names(mcols(strimmed)))
   trimmeddf<-cbind(myqdf[c("seqnames","qcontignames","snames","scontignames","inputhsp","alnlen","pid","bitscore","mystrand","qstart","qend","qwidth")],mysdf[c("sstart","send","swidth")])
   colnames(trimmeddf)<-c("qname","qcontig","sname","scontig","originalhspindex","originalalnlen","pid","bitscore","strand","qstart","qend","qwidth","sstart","send","swidth")
+  trimmeddf[c("qname","qcontig","sname","scontig")]<-sapply(trimmeddf[c("qname","qcontig","sname","scontig")],as.vector)
   return(trimmeddf)
 }
 

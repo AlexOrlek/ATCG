@@ -33,7 +33,7 @@ help_group.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS
 #Input options                                                               
 input_group = parser.add_argument_group('Input')
 input_group.add_argument('-i','--inputdir', help='Input directory containing alignment files, and (optionally) tree file(s) (required)', required=True)
-input_group.add_argument('-s','--syntax', help='Syntax of alignment file names and (optionally) annotation file names e.g. trimmedalignments_GENOMENAME.tsv GENOMENAME.gff (required)', nargs='+', required=True)
+input_group.add_argument('-s','--syntax', help='File name / file path syntax for identifying alignment files and (optionally) annotation files within the input/feature directories e.g. trimmedalignments_GENOMENAME.tsv GENOMENAME.gff (required)', nargs='+', required=True)
 input_group.add_argument('-l','--sequencelengths', help='File specifying sequence lengths (required)', required=True)
 input_group.add_argument('-c','--comparisons', help='File specifying which comparisons to visualise, output file name, and (optionally) annotation data/tree name (required)', required=True)
 input_group.add_argument('-f','--features', help='Input directory containing feature annotation data files (optional)', required=False)
@@ -56,7 +56,7 @@ vis_group1.add_argument('--negativecols', help='As above but for negative orient
 
 #sequence-related
 vis_group2 = parser.add_argument_group('Visualisation options: sequence-related')
-vis_group2.add_argument('--sequencecols', help='Colour(s) of adjacent subsequences; default depends on --comparisontype; chain: "white"; singlereference: "light yellow" "light blue"', nargs='+',type=str)
+vis_group2.add_argument('--sequencecols', help='Colour(s) of sequences; comma-separated colours indicate colours of adjacent subsequences for a given genome; space-separated colours indicate colours for the different genomes in the comparison; colour values will be replicated so that each sequence is assigned a colour e.g. "white" will colour all sequences white; "lightgray,darkgray lightblue,darkblue" will colour sequences in the first genome grayscale and sequences in the second genome blue shades (default: white)', nargs='+',default=['white'],type=str)
 vis_group2.add_argument('--dna_seg_labels', help='The names of the sequences; must provide same number of names as there are sequences. (default: use names of dna_segs if available)', default=['NULL'],nargs='+',type=str)
 vis_group2.add_argument('--dna_seg_label_cex', help='The relative size of dna_seg_labels text (default: 0.8)', default='0.8',type=positivefloat)
 vis_group2.add_argument('--dna_seg_label_col', help='The colour of dna_seg_labels text; provide either a single value or a space-separated list of the same length as the number of genomes (default: black)', default=['black'],nargs='+',type=str)
@@ -65,11 +65,12 @@ vis_group2.add_argument('--minimum_gap_size', help='For chain reference comparis
 vis_group2.add_argument('--scale', help='Should a global scale be shown at the bottom of the plot; provide true/false (case-insensitive) (default: false)', default='false',choices=['true','True','TRUE','false','False','FALSE'],type=str)
 vis_group2.add_argument('--dna_seg_scale', help='Should per-genome scales be shown; provide true/false (case-insensitive) (default: true)', default='true',choices=['true','True','TRUE','false','False','FALSE'],type=str)
 vis_group2.add_argument('--dna_seg_scale_cex', help='The relative size of per-genome scales (default: 0.7)', default='0.7',type=positivefloat)
+vis_group2.add_argument('--dna_seg_scale_n_ticks', help='The approximate number of ticks on the scale of the longest genome (default: 7)', default='7',type=positiveint)
 
 #annotation-related
 vis_group3 = parser.add_argument_group('Visualisation options: annotation-related')
 vis_group3.add_argument('--annotation_gene_type', help='Specifies the default symbol to represent annotations (default: side_bars)', default='side_bars', choices=['arrowheads','arrows','headless_arrows','blocks','bars','points','text','lines','side_blocks','side_bars','side_points','side_text','side_lines','introns','exons','side_exons'],type=str)
-vis_group3.add_argument('--annotation_outline_col', help='Specifies the default outline colour of the annotation symbol (default: light gray)', default='light gray',type=str)
+vis_group3.add_argument('--annotation_outline_col', help='Specifies the default outline colour of the annotation symbol (default: lightgray)', default='lightgray',type=str)
 vis_group3.add_argument('--annotation_fill_col', help='Specifies the default fill colour of the annotation symbol (default: black)', default='black',type=str)
 vis_group3.add_argument('--annotation_lty', help='Specifies the default outline line type of the annotation symbol (default: 1)', default='1',type=ltyint)
 vis_group3.add_argument('--annotation_lwd', help='Specifies the default outline line width of the annotation symbol (default: 0.8)', default='0.8',type=positivefloat)
@@ -98,13 +99,6 @@ if 'GENOMENAME' not in str(args.syntax):
 if len(args.syntax)>2:
     print('Error: syntax flag must be provided with between 1 and 2 arguments; %i arguments provided'%len(args.syntax))
     sys.exit()
-
-#sequencecol handling
-if args.sequencecols==None:
-    if args.comparisontype=='chain':
-        args.sequencecols=["white"]
-    else:
-        args.sequencecols=["light yellow","light blue"]
 
 #handling dna_seg_line - set true/false values to lowercase (will need to convert to TRUE/FALSE in R)
 for i in range(len(args.dna_seg_line)):
@@ -167,15 +161,25 @@ args.inputdir=str(args.inputdir).rstrip('/')
 runsubprocess(['mkdir -p %s'%outputpath],shell=True)
 
 if args.features==None:
-    runsubprocess(['Rscript','%s/genoplotr.R'%sourcedir,str(args.inputdir),str(','.join(args.syntax)),str(args.sequencelengths),str(args.comparisons),outputpath,str(args.comparisontype),str(args.main),str(args.main_pos),str(args.rightmargin),str(','.join(args.sequencecols)),str(','.join(args.dna_seg_labels)),str(args.dna_seg_label_cex),str(','.join(args.dna_seg_label_col)),str(','.join(args.dna_seg_line)),str(args.minimum_gap_size),str(args.scale).lower(),str(args.dna_seg_scale).lower(),str(args.dna_seg_scale_cex),str(args.output_height),str(args.output_width),str(args.legend_orientation),','.join(args.positivecols),','.join(args.negativecols),sourcedir,'featuresabsent'])
+    runsubprocess(['Rscript','%s/genoplotr.R'%sourcedir,str(args.inputdir),str(','.join(args.syntax)),str(args.sequencelengths),str(args.comparisons),outputpath,str(args.comparisontype),str(args.main),str(args.main_pos),str(args.rightmargin),str(';'.join(args.sequencecols)),str(','.join(args.dna_seg_labels)),str(args.dna_seg_label_cex),str(','.join(args.dna_seg_label_col)),str(','.join(args.dna_seg_line)),str(args.minimum_gap_size),str(args.scale).lower(),str(args.dna_seg_scale).lower(),str(args.dna_seg_scale_cex),str(args.dna_seg_scale_n_ticks),str(args.output_height),str(args.output_width),str(args.legend_orientation),','.join(args.positivecols),','.join(args.negativecols),sourcedir,'featuresabsent'])
 else:
-    runsubprocess(['Rscript','%s/genoplotr.R'%sourcedir,str(args.inputdir),str(','.join(args.syntax)),str(args.sequencelengths),str(args.comparisons),outputpath,str(args.comparisontype),str(args.main),str(args.main_pos),str(args.rightmargin),str(','.join(args.sequencecols)),str(','.join(args.dna_seg_labels)),str(args.dna_seg_label_cex),str(','.join(args.dna_seg_label_col)),str(','.join(args.dna_seg_line)),str(args.minimum_gap_size),str(args.scale).lower(),str(args.dna_seg_scale).lower(),str(args.dna_seg_scale_cex),str(args.output_height),str(args.output_width),str(args.legend_orientation),','.join(args.positivecols),','.join(args.negativecols),sourcedir,'featurespresent',str(args.features).rstrip('/'),str(args.annotationtxt_name),str(args.annotationtxt_height),str(args.annotationtxt_rot),str(args.annotationtxt_rot),exclusionpresent,exclusionarg,inclusionpresent,inclusionarg,str(args.annotationtxt_exclinc_casesensitive),str(args.annotation_gene_type),str(args.annotation_outline_col),str(args.annotation_fill_col),str(args.annotation_lty),str(args.annotation_lwd)])
+    runsubprocess(['Rscript','%s/genoplotr.R'%sourcedir,str(args.inputdir),str(','.join(args.syntax)),str(args.sequencelengths),str(args.comparisons),outputpath,str(args.comparisontype),str(args.main),str(args.main_pos),str(args.rightmargin),str(';'.join(args.sequencecols)),str(','.join(args.dna_seg_labels)),str(args.dna_seg_label_cex),str(','.join(args.dna_seg_label_col)),str(','.join(args.dna_seg_line)),str(args.minimum_gap_size),str(args.scale).lower(),str(args.dna_seg_scale).lower(),str(args.dna_seg_scale_cex),str(args.dna_seg_scale_n_ticks),str(args.output_height),str(args.output_width),str(args.legend_orientation),','.join(args.positivecols),','.join(args.negativecols),sourcedir,'featurespresent',str(args.features).rstrip('/'),str(args.annotationtxt_name),str(args.annotationtxt_height),str(args.annotationtxt_rot),str(args.annotationtxt_rot),exclusionpresent,exclusionarg,inclusionpresent,inclusionarg,str(args.annotationtxt_exclinc_casesensitive),str(args.annotation_gene_type),str(args.annotation_outline_col),str(args.annotation_fill_col),str(args.annotation_lty),str(args.annotation_lwd)])
 print('finished plotting visualisation')
 
 
 
 #OLD
-              
+
+
+#sequencecol handling
+#if args.sequencecols==None:
+#    if args.comparisontype=='chain':
+#        args.sequencecols=["white"]
+#    else:
+#        args.sequencecols=["light yellow","light blue"]
+#; default depends on --comparisontype; chain: "white"; singlereference: "light yellow" "light blue"
+#str(','.join(args.sequencecols))
+
 #input_group.add_argument('--tree', help='Tree file, used to plot tree alongside comparisons (optional)')
 #vis_group.add_argument('--annotation_cex', help='Specifies the default cex (scaling) of the annotation symbol (default: 1)', default='1',type=positiveint)
 #vis_group.add_argument('--annotation_cex', help='Specifies the default cex (scaling) of the annotation symbols; calculated automatically based on output dimensions unless specified, or provided on a per-gene basis in the gff file (optional)', type=positivefloat)

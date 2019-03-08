@@ -54,6 +54,7 @@ alignment_group.add_argument('-r','--alnrankmethod', help='Parameter used for se
 other_group = parser.add_argument_group('Other')
 other_group.add_argument('-t','--threads', help='Number of threads to use (default: 1)', default=1, type=int)
 other_group.add_argument('-b','--boot', help='Number of bootstraps to run (default: no bootstrapping)', default=0, type=positiveint)
+output_group.add_argument('--blastonly', action='store_true', help='If flag is provided, only output pairwise blast results; do not calculate distance statistics (default: run full pipeline)')
 args = parser.parse_args()
 outputpath=os.path.relpath(args.out, cwdir)
 
@@ -175,29 +176,30 @@ if args.sequences==None:
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
 
-runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.trimmedalignments)])
-laterruntime=runtime()
-print(laterruntime-startruntime, 'runtime; finished trimming alignments')
-if blasttype=='allvallpairwise':
-    if 'none' not in args.treemethod:
-      if 'dendrogram' in args.treemethod:
-          dendrogram='True'
-      else:
-          dendrogram='False'
-      if 'phylogeny' in args.treemethod:
-          phylogeny='True'
-      else:
-          phylogeny='False'
-          
-      linecount=int(runsubprocess(['wc -l < %s/included.txt'%outputpath],shell=True))
-      if linecount < 3:
-          print('Warning: there are only %i samples: a tree cannot be constructed'%linecount)
-      else:
-          treeargs=['Rscript','%s/tree.R'%sourcedir,outputpath,str(args.threads),str(args.boot),dendrogram,phylogeny]
-          treeargs.extend(args.distscore)
-          runsubprocess(treeargs)
-          laterruntime=runtime()
-          print(laterruntime-startruntime, 'runtime; finished plotting tree(s) using distance score(s): %s'%args.distscore)
+if args.blastonly!=True:
+    runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.trimmedalignments)])
+    laterruntime=runtime()
+    print(laterruntime-startruntime, 'runtime; finished trimming alignments')
+    if blasttype=='allvallpairwise':
+        if 'none' not in args.treemethod:
+          if 'dendrogram' in args.treemethod:
+              dendrogram='True'
+          else:
+              dendrogram='False'
+          if 'phylogeny' in args.treemethod:
+              phylogeny='True'
+          else:
+              phylogeny='False'
+
+          linecount=int(runsubprocess(['wc -l < %s/included.txt'%outputpath],shell=True))
+          if linecount < 3:
+              print('Warning: there are only %i samples: a tree cannot be constructed'%linecount)
+          else:
+              treeargs=['Rscript','%s/tree.R'%sourcedir,outputpath,str(args.threads),str(args.boot),dendrogram,phylogeny]
+              treeargs.extend(args.distscore)
+              runsubprocess(treeargs)
+              laterruntime=runtime()
+              print(laterruntime-startruntime, 'runtime; finished plotting tree(s) using distance score(s): %s'%args.distscore)
 
 
 

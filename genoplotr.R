@@ -23,34 +23,36 @@ dnasegline=as.character(args[14]) #false / black or false,flase / black,black ##
 mingapsize=as.numeric(args[15]) #0.02
 mainscale=as.character(args[16]) #true/false ##
 dnasegscale=as.character(args[17]) #true/false ##
-dnasegscalecex=as.numeric(args[18]) #1                 
-outputheight=as.character(args[19])
-outputwidth=as.character(args[20])
-legendorientation=as.character(args[21])
-poscolvec=as.character(args[22])
-negcolvec=as.character(args[23])
-sourcedir=as.character(args[24])
-featurespresent=as.character(args[25])
+dnasegscalecex=as.numeric(args[18]) #1
+dnasegscalenticks=as.integer(args[19])
+outputheight=as.character(args[20])
+outputwidth=as.character(args[21])
+legendorientation=as.character(args[22])
+poscolvec=as.character(args[23])
+negcolvec=as.character(args[24])
+sourcedir=as.character(args[25])
+featurespresent=as.character(args[26])
 if (featurespresent=='featurespresent') { #there is a feature input directory provided
-  featuresdir=as.character(args[26]) #features input dir
-  annotationtxtname=as.character(args[27]) #auto product gene
-  annotationtxtheight=as.character(args[28]) #auto or numeric
-  annotationtxtrot=as.integer(args[29])
-  annotationtxtcex=as.numeric(args[30])
-  exclusionpresent=as.character(args[31]) #exclusionabsent commandline filepath
-  exclusionarg=as.character(args[32])  #placeholder, comma-separated string, path to file
-  inclusionpresent=as.character(args[33])
-  inclusionarg=as.character(args[34])
-  casesensitive=as.character(args[35])
-  annotationgenetype=as.character(args[36]) #default: side_bars
-  annotationoutlinecol=as.character(args[37]) #default: black
-  annotationfillcol=as.character(args[38]) #default: black 
-  annotationlty=as.integer(args[39]) #default: 1
-  annotationlwd=as.numeric(args[40]) #default: 1
+  featuresdir=as.character(args[27]) #features input dir
+  annotationtxtname=as.character(args[28]) #auto product gene
+  annotationtxtheight=as.character(args[29]) #auto or numeric
+  annotationtxtrot=as.integer(args[30])
+  annotationtxtcex=as.numeric(args[31])
+  exclusionpresent=as.character(args[32]) #exclusionabsent commandline filepath
+  exclusionarg=as.character(args[33])  #placeholder, comma-separated string, path to file
+  inclusionpresent=as.character(args[34])
+  inclusionarg=as.character(args[35])
+  casesensitive=as.character(args[36])
+  annotationgenetype=as.character(args[37]) #default: side_bars
+  annotationoutlinecol=as.character(args[38]) #default: black
+  annotationfillcol=as.character(args[39]) #default: black 
+  annotationlty=as.integer(args[40]) #default: 1
+  annotationlwd=as.numeric(args[41]) #default: 1
   #annotationcex=as.character(args[19]) #default: auto or numeric
 } else {
   annotationtxtheight=0
   annotationgenetype='side_bars'
+  annotationtxtcex=0.5
 }
 
 
@@ -67,7 +69,8 @@ poscolvec<-unlist(strsplit(poscolvec,',',fixed=T))
 negcolvec<-unlist(strsplit(negcolvec,',',fixed=T))
 
 #handle sequencecols, syntax
-sequencecols<-unlist(strsplit(sequencecols,',',fixed=T))
+#sequencecols<-unlist(strsplit(sequencecols,',',fixed=T))
+sequencecols<-lapply(as.list(unlist(strsplit(sequencecols,';',fixed=T))),function(x) unlist(strsplit(x,',',fixed=T))) #handles new syntax with ";" separating different dna_segs (col1,col2;colA,colB...)
 
 syntaxvec<-unlist(strsplit(filenamesyntax,',',fixed=T))
 alignmentsyntax<-syntaxvec[1]
@@ -568,8 +571,9 @@ for (i in 1:nrow(comparisonfile)) {
   
   #get subject dna_seg
   subject_matrix<-matrix(xlim_subject,ncol=2,byrow=T)
+  seqcolscounter=1
   nseq<-nrow(subject_matrix)
-  myfill<-rep(sequencecols,nseq)[1:nseq]
+  myfill<-rep(sequencecols[[seqcolscounter]],nseq)[1:nseq]
   subject_seq<-data.frame(name=seqlengths[seqlengths$names==subject,2], #using contigs for names
                           start=subject_matrix[,1],
                           end=subject_matrix[,2],
@@ -646,8 +650,12 @@ for (i in 1:nrow(comparisonfile)) {
     query<-queryvec[j]
     #query_matrix<-matrix(xlim_query,ncol=2,byrow=T) #!bug
     query_matrix<-matrix(xlim_queries[[j]],ncol = 2,byrow = T)
+    seqcolscounter=seqcolscounter+1
+    if (length(sequencecols)<seqcolscounter) {
+      sequencecols[[seqcolscounter]]<-sequencecols[[1]]
+    }
     nseq<-nrow(query_matrix)
-    myfill<-rep(sequencecols,nseq)[1:nseq]
+    myfill<-rep(sequencecols[[seqcolscounter]],nseq)[1:nseq]
     query_seq<-data.frame(name=seqlengths[seqlengths$names==query,2], #using contigs for names
                           start=query_matrix[,1],
                           end=query_matrix[,2],
@@ -791,22 +799,20 @@ for (i in 1:nrow(comparisonfile)) {
       qry<-pair[2]
       filename<-gsub("GENOMENAME", sbj, alignmentsyntax) #replaces GENOMENAME placeholder with subject genome name
       report<-read.table(gsubfn('%1|%2',list('%1'=inputdir,'%2'=filename),'%1/%2'),sep='\t',header=TRUE) #read subject alignment file
-      report<-report[report$qname==qry,] #filter subject alignment file by query
+      report<-report[sapply(strsplit(as.vector(report$qname),'|',fixed=T),function(x) x[1])==qry,] #filter subject alignment file by query
       #if there are contigs present in qname or sname column (assuming genome|contig formatting), apply rangeshifting
-      qnamecontigs<-sapply(strsplit(as.vector(report$qname),'|',fixed=T),function(x) x[2])
-      if (unique(is.na(qnamecontigs))==FALSE) {  #if there are contigs i.e rangeshifting is required
-        reformattednames<-sapply(strsplit(as.vector(report$qname),'|',fixed=T),pastefunction)
-        addlens<-rangeshifting(reformattednames,seqlengthsreport,seqlengthsreport$names)
-        report$qstart<-report$qstart+addlens
-	report$qend<-report$qend+addlens
-      }
+      #qnamecontigs<-sapply(strsplit(as.vector(report$qname),'|',fixed=T),function(x) x[2])
+      #if (unique(is.na(qnamecontigs))==FALSE) {  #if there are contigs i.e rangeshifting is required
+      reformattednames<-sapply(strsplit(as.vector(report$qname),'|',fixed=T),pastefunction)
+      addlens<-rangeshifting(reformattednames,seqlengthsreport,seqlengthsreport$names)
+      report$qstart<-report$qstart+addlens
+      report$qend<-report$qend+addlens
       snamecontigs<-sapply(strsplit(as.vector(report$sname),'|',fixed=T),function(x) x[2])
-      if (unique(is.na(snamecontigs))==FALSE) {  #if there are contigs i.e rangeshifting is required
-        reformattednames<-sapply(strsplit(as.vector(report$sname),'|',fixed=T),pastefunction)
-        addlens<-rangeshifting(reformattednames,seqlengthsreport,seqlengthsreport$names)
-        report$sstart<-report$sstart+addlens
-	report$send<-report$send+addlens
-      }
+      #if (unique(is.na(snamecontigs))==FALSE) {  #if there are contigs i.e rangeshifting is required
+      reformattednames<-sapply(strsplit(as.vector(report$sname),'|',fixed=T),pastefunction)
+      addlens<-rangeshifting(reformattednames,seqlengthsreport,seqlengthsreport$names)
+      report$sstart<-report$sstart+addlens
+      report$send<-report$send+addlens
       #
       mystrand<-as.vector(report$strand)
       mystrand[mystrand=='+']<-1
@@ -824,10 +830,12 @@ for (i in 1:nrow(comparisonfile)) {
       comparisons[[z]]<-comparison
     }
     #add right hand side margin
-    xlimmaxindex<-which.max(sapply(xlims, function(x) max(x)))
-    xlimmaxindexlast<-length(xlims[[xlimmaxindex]])
-    newxlimvalue<-xlims[[xlimmaxindex]][xlimmaxindexlast]+(xlims[[xlimmaxindex]][xlimmaxindexlast]*rightmargin)
-    xlims[[xlimmaxindex]][xlimmaxindexlast]<-newxlimvalue
+    maxxlims<-sapply(xlims, function(x) max(x))
+    maxxlimindices<-which(maxxlims==max(maxxlims))
+    for (indx in maxxlimindices) {
+      lastindex<-length(xlims[[indx]])
+      xlims[[indx]][lastindex]<-ceiling(xlims[[indx]][lastindex]+((xlims[[indx]][lastindex])*rightmargin))
+    }
     #calculate output dimensions, and from this calculate annotation cex
     if (annotationtxtheight=='auto') {
       annotationtxtheight<-max(nchar(do.call(rbind,annotationtexts)$text))/3.5
@@ -861,9 +869,9 @@ for (i in 1:nrow(comparisonfile)) {
     pdf(writefilepath,outputwidth,outputheight)
     
     if (treepresentbool==TRUE) {
-      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims,tree=mytree,annotations = annotationtexts,annotation_height = annotationtxtheight/1.75,annotation_cex = annotationtxtcex,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex)
+      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims,tree=mytree,annotations = annotationtexts,annotation_height = annotationtxtheight/1.75,annotation_cex = annotationtxtcex,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex,n_scale_ticks=dnasegscalenticks)
     } else {
-      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims,annotations = annotationtexts,annotation_height = annotationtxtheight/1.75,annotation_cex = annotationtxtcex,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex)
+      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims,annotations = annotationtexts,annotation_height = annotationtxtheight/1.75,annotation_cex = annotationtxtcex,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex,n_scale_ticks=dnasegscalenticks)
     }
     dev.off()
     
@@ -885,22 +893,36 @@ for (i in 1:nrow(comparisonfile)) {
   if (comparisontype=='singlereference') {
     #comparison - single reference - need to overwrite xlims so that they are set to limits of the longest genome in the comparison
     #reset xlims
-    maxxlim<-1
-    for (xlim in xlims) {
-      maxxlim<-max(maxxlim,xlim)
-    }
-    
-    xlims2<-vector("list",length(xlims)) #problem - by using maxxlim it means genomes can't be shifted to the middle for optimal display - this is a limitation I'll accept since other options don't seem to work
+    maxrefxlim<-max(xlims[[1]]) #if genome is shorter than reference, set xlims to c(1,maxrefxlim), otherwise c(1,maxxlim) 
+    xlims2<-vector("list",length(xlims))
     for (z in 1:length(xlims)) {
-      xlims2[[z]]<-c(1,maxxlim)
+      if (z==1) {
+        xlims2[[z]]<-c(1,maxrefxlim)
+      }
+      if (max(xlims[[z]]<=maxrefxlim)) {
+        xlims2[[z]]<-c(1,maxrefxlim)
+      }
+      if (max(xlims[[z]]>maxrefxlim)) {
+        xlims2[[z]]<-c(1,max(xlims[[z]]))
+      }
     }
-    
+
     filename<-gsub("GENOMENAME", subject, alignmentsyntax) #replaces GENOMENAME placeholder with subject genome name
     report<-read.table(gsubfn('%1|%2',list('%1'=inputdir,'%2'=filename),'%1/%2'),sep='\t',header=TRUE) #read subject alignment file
     comparisons<-vector("list",length(queryvec))
     for (z in 1:length(queryvec)) {
       query<-queryvec[z]
-      qreport<-report[report$qname==query,]
+      qreport<-report[sapply(strsplit(as.vector(report$qname),'|',fixed=T),function(x) x[1])==query,]
+      #if there are contigs present, apply rangeshifting
+      reformattednames<-sapply(strsplit(as.vector(qreport$qname),'|',fixed=T),pastefunction)
+      addlens<-rangeshifting(reformattednames,seqlengthsreport,seqlengthsreport$names)
+      qreport$qstart<-qreport$qstart+addlens
+      qreport$qend<-qreport$qend+addlens
+      reformattednames<-sapply(strsplit(as.vector(qreport$sname),'|',fixed=T),pastefunction)
+      addlens<-rangeshifting(reformattednames,seqlengthsreport,seqlengthsreport$names)
+      qreport$sstart<-qreport$sstart+addlens
+      qreport$send<-qreport$send+addlens
+      #
       mystrand<-as.vector(qreport$strand)
       mystrand[mystrand=='+']<-1
       mystrand[mystrand=='-']<--1
@@ -933,10 +955,12 @@ for (i in 1:nrow(comparisonfile)) {
     offsets<-rep(0,length(dna_segs))
     
     #add right hand side margin
-    xlimmaxindex<-which.max(sapply(xlims2, function(x) max(x)))
-    xlimmaxindexlast<-length(xlims2[[xlimmaxindex]])
-    newxlimvalue<-xlims2[[xlimmaxindex]][xlimmaxindexlast]+(xlims2[[xlimmaxindex]][xlimmaxindexlast]*rightmargin)
-    xlims2[[xlimmaxindex]][xlimmaxindexlast]<-newxlimvalue
+    maxxlims<-sapply(xlims2, function(x) max(x))
+    maxxlimindices<-which(maxxlims==max(maxxlims))
+    for (indx in maxxlimindices) {
+      lastindex<-length(xlims2[[indx]])
+      xlims2[[indx]][lastindex]<-ceiling(xlims2[[indx]][lastindex]+((xlims2[[indx]][lastindex])*rightmargin))
+    }
     
     #calculate output dimensions, and from this calculate annotation cex
     if (annotationtxtheight=='auto') {
@@ -971,10 +995,10 @@ for (i in 1:nrow(comparisonfile)) {
     
     if (treepresentbool==TRUE) {
       #plot_gene_map2(dna_segs = dna_segs2, comparisons = comparisons,xlims = xlims2,tree=mytree,annotations = annotationtexts,annotation_height = max(nchar(do.call(rbind,annotationtexts)$text))/4,annotation_cex = 0.5,plot_new = T)
-      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims2,tree=mytree,annotations = annotationtexts,annotation_height = annotationtxtheight/1.75,annotation_cex = annotationtxtcex,offsets=offsets,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex)
+      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims2,tree=mytree,annotations = annotationtexts,annotation_height = annotationtxtheight/1.75,annotation_cex = annotationtxtcex,offsets=offsets,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex,n_scale_ticks=dnasegscalenticks)
     } else {
       #plot_gene_map2(dna_segs = dna_segs2, comparisons = comparisons,xlims = xlims2,annotations = annotationtexts,annotation_height = max(nchar(do.call(rbind,annotationtexts)$text))/4,annotation_cex = 0.5,plot_new = T)
-      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims2,annotations = annotationtexts,annotation_height = annotationtxtheight/1.75,annotation_cex = annotationtxtcex,offsets=offsets,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex)
+      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims2,annotations = annotationtexts,annotation_height = annotationtxtheight/1.75,annotation_cex = annotationtxtcex,offsets=offsets,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex,n_scale_ticks=dnasegscalenticks)
     }
     dev.off()
     
