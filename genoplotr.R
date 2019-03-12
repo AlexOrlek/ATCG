@@ -995,6 +995,7 @@ for (i in 1:nrow(comparisonfile)) {
     print('dimensions: height, width')
     print(outputheight)
     print(outputwidth)
+    #
     if (segplots=='placeholder') {
       segplots<-rep(NULL,length(dna_segs))
     }
@@ -1127,6 +1128,10 @@ for (i in 1:nrow(comparisonfile)) {
     print('dimensions: height, width')
     print(outputheight)
     print(outputwidth)
+    #
+    if (segplots=='placeholder') {
+      segplots<-rep(NULL,length(dna_segs))
+    }
     #
     writefilepath=gsubfn('%1|%2', list('%1'=outdir,'%2'=outputname), '%1/%2.pdf')
     pdf(writefilepath,outputwidth,outputheight)
