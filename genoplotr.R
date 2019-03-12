@@ -10,44 +10,58 @@ inputdir=as.character(args[1]) #alignments/tree input dir
 filenamesyntax=as.character(args[2]) #syntax for alignment files and (optionally) for feature annotation files e.g. trimmedalignments_GENOMENAME.tsv,GENOMENAME.gb; GENOMENAME will be replaced
 seqlengths=as.character(args[3]) #seqlength file
 comparisons=as.character(args[4]) #comparisons file
-outdir=as.character(args[5]) #output dir
-comparisontype=as.character(args[6]) #'chain' or 'singlereference'
-title=as.character(args[7]) #'my title' or NULL ##                                                 
-titlepos=as.character(args[8]) #centre   
-rightmargin=as.numeric(args[9]) #0.05
-sequencecols=as.character(args[10]) #"light yellow,light cyan"
-dnaseglabels=as.character(args[11])  #genome1,genome2 OR NULL (default) ##
-dnaseglabelcex=as.numeric(args[12]) #1
-dnaseglabelcol=as.character(args[13]) #black or black,black ##
-dnasegline=as.character(args[14]) #false / black or false,flase / black,black ##
-mingapsize=as.numeric(args[15]) #0.02
-mainscale=as.character(args[16]) #true/false ##
-dnasegscale=as.character(args[17]) #true/false ##
-dnasegscalecex=as.numeric(args[18]) #1
-dnasegscalenticks=as.integer(args[19])
-outputheight=as.character(args[20])
-outputwidth=as.character(args[21])
-legendorientation=as.character(args[22])
-poscolvec=as.character(args[23])
-negcolvec=as.character(args[24])
-sourcedir=as.character(args[25])
-featurespresent=as.character(args[26])
+segplots=as.character(args[5]) #placeholder or filepath
+outdir=as.character(args[6]) #output dir
+comparisontype=as.character(args[7]) #'chain' or 'singlereference'
+title=as.character(args[8]) #'my title' or NULL ##                                                 
+titlepos=as.character(args[9]) #centre   
+rightmargin=as.numeric(args[10]) #0.05
+sequencefills=as.character(args[11]) #"light yellow,light cyan"
+sequenceoutlines=as.character(args[12])
+sequencetypes=as.character(args[13])
+dnaseglabels=as.character(args[14])  #genome1,genome2 OR NULL (default) ##
+dnaseglabelcex=as.numeric(args[15]) #1
+dnaseglabelcol=as.character(args[16]) #black or black,black ##
+dnasegline=as.character(args[17]) #false hardcoded
+mingapsize=as.numeric(args[18]) #0.02
+mainscale=as.character(args[19]) #true/false ##
+dnasegscale=as.character(args[20]) #true/false ##
+dnasegscalecex=as.numeric(args[21]) #1
+dnasegscalenticks=as.integer(args[22])
+outputheight=as.character(args[23])
+outputwidth=as.character(args[24])
+legendorientation=as.character(args[25])
+legendtextcex=as.numeric(args[26])
+legendtitlecex=as.numeric(args[27])
+poscolvec=as.character(args[28])
+negcolvec=as.character(args[29])
+gffannotationtypevec=as.character(args[30])
+treewidth=as.numeric(args[31])
+treebranchlabelscex=as.numeric(args[32])
+treescale=as.character(args[33]) #True if flag provided
+segplotheight=as.numeric(args[34])
+segplotheightunit=as.character(args[35]) #null hardcoded
+segplotyaxis=as.character(args[36]) #NULL or numeric
+segplotyaxiscex=as.numeric(args[37])
+sourcedir=as.character(args[38])
+featurespresent=as.character(args[39])
 if (featurespresent=='featurespresent') { #there is a feature input directory provided
-  featuresdir=as.character(args[27]) #features input dir
-  annotationtxtname=as.character(args[28]) #auto product gene
-  annotationtxtheight=as.character(args[29]) #auto or numeric
-  annotationtxtrot=as.integer(args[30])
-  annotationtxtcex=as.numeric(args[31])
-  exclusionpresent=as.character(args[32]) #exclusionabsent commandline filepath
-  exclusionarg=as.character(args[33])  #placeholder, comma-separated string, path to file
-  inclusionpresent=as.character(args[34])
-  inclusionarg=as.character(args[35])
-  casesensitive=as.character(args[36])
-  annotationgenetype=as.character(args[37]) #default: side_bars
-  annotationoutlinecol=as.character(args[38]) #default: black
-  annotationfillcol=as.character(args[39]) #default: black 
-  annotationlty=as.integer(args[40]) #default: 1
-  annotationlwd=as.numeric(args[41]) #default: 1
+  featuresdir=as.character(args[40]) #features input dir
+  annotationtxtname=as.character(args[41]) #auto product gene
+  annotationtxttype=as.character(args[42]) #mid or spanning
+  annotationtxtheight=as.character(args[43]) #auto or numeric
+  annotationtxtrot=as.integer(args[44])
+  annotationtxtcex=as.numeric(args[45])
+  exclusionpresent=as.character(args[46]) #exclusionabsent commandline filepath
+  exclusionarg=as.character(args[47])  #placeholder, comma-separated string, path to file
+  inclusionpresent=as.character(args[48])
+  inclusionarg=as.character(args[49])
+  casesensitive=as.character(args[50])
+  annotationgenetype=as.character(args[51]) #default: side_bars
+  annotationoutlinecol=as.character(args[52]) #default: black
+  annotationfillcol=as.character(args[53]) #default: black 
+  annotationlty=as.integer(args[54]) #default: 1
+  annotationlwd=as.numeric(args[55]) #default: 1
   #annotationcex=as.character(args[19]) #default: auto or numeric
 } else {
   annotationtxtheight=0
@@ -59,18 +73,44 @@ if (featurespresent=='featurespresent') { #there is a feature input directory pr
 annotationcex<-1 #not sure what these do; set to defaults
 annotationpch<-8
 
+subjectrot0present<-FALSE
+queryrot0present<-FALSE
+
+#if present, read seg_plots
+if (segplots!='placeholder') {
+  segplotpath=gsubfn('%1|%2',list('%1'=sourcedir,'%2'=segplots),'%1/%2')
+  segplots=readRDS(segplotpath)
+}
+
+#handle segplotyaxis - NULL or numeric
+if (segplotyaxis!='NULL') {
+  segplotyaxis<-as.numeric(segplotyaxis)
+}
+
+#handle boolean
+if (treescale!='True') {
+  treescale=FALSE
+} else {
+  treescale=TRUE
+}
+
+
 #handle title
 if (title=='NULL') {
   title<-NULL
 }
 
-#handle col vecs ###!!!added
+#handle col vecs and gffannotationtypevec
 poscolvec<-unlist(strsplit(poscolvec,',',fixed=T))
 negcolvec<-unlist(strsplit(negcolvec,',',fixed=T))
 
-#handle sequencecols, syntax
-#sequencecols<-unlist(strsplit(sequencecols,',',fixed=T))
-sequencecols<-lapply(as.list(unlist(strsplit(sequencecols,';',fixed=T))),function(x) unlist(strsplit(x,',',fixed=T))) #handles new syntax with ";" separating different dna_segs (col1,col2;colA,colB...)
+gffannotationtypevec<-unlist(strsplit(gffannotationtypevec,',',fixed=T))
+
+#handle sequencefills, sequencetypes, syntax
+#sequencefills<-unlist(strsplit(sequencefills,',',fixed=T))
+sequencefills<-lapply(as.list(unlist(strsplit(sequencefills,';',fixed=T))),function(x) unlist(strsplit(x,',',fixed=T))) #handles new syntax with ";" separating different dna_segs (col1,col2;colA,colB...)
+sequenceoutlines<-lapply(as.list(unlist(strsplit(sequenceoutlines,';',fixed=T))),function(x) unlist(strsplit(x,',',fixed=T)))
+sequencetypes<-lapply(as.list(unlist(strsplit(sequencetypes,';',fixed=T))),function(x) unlist(strsplit(x,',',fixed=T)))
 
 syntaxvec<-unlist(strsplit(filenamesyntax,',',fixed=T))
 alignmentsyntax<-syntaxvec[1]
@@ -227,7 +267,7 @@ applyexclincl<-function(annotvec,terms,casesen,exclincl) {
 }
 
 
-reformatgff<-function(gff,annotationtagname=annotationtxtname,defaultoutlinecol=annotationoutlinecol,defaultgenetype=annotationgenetype,defaultfillcol=annotationfillcol,defaultlty=annotationlty,defaultlwd=annotationlwd,defaultpch=annotationpch,defaultcex=annotationcex,exclusioncriteria=exclusionarg,inclusioncriteria=inclusionarg,casesen=casesensitive) {
+reformatgff<-function(gff,annotationtagname=annotationtxtname,defaultoutlinecol=annotationoutlinecol,defaultgenetype=annotationgenetype,defaulttxttype=annotationtxttype,defaulttxtrot=annotationtxtrot,defaultfillcol=annotationfillcol,defaultlty=annotationlty,defaultlwd=annotationlwd,defaultpch=annotationpch,defaultcex=annotationcex,exclusioncriteria=exclusionarg,inclusioncriteria=inclusionarg,casesen=casesensitive) {
   #get annotation text
   if (annotationtagname=='auto') {
     name1<-getAttributeField(gff$attributes,'gene')
@@ -259,6 +299,11 @@ reformatgff<-function(gff,annotationtagname=annotationtxtname,defaultoutlinecol=
   gene_type[is.na(gene_type)]<-defaultgenetype
   gene_type[gene_type=='arrowheads']<-'arrowsgrob'
   gene_type<-as.character(gene_type)
+  text_type<-getAttributeField(gff$attributes,'text_type')
+  text_type[is.na(text_type)]<-defaulttxttype
+  text_rot<-getAttributeField(gff$attributes,'text_rotation')
+  text_rot[is.na(text_rot)]<-defaulttxtrot
+  #text_rot[text_type=='spanning']<-0
   fill<-getAttributeField(gff$attributes,'fill')
   fill[is.na(fill)]<-defaultfillcol
   fill<-as.character(fill)
@@ -266,17 +311,24 @@ reformatgff<-function(gff,annotationtagname=annotationtxtname,defaultoutlinecol=
   lty[is.na(lty)]<-defaultlty
   lwd<-getAttributeField(gff$attributes,'lwd')
   lwd[is.na(lwd)]<-defaultlwd
-  pch<-getAttributeField(gff$attributes,'pch')
+  pch<-getAttributeField(gff$attributes,'pch') #not sure this has any effect?
   pch[is.na(pch)]<-defaultpch
-  cex<-getAttributeField(gff$attributes,'cex')
+  cex<-getAttributeField(gff$attributes,'cex') #this has no effect? - annotation text size is controlled by geoplotr plot_gene_function flag
   cex[is.na(cex)]<-defaultcex
   #make genoplotr style annotation dataframe
-  reformatteddf<-data.frame(name,start,end,strand,col,gene_type,fill,lty,lwd,pch,cex,stringsAsFactors = F)
+  reformatteddf<-data.frame(name,start,end,strand,col,gene_type,text_type,text_rot,fill,lty,lwd,pch,cex,stringsAsFactors = F)
+  reformatteddf$text_rot<-as.integer(reformatteddf$text_rot)
   reformatteddf$lty<-as.integer(reformatteddf$lty)
   reformatteddf$lwd<-as.numeric(reformatteddf$lwd)
   reformatteddf$pch<-as.integer(reformatteddf$pch)
   reformatteddf$cex<-as.numeric(reformatteddf$cex)
-  return(reformatteddf)
+  #split NA genetype (don't plot gene_type annotation, text only) from non-NA gene-type                                                                                                                     
+  nogeneindices<-which(gene_type=='none')
+  reformatteddfNA<-reformatteddf[nogeneindices,]
+  if (length(nogeneindices)>0) {
+    reformatteddf<-reformatteddf[-nogeneindices,]
+  }
+  return(list(reformatteddf,reformatteddfNA))
 }
 
 
@@ -371,10 +423,10 @@ getlegendplot<-function(comparison,indices,mypids,colvec,legendorientation,legen
   p<-ggplot(dummydf,aes(x=indices,y=PercentIdentity,colour=PercentIdentity)) + geom_point()
   if (length(colvec)>2) {
     p2<-p + scale_colour_gradientn(colours=colvec,limits = c(floor(min(comparison$pid)),ceiling(max(comparison$pid))), 
-                                   breaks = getbreaks(comparison$pid,10)) + labs(colour="Percent\nIdentity") + theme(legend.text.align = 1, legend.text = element_text(size=rel(0.7)),legend.title = element_text(size=rel(0.7)),legend.position = c(0.5,0.5),legend.key.size = unit(30,"pt")) #legend.margin = margin(0,0,0,0),legend.box.margin = margin(0,0,0,0)  #legend.position = legendpos
+                                   breaks = getbreaks(comparison$pid,10)) + labs(colour="Percent\nIdentity") + theme(legend.text.align = 1, legend.text = element_text(size=rel(legendtextcex)),legend.title = element_text(size=rel(legendtitlecex)),legend.position = c(0.5,0.5),legend.key.size = unit(30,"pt")) #legend.margin = margin(0,0,0,0),legend.box.margin = margin(0,0,0,0)  #legend.position = legendpos
   } else {
     p2<-p + scale_colour_gradient(low=colvec[1],high=colvec[2],limits = c(floor(min(comparison$pid)),ceiling(max(comparison$pid))), 
-                                  breaks = getbreaks(comparison$pid,10)) + labs(colour="Percent\nIdentity") + theme(legend.text.align = 1,legend.text = element_text(size=rel(0.7)),legend.title=element_text(size=rel(0.7)),legend.position = c(0.5,0.5),legend.key.size = unit(30,"pt"))
+                                  breaks = getbreaks(comparison$pid,10)) + labs(colour="Percent\nIdentity") + theme(legend.text.align = 1,legend.text = element_text(size=rel(legendtextcex)),legend.title=element_text(size=rel(legendtitlecex)),legend.position = c(0.5,0.5),legend.key.size = unit(30,"pt"))
   }
   if (legendorientation=='horizontal') {
     p2<-p2+theme(legend.direction = "horizontal", legend.text = element_text(angle = 90))
@@ -438,6 +490,12 @@ assignInNamespace("colour_ramp", function(colors, na.color = NA, alpha = TRUE){
 }, "scales")
 
 
+#miscellaneous functions
+
+midpos<-function(dna_seg) {
+  apply(dna_seg[, c("start", "end")], 1, mean)
+}
+
 
 ###annotation legend functions
 
@@ -470,7 +528,7 @@ getannotationlegendplot<-function(annotation,annotationtext) {
     scale_fill_manual(values=dummydf$fill,labels=annotationtext) + 
     guides(colour=guide_legend(override.aes=list(shape=genetypetoshape(dummydf$gene_type)))) +  #doesn't matter whether colour or fill legend is overridden 
     labs(fill="Gene annotations",colour="Gene annotations") + 
-    theme(legend.text.align = NULL,legend.text = element_text(size=rel(0.7)),legend.title=element_text(size=rel(0.7)),legend.position = c(0.5,0.5),legend.key.size = unit(30,"pt"))
+    theme(legend.text.align = NULL,legend.text = element_text(size=rel(legendtextcex)),legend.title=element_text(size=rel(legendtitlecex)),legend.position = c(0.5,0.5),legend.key.size = unit(30,"pt"))
   annotationlegend<-get_legend(p)
   return(annotationlegend)
 }
@@ -571,16 +629,20 @@ for (i in 1:nrow(comparisonfile)) {
   
   #get subject dna_seg
   subject_matrix<-matrix(xlim_subject,ncol=2,byrow=T)
-  seqcolscounter=1
+  seqcounter=1
   nseq<-nrow(subject_matrix)
-  myfill<-rep(sequencecols[[seqcolscounter]],nseq)[1:nseq]
+  myfill<-rep(sequencefills[[seqcounter]],nseq)[1:nseq]
+  myoutline<-rep(sequenceoutlines[[seqcounter]],nseq)[1:nseq]
+  myseqtype<-rep(sequencetypes[[seqcounter]],nseq)[1:nseq]
   subject_seq<-data.frame(name=seqlengths[seqlengths$names==subject,2], #using contigs for names
                           start=subject_matrix[,1],
                           end=subject_matrix[,2],
                           strand=rep(1,nseq),
-                          col=rep("black",nseq),
-                          gene_type=rep("blocks",nseq),
-                          #fill=rep("light gray",nseq),  #!!!this should be alternating to distinguish adjacent contigs
+                          col=rep(myoutline,nseq),
+                          gene_type=myseqtype,
+			  text_type=rep("mid",nseq),
+			  text_rot=rep(40,nseq),
+                          #fill=rep("light gray",nseq),  #this could be alternating to distinguish adjacent contigs
                           fill=myfill,
                           lty=rep(1,nseq),
                           lwd=rep(1,nseq),
@@ -596,7 +658,8 @@ for (i in 1:nrow(comparisonfile)) {
     #colnames(subject_annotations)<-c("name","start","end","strand","col","gene_type","fill","lty","lwd","pch","cex")
     #subject_annotations<-subject_annotations[subject_annotations$gene_type!='introns',]
     sbj_gff<-read.gff(gsubfn('%1|%2',list('%1'=featuresdir,'%2'=annotationsfile),'%1/%2'))
-    sbj_gff<-sbj_gff[sbj_gff$type=='CDS',]
+    #sbj_gff<-sbj_gff[sbj_gff$type=='CDS',]
+    sbj_gff<-sbj_gff[sbj_gff$type %in% gffannotationtypevec,]
     sbj_gff<-removeparentannotations(sbj_gff)
     ##shift ranges if there are contigs
     reformattednames<-sapply(strsplit(as.vector(sbj_gff$seqid),'|',fixed=T),pastefunction)
@@ -604,33 +667,60 @@ for (i in 1:nrow(comparisonfile)) {
     sbj_gff$start<-sbj_gff$start+addlens
     sbj_gff$end<-sbj_gff$end+addlens
     ##
-    subject_annotations<-reformatgff(sbj_gff)
-    subject_seg<-rbind(subject_seq,subject_annotations)
-    subject_seg<-dna_seg(subject_seg)
-    #get annotation text - for legend
-    annotlgndcounter<-annotlgndcounter+1
-    legendannotationlist<-getallannotations(subject_annotations)
-    legendannotation<-legendannotationlist[[1]];legendtext<-legendannotationlist[[2]]
-    alllegendannotations[[annotlgndcounter]]<-legendannotation;alllegendannotationtexts[[annotlgndcounter]]<-legendtext
+    subject_annotations_list<-reformatgff(sbj_gff)
+    subject_annotations<-subject_annotations_list[[1]];subject_annotations_nogenetype<-subject_annotations_list[[2]]
+    if (nrow(subject_annotations)>0) {
+      subject_seg<-rbind(subject_seq,subject_annotations)
+      subject_seg<-dna_seg(subject_seg)
+      #get annotation text - for legend
+      annotlgndcounter<-annotlgndcounter+1
+      legendannotationlist<-getallannotations(subject_annotations)
+      legendannotation<-legendannotationlist[[1]];legendtext<-legendannotationlist[[2]]
+      alllegendannotations[[annotlgndcounter]]<-legendannotation;alllegendannotationtexts[[annotlgndcounter]]<-legendtext
+    } else {
+      subject_seg<-dna_seg(subject_seq)
+    }
   } else {
     subject_seg<-dna_seg(subject_seq)
   }
 
-
   #get annotation text - for genoplotr plot; if there are no annotations, annotation will be blank ("")
+  if (featurespresent=='featurespresent') {  #spanning text will be plotted irrespective of whether annotation text plotting is specified in comparison file; spanning text annotation won't be included in annotation legend
+    subject_seg_all<-rbind(as.data.frame(subject_seg),subject_annotations_nogenetype)
+    subject_seg_spanning<-subject_seg_all[subject_seg_all$text_type=='spanning',]
+    if (nrow(subject_seg_spanning)>0) {  #spanning text will be plotted irrespective of whether annotation text plotting is specified in comprison file
+      pos1<-subject_seg_spanning$start
+      pos2<-subject_seg_spanning$end
+      annottext_spanning<-subject_seg_spanning$name
+      annottextrot_spanning<-subject_seg_spanning$text_rot
+    }
+  }
   cellpresentbool<-cellpresent(comparison[i,6]) #plot subject text annotations?
   if (cellpresentbool==TRUE && featurespresent=='featurespresent') {
-    mid_pos<-middle(subject_seg)[1:nrow(subject_seg)]
-    annottext<-subject_seg$name #need to overwrite [1] with blank
-    annottext[1:nrow(subject_seq)]<-""
-    subjectannot<-annotation(x1=mid_pos,text=annottext,rot = annotationtxtrot)
+    subject_seg_mid<-subject_seg_all[subject_seg_all$text_type=='mid',]
+    mid_pos<-midpos(subject_seg_mid)[1:nrow(subject_seg_mid)]
+    annottext_mid<-subject_seg_mid$name #need to overwrite subject_seq text with blank
+    annottext_mid[1:nrow(subject_seq)]<-""
+    annottextrot_mid<-subject_seg_mid$text_rot
+    if (nrow(subject_seg_spanning)>0) {
+      subjectannot<-annotation(x1=c(mid_pos,pos1),x2<-c(rep(NA,length(mid_pos)),pos2),text=c(annottext_mid,annottext_spanning),rot = c(annottextrot_mid,annottextrot_spanning))
+    } else {
+      subjectannot<-annotation(x1=mid_pos,text=annottext_mid,rot = annottextrot_mid)
+    }
   } else {
-    subjectannot<-annotation(x1=1,text="") 
+    if (featurespresent=='featurespresent' && nrow(subject_seg_spanning)>0) {
+      subjectannot<-annotation(x1=pos1,x2=pos2,text=annottext_spanning,rot = annottextrot_spanning)
+    } else {
+      subjectannot<-annotation(x1=1,text="",rot=40)
+    }
   }
-  
+  subjectrot0present<-sum(subjectannot$rot==0)>0 #TRUE if there are 0 text rotations
+  subjectannotrotgt0<-subjectannot[subjectannot$rot>0,]
+
   #get query dna_seg(s)
   query_segs<-vector("list",length(queryvec))
   query_annotation_texts<-vector("list",length(queryvec))
+  query_annotation_texts_rotgt0<-vector("list",length(queryvec))
   
   #get queryannotation/querytxtannotation genome names (indicating which should be plotted)
   cellpresentbool<-cellpresent(comparison[i,5]) #query annotations provided?
@@ -650,55 +740,67 @@ for (i in 1:nrow(comparisonfile)) {
     query<-queryvec[j]
     #query_matrix<-matrix(xlim_query,ncol=2,byrow=T) #!bug
     query_matrix<-matrix(xlim_queries[[j]],ncol = 2,byrow = T)
-    seqcolscounter=seqcolscounter+1
-    if (length(sequencecols)<seqcolscounter) {
-      sequencecols[[seqcolscounter]]<-sequencecols[[1]]
+    seqcounter=seqcounter+1
+    if (length(sequencefills)<seqcounter) {
+      sequencefills[[seqcounter]]<-sequencefills[[1]]
+    }
+    if (length(sequenceoutlines)<seqcounter) {
+      sequenceoutlines[[seqcounter]]<-sequenceoutlines[[1]]
+    }
+    if (length(sequencetypes)<seqcounter) {
+      sequencetypes[[seqcounter]]<-sequencetypes[[1]]
     }
     nseq<-nrow(query_matrix)
-    myfill<-rep(sequencecols[[seqcolscounter]],nseq)[1:nseq]
+    myfill<-rep(sequencefills[[seqcounter]],nseq)[1:nseq]
+    myoutline<-rep(sequenceoutlines[[seqcounter]],nseq)[1:nseq]
+    myseqtype<-rep(sequencetypes[[seqcounter]],nseq)[1:nseq]
     query_seq<-data.frame(name=seqlengths[seqlengths$names==query,2], #using contigs for names
                           start=query_matrix[,1],
                           end=query_matrix[,2],
                           strand=rep(1,nseq),
-                          col=rep("black",nseq),
-                          gene_type=rep("blocks",nseq),
-                          #fill=rep("light gray",nseq), #!!!this should be alternating to distinguish adjacent contigs
+                          col=rep(myoutline,nseq),
+                          gene_type=myseqtype,
+			  text_type=rep("mid",nseq),
+			  text_rot=rep(40,nseq),
+                          #fill=rep("light gray",nseq), #this could be alternating to distinguish adjacent contigs
                           fill=myfill,
                           lty=rep(1,nseq),
                           lwd=rep(1,nseq),
                           pch=rep(8,nseq),
                           cex=rep(1,nseq))
     cellpresentbool<-cellpresent(comparison[i,5]) #query annotations provided?
-    if (cellpresentbool==TRUE && featurespresent=='featurespresent') {
-      if (nchar(queryannotationfiles[j])>0) { #annotations to plot are provided in a comma-sep string, so a blank (nchar=0) means don't plot annotations for this query
-        annotationsfile<-queryannotationfiles[j]
-        annotationsfile<-gsub("GENOMENAME", query, annotationsyntax) #replaces GENOMENAME placeholder with query genome name
-        #query_annotations<-read_dna_seg_from_file(gsubfn('%1|%2',list('%1'=featuresdir,'%2'=annotationsfile),'%1/%2'),gene_type = annotationgenetype)
-        #query_annotations<-as.data.frame(query_annotations)
-        #query_annotations<-query_annotations[c(annotationtxtname,"start","end","strand","col","gene_type","fill","lty","lwd","pch","cex")]
-        #colnames(query_annotations)<-c("name","start","end","strand","col","gene_type","fill","lty","lwd","pch","cex")
-        #query_annotations<-query_annotations[query_annotations$gene_type!='introns',]
-        qry_gff<-read.gff(gsubfn('%1|%2',list('%1'=featuresdir,'%2'=annotationsfile),'%1/%2'))
-        qry_gff<-qry_gff[qry_gff$type=='CDS',]
-        qry_gff<-removeparentannotations(qry_gff)
-        ##shift ranges if there are contigs
-        reformattednames<-sapply(strsplit(as.vector(qry_gff$seqid),'|',fixed=T),pastefunction)
-        addlens<-rangeshifting(reformattednames,seqlengthsreport,seqlengthsreport$names)
-        qry_gff$start<-qry_gff$start+addlens
-        qry_gff$end<-qry_gff$end+addlens
-        ##
-        query_annotations<-reformatgff(qry_gff)
+    if (cellpresentbool==TRUE && featurespresent=='featurespresent' && nchar(queryannotationfiles[j])>0) { #nchar(queryannotationfiles[j]): annotations to plot are provided in a comma-sep string, so a blank (nchar=0) means don't plot annotations for this query - this occurs when there is a '-' in the comma-separated string that has been replaced by a blank ('')
+      annotationsfile<-queryannotationfiles[j]
+      annotationsfile<-gsub("GENOMENAME", query, annotationsyntax) #replaces GENOMENAME placeholder with query genome name
+      #query_annotations<-read_dna_seg_from_file(gsubfn('%1|%2',list('%1'=featuresdir,'%2'=annotationsfile),'%1/%2'),gene_type = annotationgenetype)
+      #query_annotations<-as.data.frame(query_annotations)
+      #query_annotations<-query_annotations[c(annotationtxtname,"start","end","strand","col","gene_type","fill","lty","lwd","pch","cex")]
+      #colnames(query_annotations)<-c("name","start","end","strand","col","gene_type","fill","lty","lwd","pch","cex")
+      #query_annotations<-query_annotations[query_annotations$gene_type!='introns',]
+      qry_gff<-read.gff(gsubfn('%1|%2',list('%1'=featuresdir,'%2'=annotationsfile),'%1/%2'))
+      #qry_gff<-qry_gff[qry_gff$type=='CDS',]
+      qry_gff<-qry_gff[qry_gff$type %in% gffannotationtypevec,]
+      qry_gff<-removeparentannotations(qry_gff)
+      ##shift ranges if there are contigs
+      reformattednames<-sapply(strsplit(as.vector(qry_gff$seqid),'|',fixed=T),pastefunction)
+      addlens<-rangeshifting(reformattednames,seqlengthsreport,seqlengthsreport$names)
+      qry_gff$start<-qry_gff$start+addlens
+      qry_gff$end<-qry_gff$end+addlens
+      ##
+      query_annotations_list<-reformatgff(qry_gff)
+      query_annotations<-query_annotations_list[[1]];query_annotations_nogenetype<-query_annotations_list[[2]]
+      if (nrow(query_annotations)>0) {
         query_seg<-rbind(query_seq,query_annotations)
         query_seg<-dna_seg(query_seg)
         query_segs[[j]]<-query_seg
-	#get annotation text - for legend
+        #get annotation text - for legend
         annotlgndcounter<-annotlgndcounter+1
         legendannotationlist<-getallannotations(query_annotations)
         legendannotation<-legendannotationlist[[1]];legendtext<-legendannotationlist[[2]]
         alllegendannotations[[annotlgndcounter]]<-legendannotation;alllegendannotationtexts[[annotlgndcounter]]<-legendtext
       } else {
         query_seg<-dna_seg(query_seq)
-        query_segs[[j]]<-query_seg	
+        query_segs[[j]]<-query_seg
       }
     } else {
       query_seg<-dna_seg(query_seq)
@@ -706,26 +808,50 @@ for (i in 1:nrow(comparisonfile)) {
     }
     
     #get annotation text - for genoplotr plot; if there are no annotations this will be blank ("")
+    if (featurespresent=='featurespresent') { 
+      query_seg_all<-rbind(as.data.frame(query_seg),query_annotations_nogenetype)
+      query_seg_spanning<-query_seg_all[query_seg_all$text_type=='spanning',]
+      if (nrow(query_seg_spanning)>0) {
+        pos1<-query_seg_spanning$start
+        pos2<-query_seg_spanning$end
+        annottext_spanning<-query_seg_spanning$name
+        annottextrot_spanning<-query_seg_spanning$text_rot
+      }
+    }
     cellpresentbool<-cellpresent(comparison[i,7]) #plot query text annotations?
-    if (cellpresentbool==TRUE && featurespresent=='featurespresent') {
-      if (nchar(querytxtannotationfiles[j])>0) { #annotations to plot are provided in a comma-sep string, so a blank (nchar=0) means don't plot annotations for this query
-        mid_pos<-middle(query_seg)[1:nrow(query_seg)]  ##!N.B you can't plot annotation text if you don't have annotation (text will just be the blank(s) corresponding to contigs)
-        annottext<-query_seg$name #need to overwrite [1] with blank
-        annottext[1:nrow(query_seq)]<-""
-        queryannot<-annotation(x1=mid_pos,text=annottext,rot = annotationtxtrot)
-        query_annotation_texts[[j]]<-queryannot
+    if (cellpresentbool==TRUE && featurespresent=='featurespresent' && nchar(querytxtannotationfiles[j])>0) { #annotations to plot are provided in a comma-sep string, so a blank (nchar=0) means don't plot annotations for this query
+      query_seg_mid<-query_seg_all[query_seg_all$text_type=='mid',]
+      mid_pos<-midpos(query_seg_mid)[1:nrow(query_seg_mid)]  ##!N.B you can't plot annotation text if you don't have annotation (text will just be the blank(s) corresponding to contigs)                 
+      annottext_mid<-query_seg_mid$name #need to overwrite query_seq text with blank                                                                                                                      
+      annottext_mid[1:nrow(query_seq)]<-""
+      annottextrot_mid<-query_seg_mid$text_rot
+      if (nrow(query_seg_spanning)>0) {
+        queryannot<-annotation(x1=c(mid_pos,pos1),x2<-c(rep(NA,length(mid_pos)),pos2),text=c(annottext_mid,annottext_spanning),rot = c(annottextrot_mid,annottextrot_spanning))
+	query_annotation_texts[[j]]<-queryannot
       } else {
-        queryannot<-annotation(x1=1,text="")
-        query_annotation_texts[[j]]<-queryannot
+        queryannot<-annotation(x1=mid_pos,text=annottext_mid,rot = annottextrot_mid)
+	query_annotation_texts[[j]]<-queryannot
       }
     } else {
-      queryannot<-annotation(x1=1,text="")
-      query_annotation_texts[[j]]<-queryannot
+      if (featurespresent=='featurespresent' && nrow(query_seg_spanning)>0) {
+        queryannot<-annotation(x1=pos1,x2=pos2,text=annottext_spanning,rot = annottextrot_spanning)
+	query_annotation_texts[[j]]<-queryannot
+      } else {
+        queryannot<-annotation(x1=1,text="",rot=40)
+        query_annotation_texts[[j]]<-queryannot
+      }
+    }
+    queryannotrotgt0<-queryannot[queryannot$rot>0,]
+    query_annotation_texts_rotgt0[[j]]<-queryannotrotgt0
+    if ((sum(queryannot$rot==0)>0)==TRUE) {
+      queryrot0present<-TRUE #TRUE if there are 0 text rotations
     }
   }
+
   dna_segs<-c(list(subject_seg),query_segs)
   names(dna_segs)<-c(subject,queryvec)
   annotationtexts<-c(list(subjectannot),query_annotation_texts)
+  annotationtextsrotgt0<-c(list(subjectannotrotgt0),query_annotation_texts_rotgt0)
 
 
   ###plot annotation legend
@@ -838,7 +964,13 @@ for (i in 1:nrow(comparisonfile)) {
     }
     #calculate output dimensions, and from this calculate annotation cex
     if (annotationtxtheight=='auto') {
-      annotationtxtheight<-max(nchar(do.call(rbind,annotationtexts)$text))/3.5
+      annotationtxtheight<-max(nchar(do.call(rbind,annotationtextsrotgt0)$text))/6
+      #if rot=0 text is present, ensure enough space if there's rot gt 0 text
+      if (annotationtxtheight<1) {
+        if (subjectrot0present==TRUE || queryrot0present==TRUE) { 
+          annotationtxtheight=1
+        }
+      }
     } else {
       annotationtxtheight<-as.numeric(annotationtxtheight)
     }
@@ -852,7 +984,7 @@ for (i in 1:nrow(comparisonfile)) {
       outputwidth<-as.numeric(outputwidth)
     }
     if (outputheight=='auto') {
-      outputheight<-(((annotationtxtheight/3)*5)+(length(dna_segs)*3))/3
+      outputheight<-(((annotationtxtheight/1.5)*5)+(length(dna_segs)*3))/3
       if (outputheight<3) {
         outputheight<-3
       }
@@ -863,15 +995,16 @@ for (i in 1:nrow(comparisonfile)) {
     print('dimensions: height, width')
     print(outputheight)
     print(outputwidth)
-    
+    if (segplots=='placeholder') {
+      segplots<-rep(NULL,length(dna_segs))
+    }
     #
     writefilepath=gsubfn('%1|%2', list('%1'=outdir,'%2'=outputname), '%1/%2.pdf')
     pdf(writefilepath,outputwidth,outputheight)
-    
     if (treepresentbool==TRUE) {
-      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims,tree=mytree,annotations = annotationtexts,annotation_height = annotationtxtheight/1.75,annotation_cex = annotationtxtcex,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex,n_scale_ticks=dnasegscalenticks)
+      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims,tree=mytree,annotations = annotationtexts,annotation_height = annotationtxtheight,annotation_cex = annotationtxtcex,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex,n_scale_ticks=dnasegscalenticks,seg_plots=segplots,seg_plot_height=segplotheight,seg_plot_height_unit=segplotheightunit,seg_plot_yaxis=segplotyaxis,seg_plot_yaxis_cex=segplotyaxiscex,tree_width=outputwidth*treewidth,tree_branch_labels_cex=treebranchlabelscex,tree_scale=treescale)
     } else {
-      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims,annotations = annotationtexts,annotation_height = annotationtxtheight/1.75,annotation_cex = annotationtxtcex,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex,n_scale_ticks=dnasegscalenticks)
+      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims,annotations = annotationtexts,annotation_height = annotationtxtheight,annotation_cex = annotationtxtcex,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex,n_scale_ticks=dnasegscalenticks,seg_plots=segplots,seg_plot_height=segplotheight,seg_plot_height_unit=segplotheightunit,seg_plot_yaxis=segplotyaxis,seg_plot_yaxis_cex=segplotyaxiscex)
     }
     dev.off()
     
@@ -944,11 +1077,11 @@ for (i in 1:nrow(comparisonfile)) {
     #for (z in 1:length(dna_segs2)) {
     #  dna_segs2[[z]]$gene_type<-"arrows"
     #}
-    #sequencecols<-c("light gray","light blue")
-    #sequencecols<-rep(sequencecols,length(dna_segs2))[1:length(dna_segs2)]
+    #sequencefills<-c("light gray","light blue")
+    #sequencefills<-rep(sequencefills,length(dna_segs2))[1:length(dna_segs2)]
     #for (i in 1:length(dna_segs2)) {
     #  dna_segs2[[z]][1,]$gene_type<-"blocks"
-    #  dna_segs2[[z]][1,]$fill<-sequencecols[z]
+    #  dna_segs2[[z]][1,]$fill<-sequencefills[z]
     #}
     
     #use offsets to ensure correct layout
@@ -964,7 +1097,12 @@ for (i in 1:nrow(comparisonfile)) {
     
     #calculate output dimensions, and from this calculate annotation cex
     if (annotationtxtheight=='auto') {
-      annotationtxtheight<-max(nchar(do.call(rbind,annotationtexts)$text))/3.5
+      annotationtxtheight<-max(nchar(do.call(rbind,annotationtextsrotgt0)$text))/6 #previously 3.5
+      if (annotationtxtheight<1) {
+        if (subjectrot0present==TRUE || queryrot0present==TRUE) {
+          annotationtxtheight=1
+        }
+      }
     } else {
       annotationtxtheight<-as.numeric(annotationtxtheight)
     }
@@ -978,7 +1116,7 @@ for (i in 1:nrow(comparisonfile)) {
       outputwidth<-as.numeric(outputwidth)
     }
     if (outputheight=='auto') {
-      outputheight<-(((annotationtxtheight/3)*5)+(length(dna_segs)*3))/3
+      outputheight<-(((annotationtxtheight/1.5)*5)+(length(dna_segs)*3))/3
       if (outputheight<3) {
         outputheight<-3
       }
@@ -995,10 +1133,10 @@ for (i in 1:nrow(comparisonfile)) {
     
     if (treepresentbool==TRUE) {
       #plot_gene_map2(dna_segs = dna_segs2, comparisons = comparisons,xlims = xlims2,tree=mytree,annotations = annotationtexts,annotation_height = max(nchar(do.call(rbind,annotationtexts)$text))/4,annotation_cex = 0.5,plot_new = T)
-      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims2,tree=mytree,annotations = annotationtexts,annotation_height = annotationtxtheight/1.75,annotation_cex = annotationtxtcex,offsets=offsets,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex,n_scale_ticks=dnasegscalenticks)
+      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims2,tree=mytree,annotations = annotationtexts,annotation_height = annotationtxtheight,annotation_cex = annotationtxtcex,offsets=offsets,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex,n_scale_ticks=dnasegscalenticks,seg_plots=segplots,seg_plot_height=segplotheight,seg_plot_height_unit=segplotheightunit,seg_plot_yaxis=segplotyaxis,seg_plot_yaxis_cex=segplotyaxiscex,tree_width=outputwidth*treewidth,tree_branch_labels_cex=treebranchlabelscex,tree_scale=treescale)
     } else {
       #plot_gene_map2(dna_segs = dna_segs2, comparisons = comparisons,xlims = xlims2,annotations = annotationtexts,annotation_height = max(nchar(do.call(rbind,annotationtexts)$text))/4,annotation_cex = 0.5,plot_new = T)
-      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims2,annotations = annotationtexts,annotation_height = annotationtxtheight/1.75,annotation_cex = annotationtxtcex,offsets=offsets,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex,n_scale_ticks=dnasegscalenticks)
+      plot_gene_map2(dna_segs = dna_segs, comparisons = comparisons,xlims = xlims2,annotations = annotationtexts,annotation_height = annotationtxtheight,annotation_cex = annotationtxtcex,offsets=offsets,main=title,main_pos=titlepos,dna_seg_labels=dnaseglabels,dna_seg_label_cex=dnaseglabelcex,dna_seg_label_col=dnaseglabelcol,dna_seg_line=dnasegline,min_gap_size=mingapsize,scale=mainscale,dna_seg_scale=dnasegscale,scale_cex=dnasegscalecex,n_scale_ticks=dnasegscalenticks,seg_plots=segplots,seg_plot_height=segplotheight,seg_plot_height_unit=segplotheightunit,seg_plot_yaxis=segplotyaxis,seg_plot_yaxis_cex=segplotyaxiscex)
     }
     dev.off()
     

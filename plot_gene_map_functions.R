@@ -229,7 +229,7 @@ label_grob <- function(label, cex=0.8){
     x <- label$x1
   }
   if (label$rot == 0){
-    just <- c(0.5, 0)
+    just <- c(0.5, 0)  #could try "centre"?
   } else {
     just <- "left"   #c(-0.1, 0.5)
   }
