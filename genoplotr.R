@@ -890,8 +890,7 @@ for (i in 1:nrow(comparisonfile)) {
         errormessage<-gsubfn('%1',list('%1'=treeclass),'Error: tree object is of class %1; class phylo is required')
         stop(errormessage)
       }
-    }
-    else { #read nexus or newick
+    } else { #read nexus or newick
       mytree<-try(read.tree(treepath))
       if (class(mytree)=="try-error") {
         mytree<-try(read.nexus(treepath))
@@ -909,8 +908,12 @@ for (i in 1:nrow(comparisonfile)) {
     #convert phylo tree to newick; then convert newick to phylog
     mynewick<-write.tree(mytree, file = "")
     mytree<-newick2phylog(mynewick)
+    #make sure dna_segs names matches tree names (ade4 newick2phylog function replaces '-' with '_')
+    names_dna_segs<-names(dna_segs)
+    names_dna_segs<-gsub('-','_',names_dna_segs,fixed=TRUE)
+    names(dna_segs)<-names_dna_segs
   }
-  
+ 
   
   #N.B until now, haven't used alignment data - need to subet according to query !also if doing chain of comparisons (sample A-B-C...) need to open different alignment data files
   ###read comparison alignment data
