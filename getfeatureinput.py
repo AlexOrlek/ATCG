@@ -45,7 +45,7 @@ else:
     if inputpathtype=='directory':
         runsubprocess(['bash %s/concatenategbk.sh %s | python %s/gffparsing.py %s | python %s/gffparsing2.py %s'%(sourcedir,str(args.inputpath),sourcedir,inputpathtype,sourcedir,outputpath)],shell=True)
     else:
-        runsubprocess(['python %s/gffparsing.py %s | python %s/gffparsing2.py %s'%(sourcedir,inputpathtype,sourcedir,outputpath)],shell=True)   
+        runsubprocess(['python %s/gffparsing.py %s %s | python %s/gffparsing2.py %s'%(sourcedir,inputpathtype,str(args.inputpath),sourcedir,outputpath)],shell=True)   
 
         
 
