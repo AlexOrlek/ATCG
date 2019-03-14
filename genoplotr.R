@@ -6,6 +6,7 @@ library('ape') #handling trees
 library('tools') #file_ext function  #tools is a base R package
 library('ggplot2')
 library('cowplot')
+library('GenomicRanges')
 inputdir=as.character(args[1]) #alignments/tree input dir
 filenamesyntax=as.character(args[2]) #syntax for alignment files and (optionally) for feature annotation files e.g. trimmedalignments_GENOMENAME.tsv,GENOMENAME.gb; GENOMENAME will be replaced
 seqlengths=as.character(args[3]) #seqlength file
@@ -178,7 +179,89 @@ if (annotationgenetype=='arrowheads') {
   annotationgenetype<-'arrowsgrob'
 }
 
-##function definitions
+
+#handle introns
+
+
+# removeparentannotations<-function(gff) {
+#   childindices<-which(is.na(getAttributeField(gff$attributes,'Parent'))==F && is.na(getAttributeField(gff$attributes,'ID'))==T) #rows with parent attribute but no id (genbank location parts)
+#   if (length(childindices)>0) {
+#     ids<-getAttributeField(gff$attributes,'ID')
+#     childids<-getAttributeField(gff[childindices,]$attributes,'Parent')
+
+#     indicestoremove<-vector()
+#     for (i in 1:length(childids)) {
+#       childid<-childids[i]
+#       parentindex<-which(ids==childid)
+#       indicestoremove<-c(indicestoremove,parentindex)
+#       parentattribute<-gff[parentindex,]$attribute
+#       gff[childindices[i],]$attributes<-parentattribute #replace parent flag with parent attribute
+#     }
+#     gff<-gff[-unique(indicestoremove),]
+#     return(gff)
+#   } else {
+#     return(gff)
+#   }
+# }
+
+
+addintronsexons<-function(genedf) {
+  genedf_parent<-genedf[1,]
+  genedf_child<-genedf[2:nrow(genedf),]
+  genedf_parent$attributes<-paste(genedf_parent$attributes,'gene_type=none;text_type=spanning',sep=';')
+  genedf_child$attributes<-paste(genedf_child$attributes,'gene_type=exons',sep=';')
+  #add introns to genedf_child
+  childranges<-IRanges(start=genedf_child$start,end=genedf_child$end,names=genedf_child$seqid)
+  introns<-as.data.frame(gaps(childranges))
+  nintrons<-nrow(introns)
+  introns$width<-NULL
+  introns$seqid<-rep(genedf_child$seqid[1],nintrons)
+  introns$source<-rep(genedf_child$source[1],nintrons)
+  introns$type<-rep(genedf_child$type[1],nintrons)
+  introns$score<-rep(genedf_child$score[1],nintrons)
+  introns$strand<-rep(genedf_child$strand[1],nintrons)
+  introns$phase<-rep(genedf_child$phase[1],nintrons)
+  introns$attributes<-'gene_type=introns'
+  introns<-introns[,c("seqid","source","type","start","end","score","strand","phase","attributes")]
+  genedf_child$ids<-NULL
+  genedf_parent$ids<-NULL
+  genedf_child<-rbind(genedf_child,introns)
+  
+  return(rbind(genedf_parent,genedf_child))
+}
+
+handleintrons<-function(gff) {
+  childindices<-which(is.na(getAttributeField(gff$attributes,'Parent'))==F & is.na(getAttributeField(gff$attributes,'ID'))==T) #rows with parent attribute but no id (genbank location parts)
+  ids<-getAttributeField(gff$attributes,'ID')
+  childids<-getAttributeField(gff[childindices,]$attributes,'Parent')
+  parentindices<-which(ids %in% childids)
+  parentids<-ids[parentindices]
+  allindices<-union(parentindices,childindices)
+  if (length(allindices)>0) {
+    gff_nointrons<-gff[-allindices,]
+  } else {
+    gff_nointrons<-gff
+  }
+  #get child and parent dataframes; add column giving id; split; apply; combine
+  gff_child<-gff[childindices,]
+  gff_child<-cbind(gff_child,ids=childids)
+  gff_parent<-gff[parentindices,]
+  gff_parent<-cbind(gff_parent,ids=parentids)
+  
+  gff_genes<-rbind(gff_parent,gff_child)
+  gff_geneslist<-split(gff_genes,as.factor(gff_genes$ids))
+  
+  gff_genes_final<-lapply(gff_geneslist, addintronsexons)
+  gff_genes_final<-do.call(rbind,gff_genes_final)
+  gfffinal<-rbind(gff_nointrons,gff_genes_final)
+  return(gfffinal)
+}
+
+
+
+
+
+##miscellaneous function definitions
 
 source(gsubfn('%1',list('%1'=sourcedir),'%1/plot_gene_map_functions.R')) #includes plot_gene_map2
 
@@ -329,29 +412,6 @@ reformatgff<-function(gff,annotationtagname=annotationtxtname,defaultoutlinecol=
     reformatteddf<-reformatteddf[-nogeneindices,]
   }
   return(list(reformatteddf,reformatteddfNA))
-}
-
-
-
-removeparentannotations<-function(gff) {
-  childindices<-which(is.na(getAttributeField(gff$attributes,'Parent'))==F && is.na(getAttributeField(gff$attributes,'ID'))==T) #rows with parent attribute but no id (genbank location parts)
-  if (length(childindices)>0) {
-    ids<-getAttributeField(gff$attributes,'ID')
-    childids<-getAttributeField(gff[childindices,]$attributes,'Parent')
-
-    indicestoremove<-vector()
-    for (i in 1:length(childids)) {
-      childid<-childids[i]
-      parentindex<-which(ids==childid)
-      indicestoremove<-c(indicestoremove,parentindex)
-      parentattribute<-gff[parentindex,]$attribute
-      gff[childindices[i],]$attributes<-parentattribute #replace parent flag with parent attribute
-    }
-    gff<-gff[-unique(indicestoremove),]
-    return(gff)
-  } else {
-    return(gff)
-  }
 }
 
 
@@ -660,7 +720,7 @@ for (i in 1:nrow(comparisonfile)) {
     sbj_gff<-read.gff(gsubfn('%1|%2',list('%1'=featuresdir,'%2'=annotationsfile),'%1/%2'))
     #sbj_gff<-sbj_gff[sbj_gff$type=='CDS',]
     sbj_gff<-sbj_gff[sbj_gff$type %in% gffannotationtypevec,]
-    sbj_gff<-removeparentannotations(sbj_gff)
+    sbj_gff<-handleintrons(sbj_gff)
     ##shift ranges if there are contigs
     reformattednames<-sapply(strsplit(as.vector(sbj_gff$seqid),'|',fixed=T),pastefunction)
     addlens<-rangeshifting(reformattednames,seqlengthsreport,seqlengthsreport$names)
@@ -780,7 +840,7 @@ for (i in 1:nrow(comparisonfile)) {
       qry_gff<-read.gff(gsubfn('%1|%2',list('%1'=featuresdir,'%2'=annotationsfile),'%1/%2'))
       #qry_gff<-qry_gff[qry_gff$type=='CDS',]
       qry_gff<-qry_gff[qry_gff$type %in% gffannotationtypevec,]
-      qry_gff<-removeparentannotations(qry_gff)
+      qry_gff<-handleintrons(qry_gff)
       ##shift ranges if there are contigs
       reformattednames<-sapply(strsplit(as.vector(qry_gff$seqid),'|',fixed=T),pastefunction)
       addlens<-rangeshifting(reformattednames,seqlengthsreport,seqlengthsreport$names)
@@ -974,6 +1034,9 @@ for (i in 1:nrow(comparisonfile)) {
           annotationtxtheight=1
         }
       }
+      if (annotationtxtheight>15) {
+        annotationtxtheight<-15
+      }
     } else {
       annotationtxtheight<-as.numeric(annotationtxtheight)
     }
@@ -983,6 +1046,9 @@ for (i in 1:nrow(comparisonfile)) {
       if (outputwidth<10) {
         outputwidth<-10
       }
+      if (outputwidth>50) {
+        outputwidth<-50
+      }
     } else {
       outputwidth<-as.numeric(outputwidth)
     }
@@ -990,6 +1056,9 @@ for (i in 1:nrow(comparisonfile)) {
       outputheight<-(((annotationtxtheight/1.5)*5)+(length(dna_segs)*3))/3
       if (outputheight<3) {
         outputheight<-3
+      }
+      if (outputheight>50) {
+        outputheight<-50
       }
     } else {
       outputheight<-as.numeric(outputheight)
@@ -1107,6 +1176,9 @@ for (i in 1:nrow(comparisonfile)) {
           annotationtxtheight=1
         }
       }
+      if (annotationtxtheight>15) {
+        annotationtxtheight<-15
+      }
     } else {
       annotationtxtheight<-as.numeric(annotationtxtheight)
     }
@@ -1116,6 +1188,9 @@ for (i in 1:nrow(comparisonfile)) {
       if (outputwidth<10) {
         outputwidth<-10
       }
+      if (outputwidth>50) {
+        outputwidth<-50
+      }
     } else {
       outputwidth<-as.numeric(outputwidth)
     }
@@ -1123,6 +1198,9 @@ for (i in 1:nrow(comparisonfile)) {
       outputheight<-(((annotationtxtheight/1.5)*5)+(length(dna_segs)*3))/3
       if (outputheight<3) {
         outputheight<-3
+      }
+      if (outputheight>50) {
+        outputheight<-50
       }
     } else {
       outputheight<-as.numeric(outputheight)
