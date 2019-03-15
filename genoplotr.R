@@ -102,8 +102,8 @@ if (title=='NULL') {
 }
 
 #handle col vecs and gffannotationtypevec
-poscolvec<-unlist(strsplit(poscolvec,',',fixed=T))
-negcolvec<-unlist(strsplit(negcolvec,',',fixed=T))
+poscolvec<-rev(unlist(strsplit(poscolvec,',',fixed=T)))
+negcolvec<-rev(unlist(strsplit(negcolvec,',',fixed=T)))
 
 gffannotationtypevec<-unlist(strsplit(gffannotationtypevec,',',fixed=T))
 
@@ -172,11 +172,6 @@ if (featurespresent=='featurespresent') {
     inclusionfile<-read.table(inclusionarg,sep='\t',header=FALSE)
     inclusionarg<-as.vector(inclusionfile[,1])
   }
-}
-
-#handle annotation settings
-if (annotationgenetype=='arrowheads') {
-  annotationgenetype<-'arrowsgrob'
 }
 
 
@@ -380,7 +375,6 @@ reformatgff<-function(gff,annotationtagname=annotationtxtname,defaultoutlinecol=
   col<-as.character(col)
   gene_type<-getAttributeField(gff$attributes,'gene_type')
   gene_type[is.na(gene_type)]<-defaultgenetype
-  gene_type[gene_type=='arrowheads']<-'arrowsgrob'
   gene_type<-as.character(gene_type)
   text_type<-getAttributeField(gff$attributes,'text_type')
   text_type[is.na(text_type)]<-defaulttxttype
@@ -561,7 +555,7 @@ midpos<-function(dna_seg) {
 
 genetypetoshape<-function(genetype) {
   blockindices<-which(genetype=='blocks')
-  arrowindices<-which(genetype=='arrowsgrob')
+  arrowindices<-which(genetype=='arrowheads')
   genetype[blockindices]<-22
   genetype[arrowindices]<-24
   if (length(c(blockindices,arrowindices))==0) {
@@ -624,7 +618,7 @@ arrow_coord <- function(x1, x2, y=0.5, strand=NULL, width=1, head_len=100){
   )
 }
 
-arrowsgrob <- function(gene, head_len=Inf, i=0, grob_cex=1, ...){
+arrowheads <- function(gene, head_len=Inf, i=0, grob_cex=1, ...){
   if (!is.dna_seg(gene)) stop("A dna_seg object is required")
   if (nrow(gene) > 1) stop ("gene must be single-row")
   mid <- (gene$start + gene$end)/2
