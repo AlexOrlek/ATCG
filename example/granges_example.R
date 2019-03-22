@@ -1,6 +1,5 @@
 #args = commandArgs(trailingOnly=TRUE)
 args=c('.',1,'True','True',0,'alnlen',1,'True') #arg1: outputpath (current directory); arg2: threads; arg3: run breakpoint calculation; arg4: calculate alignment length statistics; arg5: bootstrapping (0, not running); arg6: best alignment selection parameter; arg7: alignment length filtering threshold; arg[8] output trimmed alignments
-
 library('gsubfn')
 library('GenomicRanges')
 library('purrr')
@@ -44,14 +43,15 @@ getstats<-function(x) {
 
 #range shifting function
 rangeshifting<-function(reformattedname, seqlenreport, seqlenreportseqs) { #reformatted name is seqnames in sample|contig format; seqlenreport is original seqlen report; seqlenreportseqs are the sequences in sample|contig format from the seqlenreport
-  genomes<-as.factor(sapply(strsplit(as.vector(reformattedname),'|',fixed=T), function(x) x[1]))
+  genomes<-as.vector(sapply(strsplit(as.vector(reformattedname),'|',fixed=T), function(x) x[1]))
+  genomes<-factor(genomes,levels=unique(genomes)) #query genomes not necessarily ordered alphabeticlally so need to specify factor level ordering to match actual order before using factor levels to split
   genomesplit<-split(reformattedname,genomes)
   #get contiglens and indices
   samplecontiglenslist<-list()
   sampleindiceslist<-list()
   for (a in 1:length(genomesplit)) {
     samplename<-as.factor(as.vector(genomesplit[[a]]))  #!need to convert to vector first
-    samplecontigs<-levels(samplename)
+    samplecontigs<-levels(samplename) #levels (corresponding to contigs of a genome) are ordered alphabetically; rangeshifting will follow this alphabetical order through the contigs
     sampleindices<-as.numeric(samplename)
     samplecontiglens<-numeric(length(samplecontigs))
     for (b in 1:length(samplecontigs)) {
@@ -95,8 +95,9 @@ grtodf<-function(qtrimmed,strimmed) {
   mysdf<-as.data.frame(strimmed)
   colnames(myqdf)<-c('seqnames','qstart','qend', 'qwidth', 'strand',names(mcols(qtrimmed)))
   colnames(mysdf)<-c('seqnames','sstart','send', 'swidth', 'strand',names(mcols(strimmed)))
-  trimmeddf<-cbind(myqdf[c("seqnames","qcontignames","snames","scontignames","inputhsp","alnlen","pid","mystrand","qstart","qend","qwidth")],mysdf[c("sstart","send","swidth")])
-  colnames(trimmeddf)<-c("qname","qcontig","sname","scontig","originalhspindex","originalalnlen","pid","strand","qstart","qend","qwidth","sstart","send","swidth")
+  trimmeddf<-cbind(myqdf[c("seqnames","qcontignames","snames","scontignames","inputhsp","alnlen","pid","bitscore","mystrand","qstart","qend","qwidth")],mysdf[c("sstart","send","swidth")])
+  colnames(trimmeddf)<-c("qname","qcontig","sname","scontig","originalhspindex","originalalnlen","pid","bitscore","strand","qstart","qend","qwidth","sstart","send","swidth")
+  trimmeddf[c("qname","qcontig","sname","scontig")]<-sapply(trimmeddf[c("qname","qcontig","sname","scontig")],as.vector)
   return(trimmeddf)
 }
 
@@ -144,6 +145,7 @@ addcols<-function(x) {
   #add pid, strand, and subject names to reduced output (apply to each list element i.e. each qname split)     
   myinputhsps<-mcols(x)$inputhsp
   mcols(x)$pid<-pid[myinputhsps]
+  mcols(x)$bitscore<-bitscore[myinputhsps]
   mcols(x)$mystrand<-mystrand[myinputhsps]
   mcols(x)$snames<-snames[myinputhsps] #!!!ADDED
   mcols(x)$alnlen<-alnlen[myinputhsps] #added so that short alignments can be filtered prior to breakpoint calculation
@@ -296,6 +298,13 @@ trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
 }
 
 
+reformattrimmeddf<-function(trimmeddf) {  #trimmeddf has separate genome/contig columns - merge these into a single column
+  trimmeddf$qname<-ifelse(is.na(trimmeddf$qcontig), trimmeddf$qname, paste(trimmeddf$qname,trimmeddf$qcontig,sep='|'))
+  trimmeddf$sname<-ifelse(is.na(trimmeddf$scontig), trimmeddf$sname, paste(trimmeddf$sname,trimmeddf$scontig,sep='|'))
+  trimmeddf<-trimmeddf[c("qname","sname","originalhspindex","originalalnlen","pid","strand","qstart","qend","qwidth","sstart","send","swidth")]
+  return(trimmeddf)
+}
+
 
 #breakpoint caluclation functions
 makepairs<-function(x) mapply(c, head(x,-1), tail(x,-1), SIMPLIFY = FALSE)
@@ -325,10 +334,16 @@ BPfunc<-function(x,y) {  #apply to granges objects
 
 
 breakpointcalc<-function(qtrimmed,strimmed,mydf) {
-  #first filter short alignments
-  qtrimmed<-lapply(qtrimmed, filtershortalignments, lengthfilter=lengthfilter)
-  strimmed<-lapply(strimmed, filtershortalignments, lengthfilter=lengthfilter)
-  includedindices<-lapply(qtrimmed,length)>0
+  #first filter short alignments (based on post-trimming alignment length)
+  includedindices<-mapply(filtershortwidthalignments,qtrimmed,strimmed,widthfilter=lengthfilter,SIMPLIFY=FALSE)
+  qtrimmed<-map2(qtrimmed,includedindices, `[`) #filter list of alignments using list of included indices
+  strimmed<-map2(strimmed,includedindices, `[`)
+  includedindices<-lapply(qtrimmed,length)>0 #use included indices to remove list elements with no alignments after mapping includedindices list
+  if (all(includedindices==FALSE)) { #if no alignments remain across all queries after applying length filter, fill dataframe with NAs
+    mydfbp<-cbind(querysample=rownames(mydf),subjectsample=rep(sample,nrow(mydf)),breakpoints=rep(NA,nrow(mydf)),alignments=rep(NA,nrow(mydf)),pairs=rep(NA,nrow(mydf)))
+    myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"),all=TRUE) #all=TRUE is redundant here
+    return(myfinaldf)
+  }
   qtrimmed<-qtrimmed[includedindices]
   strimmed<-strimmed[includedindices]
   #split by contig
@@ -340,7 +355,7 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
     qcontigsplit[[qname]]<-lapply(qcontigsplit[[qname]], function(x) sort(x,ignore.strand=T))
     scontigsplit[[qname]]<-lapply(scontigsplit[[qname]], function(x) sort(x,ignore.strand=T))
     numsplits<-length(qcontigsplit[[qname]])
-    out<-mapply(BPfunc,qcontigsplit[[qname]],scontigsplit[[qname]]) #apply breakpoint function to sublists
+    out<-mapply(BPfunc,qcontigsplit[[qname]],scontigsplit[[qname]],SIMPLIFY=TRUE) #apply breakpoint function to sublists
     bpcount<-sum(unlist((out["bpcount",]))) #sum across subject contig splits to get count per query
     alncount<-sum(unlist((out["alncount",])))
     pairscount<-alncount-numsplits #ADDED
@@ -350,15 +365,22 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
   colnames(mydfbp)<-c('breakpoints','alignments','pairs')
   mydfbp<-cbind(querysample=rownames(mydfbp),subjectsample=rep(sample,nrow(mydfbp)),mydfbp)
   #merge dataframes; replace missing breakpoint data with NA where necessary (if all alignments have been filtered due to filtered) - use all=TRUE argument to achieve NA missing cell replacement
-  myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"),all=TRUE)
+  myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"),all=TRUE) #all=TRUE means keep all and fill with NAs
   return(myfinaldf)
 }
 
 
 
-filtershortalignments<-function(x,lengthfilter) {
+filtershortalignments<-function(x,lengthfilter) { #this function is deprecated - now using filtershortwidthalignments instead - using post-trimmed alignment length rather than pre-trimmed alignment length
   includedindices<-mcols(x)$alnlen>lengthfilter
   return(x[includedindices])
+}
+
+filtershortwidthalignments<-function(qtrimmed,strimmed,widthfilter) {
+  qwidth<-width(qtrimmed)
+  swidth<-width(strimmed)
+  includedindices<-qwidth > widthfilter & swidth > widthfilter
+  return(includedindices)
 }
 
 
@@ -382,8 +404,15 @@ combinebootfunc<-function(x) {
 
 #alignment length distribution function
 
-getalnlenstats<-function(x) {
+getalnlenstats<-function(x,widthfilter) {
   alnlens<-rev(sort(width(x)))
+  alnlenbool<-alnlens>widthfilter
+  if(all(alnlenbool==FALSE)) {
+    lxvector<-rep(NA,length(lxcols))
+    nxvector<-rep(NA,length(nxcols))
+    return(list(lxvector,nxvector))
+  }
+  alnlens<-alnlens[alnlenbool] #calculations will be based on length filtered alignments
   totalalnlen<-sum(alnlens)
   quartiles<-c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9)
   numquart<-length(quartiles)
@@ -530,9 +559,10 @@ nxcols<-c('n10','n20','n30','n40','n50','n60','n70','n80','n90')
 allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRanges','purrr','data.table')) %dopar% {
     #read alignmnents file for given sample
     sample<-samples[i]
-    report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,4,7,8,9,10,12,17),sep='\t') #same subject, different queries    
+    #report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,4,7,8,9,10,12,17),sep='\t') #same subject, different queries
+    report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c('qname','sname','pid','alnlen','qstart','qend','sstart','send','bitscore','strand'),header=TRUE,sep='\t')
     #colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
-    colnames(report)<-c('qname','sname','pid','alnlen','qstart','qend','sstart','send','bitscore','strand')
+    #colnames(report)<-c('qname','sname','pid','alnlen','qstart','qend','sstart','send','bitscore','strand')
     #get information for shifting query and subject ranges where there are multiple contigs)
     seqlenreportseqs<-sapply(strsplit(as.vector(seqlenreport$sequence),'|',fixed=T),pastefunction)
     reformattedqname<-as.factor(sapply(strsplit(as.vector(report$qname),"|",fixed=T),pastefunction))
@@ -550,6 +580,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     report$sname<-sapply(strsplit(as.vector(report$sname),"|",fixed=T),function(x) x=x[1])   
     ###disjoin method trimming
     pid<-report$pid
+    bitscore<-report$bitscore
     snames<-report$sname #!!!ADDDED
     alnlen<-report$alnlen
     mystrand<-report$strand  #strand info is lost after disjoin - need to retain strand info for toppid
@@ -595,20 +626,28 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     colnames(shsplenpretrim)<-'shsplenpretrim'
     #trim alignments
     if (breakpoint=='True' || outputtrimmedalignments=='True') {
-      trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,SIMPLIFY = F)) #!ADDED
+      trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,SIMPLIFY = FALSE)) #!ADDED
       qtrimmed<-trimmedalignments$qfinal
       strimmed<-trimmedalignments$sfinal
       includedalignmentindices<-lapply(qtrimmed,length)>0 & lapply(strimmed,length)>0 #safeguards against bug due to empty list element (probably unecessary)
       qtrimmed<-qtrimmed[includedalignmentindices]
       strimmed<-strimmed[includedalignmentindices]
     } else {
-      qtrimmed<-mapply(trimalignments,qfinal,sfinal,qtrimonly=TRUE)
+      qtrimmed<-mapply(trimalignments,qfinal,sfinal,qtrimonly=TRUE,SIMPLIFY=FALSE)
       qtrimmed<-qtrimmed[lapply(qtrimmed,length)>0]
     }
     #write trimmed alignments to file
     if (outputtrimmedalignments=='True') {
       trimmeddflist<-mapply(grtodf, qtrimmed, strimmed, SIMPLIFY = FALSE)
       trimmeddf<-do.call(rbind,trimmeddflist)
+      #shift back query/subject positions and reformat df so genome/contig columns are merged to single column
+      minusqlens<-addqlens[trimmeddf$originalhspindex]
+      minusslens<-addslens[trimmeddf$originalhspindex]
+      trimmeddf$qstart<-trimmeddf$qstart-minusqlens
+      trimmeddf$qend<-trimmeddf$qend-minusqlens
+      trimmeddf$sstart<-trimmeddf$sstart-minusslens
+      trimmeddf$send<-trimmeddf$send-minusslens
+      trimmeddf<-reformattrimmeddf(trimmeddf)
       write.table(trimmeddf, file=gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/output/trimmedalignments_%2.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
     }
     #get hsp id stats
@@ -623,7 +662,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     }
     #get alignment length distribution stats
     if (alnlenstats=='True') {
-       alnlenstatslist<-lapply(qtrimmed, getalnlenstats)
+       alnlenstatslist<-lapply(qtrimmed, getalnlenstats, widthfilter=lengthfilter)
        alnlenstatsdf<-cbind(rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[1]]),as.data.frame.list),idcol="querysample"),rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[2]]),as.data.frame.list)))
        colnames(alnlenstatsdf)<-c('querysample',lxcols,nxcols)
        myfinaldf<-merge(myfinaldf,alnlenstatsdf,by="querysample")

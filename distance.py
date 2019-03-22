@@ -48,7 +48,7 @@ blast_group.add_argument('--wordsize', help='BLAST word size (ATCG default for b
 blast_group.add_argument('--task', help='BLAST task (default: blastn)', default='blastn', choices=['blastn','dc-megablast'], type=str)
 #Alignment filtering options                                                   
 alignment_group = parser.add_argument_group('Alignment filtering options')
-alignment_group.add_argument('-l','--lengthfilter', help='Length threshold (in basepairs) used to filter alignments prior to calculating breakpoint distance (default: 800)', default=800, type=positiveint)
+alignment_group.add_argument('-l','--lengthfilter', help='Length threshold (in basepairs) used to filter trimmed alignments prior to calculating breakpoint distance and alignment length statistics (default: 100)', default=100, type=positiveint)
 alignment_group.add_argument('-r','--alnrankmethod', help='Parameter used for selecting best alignment (default: bitscore)', default='bitscore', choices=['bitscore','alnlen','pid'], type=str)
 #Other options
 other_group = parser.add_argument_group('Other')

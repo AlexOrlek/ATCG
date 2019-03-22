@@ -80,10 +80,13 @@ install.packages("ape",repo='https://cloud.r-project.org/')
 __For visualisation__<br>
 
 * The following R packages must be installed:
-    * [genoPlotR](http://genoplotr.r-forge.r-project.org/); [gsubfn](https://cran.r-project.org/web/packages/gsubfn/index.html); [dendextend](https://cran.r-project.org/web/packages/dendextend/index.html); [ape](https://cran.r-project.org/web/packages/ape/index.html); [ggplot2](https://cran.r-project.org/web/packages/ggplot2/index.html); [cowplot](https://cran.r-project.org/web/packages/cowplot/index.html)<br>
+    * [GenomicRanges](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html); [genoPlotR](http://genoplotr.r-forge.r-project.org/); [gsubfn](https://cran.r-project.org/web/packages/gsubfn/index.html); [dendextend](https://cran.r-project.org/web/packages/dendextend/index.html); [ape](https://cran.r-project.org/web/packages/ape/index.html); [ggplot2](https://cran.r-project.org/web/packages/ggplot2/index.html); [cowplot](https://cran.r-project.org/web/packages/cowplot/index.html)<br>
 
 Run the following code in R to install the required R packages:<br>
 ```bash
+source("https://bioconductor.org/biocLite.R")
+biocLite("GenomicRanges")
+
 install.packages("devtools",repo='https://cloud.r-project.org/')
 library(devtools)
 devtools::install_github("ggrothendieck/gsubfn")
@@ -158,6 +161,8 @@ A paper describing the methods will be written shortly, and further information 
 
 By default, the number of threads is 1, but multi-threading is recommended to reduce computing time; the number of threads to use is specified using the `-t` flag; the value must not exceed the number of threads available on your machine.<br>
 By default, breakpoint distances and alignment length distribution statistics are not calculated. Calculation of breakpoint distances (measuring structural similarity) is specified using the `--breakpoint` flag. Calculation of alignment length distribution statistics is specified using the `--alnlenstats` flag. The alignment length statistics provide information on the distribution of BLAST alignment lengths and are analogous to the widely used [assembly contiguity statistics](https://www.molecularecologist.com/2017/03/whats-n50/) e.g N50/L50.<br>
+The `-r` flag determines the parameter used to select the best alignment among overalapping alignments (bitscore, length, or percent identity).<br>
+The `-l` flag specifies a length filter which is applied to trimmed alignments prior to calculating breakpoint distance and alignment length statistics. The rationale for the flag is as follows: even if alignment length is selected as the best hit selection criterion (`-r alnlen`), shorter alignments may not nest within the longest alignment if alignment positions are staggered; therefore, short remnants of trimmed alignments (the flanks that did not overlap the best alignment) may remain post-trimming. Excluding these artifactual remnant alignments whilst retaining longer (e.g. gene-sized or longer) alignments should reduce bias when calculating breakpoint distance and alignment length statistics<br>
 For all-vs-all comparison, the distance metric(s) used to build tree(s) can be specified in a space-separated list using the `-d` flag; by default, DistanceScore_d8 and DistanceScore_d9 are used, producing 2 corresponding trees. The tree building method(s) can be specified using the `-m` flag; options are: 'dendrogram', 'phylogeny', 'none'. By default, a dendrogram is built using [hierarchical clustering](https://www.rdocumentation.org/packages/fastcluster/versions/1.1.25/topics/hclust) with the complete linkage method. If the phylogeny option is provided, a phylogenetic tree will be built using the balanced minimum evolution method ([Desper and Gascuel 2002](https://www.ncbi.nlm.nih.gov/pubmed/12487758)). If the none option is specified, then no trees will be built. If both dendrogram and phylogeny options are provided in a space-separated list, then trees will be constructed using both methods.<br>
 If you only want to obtain pairwise blast output, not distance statistics the `--blastonly` flag should be provided.
 
