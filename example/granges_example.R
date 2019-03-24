@@ -1,5 +1,5 @@
 #args = commandArgs(trailingOnly=TRUE)
-args=c('.',1,'True','True',0,'alnlen',1,'True') #arg1: outputpath (current directory); arg2: threads; arg3: run breakpoint calculation; arg4: calculate alignment length statistics; arg5: bootstrapping (0, not running); arg6: best alignment selection parameter; arg7: alignment length filtering threshold; arg[8] output trimmed alignments 
+args=c('.',1,'True','True',0,'alnlen',1,'True') #arg1: outputpath (current directory); arg2: threads; arg3: run breakpoint calculation; arg4: calculate alignment length statistics; arg5: bootstrapping (0, not running); arg6: best alignment selection parameter; arg7: alignment length filtering threshold; arg[8] output trimmed alignments
 library('gsubfn')
 library('GenomicRanges')
 library('purrr')
@@ -309,7 +309,7 @@ reformattrimmeddf<-function(trimmeddf) {  #trimmeddf has separate genome/contig 
 #breakpoint caluclation functions
 makepairs<-function(x) mapply(c, head(x,-1), tail(x,-1), SIMPLIFY = FALSE)
 BP<-function(x,y) { #this function works on signed permuations (numeric vectors with +/- indicated)
-  out<-makepairs(x)[!(makepairs(x) %in% makepairs(y) && sum(sign(x))==2 | makepairs(x) %in% makepairs(rev(y)) && sum(sign(x))==-2)]
+  out<-makepairs(x)[!(makepairs(x) %in% makepairs(y) & unlist(lapply(makepairs(x), function(x) sum(sign(x))))==2 | makepairs(x) %in% makepairs(rev(y)) & unlist(lapply(makepairs(x), function(x) sum(sign(x))))==-2)]
   return(out)
 }
 

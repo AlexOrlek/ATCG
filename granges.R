@@ -308,7 +308,7 @@ reformattrimmeddf<-function(trimmeddf) {  #trimmeddf has separate genome/contig 
 #breakpoint caluclation functions
 makepairs<-function(x) mapply(c, head(x,-1), tail(x,-1), SIMPLIFY = FALSE)
 BP<-function(x,y) { #this function works on signed permuations (numeric vectors with +/- indicated)
-  out<-makepairs(x)[!(makepairs(x) %in% makepairs(y) && sum(sign(x))==2 | makepairs(x) %in% makepairs(rev(y)) && sum(sign(x))==-2)]
+  out<-makepairs(x)[!(makepairs(x) %in% makepairs(y) & unlist(lapply(makepairs(x), function(x) sum(sign(x))))==2 | makepairs(x) %in% makepairs(rev(y)) & unlist(lapply(makepairs(x), function(x) sum(sign(x))))==-2)]
   return(out)
 }
 
