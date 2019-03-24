@@ -1,5 +1,5 @@
 #args = commandArgs(trailingOnly=TRUE)
-args=c('.',1,'True','True',0,'alnlen',1,'True') #arg1: outputpath (current directory); arg2: threads; arg3: run breakpoint calculation; arg4: calculate alignment length statistics; arg5: bootstrapping (0, not running); arg6: best alignment selection parameter; arg7: alignment length filtering threshold; arg[8] output trimmed alignments
+args=c('.',1,'True','True',0,'alnlen',1,'True') #arg1: outputpath (current directory); arg2: threads; arg3: run breakpoint calculation; arg4: calculate alignment length statistics; arg5: bootstrapping (0, not running); arg6: best alignment selection parameter; arg7: alignment length filtering threshold; arg[8] output trimmed alignments 
 library('gsubfn')
 library('GenomicRanges')
 library('purrr')
@@ -309,10 +309,8 @@ reformattrimmeddf<-function(trimmeddf) {  #trimmeddf has separate genome/contig 
 #breakpoint caluclation functions
 makepairs<-function(x) mapply(c, head(x,-1), tail(x,-1), SIMPLIFY = FALSE)
 BP<-function(x,y) { #this function works on signed permuations (numeric vectors with +/- indicated)
-  out1<-makepairs(x)[!(makepairs(x) %in% makepairs(y) | makepairs(x) %in% makepairs(rev(y*-1)))]
-  out2<-makepairs(x)[unlist(lapply(makepairs(x), function(z) length(unique(sign(z)))))>1]
-  all<-c(out1,out2)
-  return(all[!duplicated(all)]) #deduplicate to aovid double counting breakpoints that occur in out1 and out2
+  out<-makepairs(x)[!(makepairs(x) %in% makepairs(y) && sum(sign(x))==2 | makepairs(x) %in% makepairs(rev(y)) && sum(sign(x))==-2)]
+  return(out)
 }
 
 BPfunc<-function(x,y) {  #apply to granges objects
@@ -821,3 +819,16 @@ if (boot!=0) {
   write.table(finaldfboot, file=gsubfn('%1',list('%1'=args[1]),'%1/output/distancestats_bootstrapped.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
 
 }
+
+
+
+
+#OLD CODE
+
+#incorrect breakpoint calculation function
+# BP<-function(x,y) { #this function works on signed permuations (numeric vectors with +/- indicated)
+#   out1<-makepairs(x)[!(makepairs(x) %in% makepairs(y) | makepairs(x) %in% makepairs(rev(y*-1)))]
+#   out2<-makepairs(x)[unlist(lapply(makepairs(x), function(z) length(unique(sign(z)))))>1]
+#   all<-c(out1,out2)
+#   return(all[!duplicated(all)]) #deduplicate to aovid double counting breakpoints that occur in out1 and out2
+# }
