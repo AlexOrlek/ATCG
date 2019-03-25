@@ -7,6 +7,7 @@ library('tools') #file_ext function  #tools is a base R package
 library('ggplot2')
 library('cowplot')
 library('GenomicRanges')
+library('data.table')
 inputdir=as.character(args[1]) #alignments/tree input dir
 filenamesyntax=as.character(args[2]) #syntax for alignment files and (optionally) for feature annotation files e.g. trimmedalignments_GENOMENAME.tsv,GENOMENAME.gb; GENOMENAME will be replaced
 seqlengths=as.character(args[3]) #seqlength file
@@ -711,7 +712,10 @@ for (i in 1:nrow(comparisonfile)) {
     #subject_annotations<-subject_annotations[c(annotationtxtname,"start","end","strand","col","gene_type","fill","lty","lwd","pch","cex")]
     #colnames(subject_annotations)<-c("name","start","end","strand","col","gene_type","fill","lty","lwd","pch","cex")
     #subject_annotations<-subject_annotations[subject_annotations$gene_type!='introns',]
-    sbj_gff<-read.gff(gsubfn('%1|%2',list('%1'=featuresdir,'%2'=annotationsfile),'%1/%2'))
+    #sbj_gff<-read.gff(gsubfn('%1|%2',list('%1'=featuresdir,'%2'=annotationsfile),'%1/%2')) #this fails when there are hex colours since # is interpreted as comment
+    sbj_gff<-fread(gsubfn('%1|%2',list('%1'=featuresdir,'%2'=annotationsfile),'%1/%2'),sep='\t',header=F) #comment.char is not used with fread; skip argument ensures ##gff line at top is not read: "If 0 (default) start on the first line and from there finds the first row with a consistent number of columns. This automatically avoids irregular header information before the column names row"
+    sbj_gff<-as.data.frame(sbj_gff)
+    colnames(sbj_gff)<-c("seqid", "source", "type", "start", "end", "score", "strand", "phase", "attributes")
     #sbj_gff<-sbj_gff[sbj_gff$type=='CDS',]
     sbj_gff<-sbj_gff[sbj_gff$type %in% gffannotationtypevec,]
     sbj_gff<-handleintrons(sbj_gff)
@@ -831,7 +835,10 @@ for (i in 1:nrow(comparisonfile)) {
       #query_annotations<-query_annotations[c(annotationtxtname,"start","end","strand","col","gene_type","fill","lty","lwd","pch","cex")]
       #colnames(query_annotations)<-c("name","start","end","strand","col","gene_type","fill","lty","lwd","pch","cex")
       #query_annotations<-query_annotations[query_annotations$gene_type!='introns',]
-      qry_gff<-read.gff(gsubfn('%1|%2',list('%1'=featuresdir,'%2'=annotationsfile),'%1/%2'))
+      #qry_gff<-read.gff(gsubfn('%1|%2',list('%1'=featuresdir,'%2'=annotationsfile),'%1/%2'))
+      qry_gff<-fread(gsubfn('%1|%2',list('%1'=featuresdir,'%2'=annotationsfile),'%1/%2'),sep='\t',header=F)
+      qry_gff<-as.data.frame(qry_gff)
+      colnames(qry_gff)<-c("seqid", "source", "type", "start", "end", "score", "strand", "phase", "attributes")
       #qry_gff<-qry_gff[qry_gff$type=='CDS',]
       qry_gff<-qry_gff[qry_gff$type %in% gffannotationtypevec,]
       qry_gff<-handleintrons(qry_gff)
