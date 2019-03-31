@@ -77,6 +77,9 @@ install.packages("data.table",repo='https://cloud.r-project.org/')
 install.packages("ape",repo='https://cloud.r-project.org/')
 ```
 
+If you have trouble installing the devtools package, see this [Issue](https://github.com/AlexOrlek/ATCG/issues/1) - you may need to install a few additional dependencies.
+
+
 __For visualisation__<br>
 
 * The following R packages must be installed:
