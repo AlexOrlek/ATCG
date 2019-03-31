@@ -1,3 +1,4 @@
+qname	sname	pid	alnlen	mismatches	gapopens	qstart	qend	sstart	send	evalue	bitscore	qcov	qcovhsp	qlength	slength	strand
 B|1	A|1	90	3	0	0	1	3	1	3	missing	missing	missing	missing	30	30	+
 B|1	A|1	70	4	0	0	2	5	3	6	missing	missing	missing	missing	30	30	+
 B|1	A|1	70	3	0	0	6	8	24	26	missing	missing	missing	missing	30	30	+
