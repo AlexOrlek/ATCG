@@ -24,3 +24,6 @@ if len(excludedsamples)>0:
         f2.write('%s\n'%sample)
 f2.close()
 
+#flag if there are no blast hits (terminate pipeline in distance.py script, if no hits)
+if len(sampleswithhits)==0:
+    print('no blast hits')

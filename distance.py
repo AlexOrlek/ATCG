@@ -44,8 +44,8 @@ output_group.add_argument('--trimmedalignments', action='store_true', help='If f
 #BLAST options                                  
 blast_group = parser.add_argument_group('BLAST options')
 blast_group.add_argument('--evalue', help='BLAST e-value cutoff (default: 1e-8)', default=1e-8, type=float) #1e-8 is used in ggdc web pipeline - see Meier-Kolthoff 2014
-blast_group.add_argument('--wordsize', help='BLAST word size (ATCG default for blastn: 38; ATCG default for dc-megablast: 12)', type=int) #38 is used in ggdc web pipleine?                 
-blast_group.add_argument('--task', help='BLAST task (default: blastn)', default='blastn', choices=['blastn','dc-megablast'], type=str)
+blast_group.add_argument('--wordsize', help='BLAST word size (ATCG default for blastn: 38; ATCG default for dc-megablast: 12; ATCG default for megablast: 28)', type=int) #38 is used in ggdc web pipleine?                 
+blast_group.add_argument('--task', help='BLAST task (default: blastn)', default='blastn', choices=['blastn','dc-megablast','megablast'], type=str)
 #Alignment filtering options                                                   
 alignment_group = parser.add_argument_group('Alignment filtering options')
 alignment_group.add_argument('-l','--lengthfilter', help='Length threshold (in basepairs) used to filter trimmed alignments prior to calculating breakpoint distance and alignment length statistics (default: 100)', default=100, type=positiveint)
@@ -74,6 +74,8 @@ if args.wordsize==None:
         args.wordsize=int(38)
     if args.task=='dc-megablastn':
         args.wordsize=int(12)
+    if args.task=='megablast':
+        args.wordsize=int(28)
 else:
     if args.task=='dc-megablast':
         if args.wordsize>int(12) or args.wordsize<int(11):
@@ -81,8 +83,12 @@ else:
     if args.task=='blastn':
         if args.wordsize<int(4):
             parser.error('if using blastn, word size must be at least 4, and a higher value would be sensible, to reduce computation time when running genome-genome searches')
+    if args.task=='megablast':
+        if args.wordsize<int(4):
+            parser.error('if using megablast, word size must be at least 4, and a higher value would be sensible, to reduce computation time when running genome-genome searches')
 
-    
+noblasthits=False
+
 if args.sequences!=None:
     blasttype='allvallpairwise'
     fastadir='%s/splitfastas'%outputpath
@@ -107,12 +113,17 @@ if args.sequences!=None:
         sys.exit()
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished running blast')
-    runsubprocess(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath,blastdbs,sourcedir])
-    laterruntime=runtime()
-    print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
-    runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences),sourcedir])
-    laterruntime=runtime()
-    print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
+    p=subprocess.Popen(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, blastdbs, sourcedir], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr= p.communicate()
+    if stdout.strip()=='no blast hits':
+        noblasthits=True
+        print('Warning: no blast alignments produced from genome comparison(s); pipeline terminated')
+    if noblasthits==False:
+        laterruntime=runtime()
+        print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
+        runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences),sourcedir])
+        laterruntime=runtime()
+        print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
     
 if args.sequences==None:
     blasttype='pairwise'
@@ -169,14 +180,19 @@ if args.sequences==None:
     blastdbs='%s/blastdbfilepaths_combined.tsv'%outputpath
     runsubprocess(['cat %s %s | sort -k1,1V > %s'%(blastdbs1,blastdbs2,blastdbs)],shell=True)
 
-    runsubprocess(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath,blastdbs,sourcedir])
-    laterruntime=runtime()
-    print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
-    runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences1),str(args.sequences2),sourcedir])
-    laterruntime=runtime()
-    print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
+    p=subprocess.Popen(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, blastdbs, sourcedir], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr= p.communicate()
+    if stdout.strip()=='no blast hits':
+        noblasthits=True
+        print('Warning: no blast alignments produced from genome comparison(s); pipeline terminated')
+    if noblasthits==False:
+        laterruntime=runtime()
+        print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
+        runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences1),str(args.sequences2),sourcedir])
+        laterruntime=runtime()
+        print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
 
-if args.blastonly!=True:
+if args.blastonly!=True and noblasthits==False:
     runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.trimmedalignments)])
     laterruntime=runtime()
     print(laterruntime-startruntime, 'runtime; finished trimming alignments')

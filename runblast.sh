@@ -29,12 +29,13 @@ do
     database="${line[1]}"
     blastoutput="${1}/blast/${sample}_alignments.tsv"
     #cat ${query} | seqkit grep -r -p ^${sample} -v  | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt ${outfmt} -task 'blastn' -num_threads ${threads} -max_target_seqs '500' -word_size ${wordsize} -culling_limit '5'
-    cat ${query} | seqkit grep -r -p ^${sample} -v  | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -max_target_seqs '500' -word_size ${wordsize} -culling_limit '5'
+    cat ${query} | seqkit grep -r -p ^${sample} -v  | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
 done < ${databasefiles}
 
 > ${1}/blast/blastsettings.txt
 echo "e-value cutoff: ${evalue}" >> ${1}/blast/blastsettings.txt
 echo "word size: ${wordsize}" >> ${1}/blast/blastsettings.txt
+
 
 
 

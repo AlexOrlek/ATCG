@@ -533,7 +533,7 @@ applystatscalc<-function(mystats,mystatscols,bootstrap='False') {
 ###iterate through samples, to get initial raw statistics for sample-pairs
 
 #read seqlength file
-seqlenreport<-fread(gsubfn('%1',list('%1'=args[1]),'%1/seqlengths.tsv'),sep='\t')
+seqlenreport<-fread(gsubfn('%1',list('%1'=args[1]),'%1/seqlengths.tsv'),sep='\t',colClasses=c('character','integer'))
 colnames(seqlenreport)<-c('sequence','length')
 seqlenreport<-seqlenreport[order(seqlenreport$sequence),]
 
@@ -545,7 +545,7 @@ cl<-makeCluster(as.integer(args[2]))
 registerDoParallel(cl)
 
 samples<-read.table(gsubfn('%1',list('%1'=args[1]),'%1/included.txt'),sep='\t',header=FALSE)
-samples<-as.vector(samples[,1])
+samples<-as.character(samples[,1])
 #samples<-samples[1:6]
 allsampledflist<-list()
 
@@ -557,7 +557,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #read alignmnents file for given sample
     sample<-samples[i]
     #report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,4,7,8,9,10,12,17),sep='\t') #same subject, different queries
-    report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c('qname','sname','pid','alnlen','qstart','qend','sstart','send','bitscore','strand'),header=TRUE,sep='\t')
+    report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c('qname','sname','pid','alnlen','qstart','qend','sstart','send','bitscore','strand'),colClasses = list('character'=c('qname','sname','strand'), 'numeric'=c('pid','bitscore'),'integer'=c('alnlen','qstart','qend','sstart','send')),header=TRUE,sep='\t')
     #colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
     #colnames(report)<-c('qname','sname','pid','alnlen','qstart','qend','sstart','send','bitscore','strand')
     #get information for shifting query and subject ranges where there are multiple contigs)
