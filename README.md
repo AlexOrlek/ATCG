@@ -153,7 +153,8 @@ A paper describing the methods will be written shortly, and further information 
 
 1. BLAST is conducted on assembled nucleotide sequences in both directions between each pair of genomes (i.e. genome A vs genome B and genome B vs genome A; that is, with genome A as the [query sequence](https://www.ncbi.nlm.nih.gov/books/NBK1734/) and genome B as the subject database sequence, and vice-versa).
 
-Overlapping alignments are trimmed in a two-step process; see the [toy example](#161-toy-example) below for a visual depiction of how alignment trimming works. The rationale for trimming overlapping alignments is explained in the [FAQ](#17-FAQ) section. The trimming algorithm used by ATCG is analogous to the "greedy-with-trimming" algorithm described by [Meier-Kolthoff _et al_](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-60).
+Overlapping alignments are trimmed in a two-step process (steps 2 and 3 below); see the [toy example](#161-toy-example) below for a visual depiction of how alignment trimming works. The rationale for trimming overlapping alignments is explained in the [FAQ](#17-FAQ) section. The trimming algorithm used by ATCG is analogous to the "greedy-with-trimming" algorithm described by [Meier-Kolthoff _et al_](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-60).
+
 2. Where alignment ranges overlap at the same region on the query genome or the subject genome, the shorter overlapping alignment is trimmed to eliminate the overlap. This results in a set of "disjoint alignments".
 3. Trimming performed on the query/subject genome is applied to the corresponding range on the subject/query genome, resulting in "trimmed alignments". 
     * The strand of the alignment is accounted for. So, if an alignment is '-' strand (a reverse complement alignment), and the alignment range on the query sequence is trimmed from the 5' end, then the corresponding alignment range on the subject sequence will be trimmed by the same length on the 3' end.
@@ -220,16 +221,16 @@ For simplicity, alignment length is used as the best hit selection criterion. Re
 
 <br>
 <p align="center">Untrimmed alignments</p>
-<p align="center"><img src="example/images/untrimmed.JPG" alt="untrimmed" width="600"></p>
+<p align="center"><img src="toy-example/images/untrimmed.JPG" alt="untrimmed" width="600"></p>
 <br>
 <p align="center">Disjoint alignments</p>
-<p align="center"><img src="example/images/disjoint.JPG" alt="trimmed" width="600"></p>
+<p align="center"><img src="toy-example/images/disjoint.JPG" alt="trimmed" width="600"></p>
 <br>
 <p align="center">Trimmed alignments</p>
-<p align="center"><img src="example/images/trimmed.JPG" alt="trimmed" width="600"></p>
+<p align="center"><img src="toy-example/images/trimmed.JPG" alt="trimmed" width="600"></p>
 <br>
 <p align="center">Calculation of percent identity from trimmed alignments</p>
-<p align="center"><img src="example/images/percent_identity.JPG" alt="percent identity calculation" width="600"></p>
+<p align="center"><img src="toy-example/images/percent_identity.JPG" alt="percent identity calculation" width="600"></p>
 
 
 __Things to note:__<br>
@@ -253,11 +254,11 @@ In this example, genomes A and B each comprise 3 contig sequences: A|1;A|2;A|3 a
 
 [Decraene _et al_. 2018](https://aac.asm.org/content/62/12/e01689-18.long) applied comparative genomic analysis to plasmids isolated from an antibiotic resistant hospital outbreak. They found that a successful plasmid called pKPC-CAD1 (carrying a blaKPC resistance gene) is highly similar to another plasmid from the outbreak called pCAD3. However, the resistance gene region of pKPC-CAD1 showed similarity to that of another plasmid, called pKPC-CAD2. So, they hypothesized that a pCAD3-like plasmid recombined with a pKPC-CAD2-like plasmid to produce pKPC-CAD1.<br>
 
-A FASTA file containing sequences from the 3 plasmids can be found in the resistance-plasmid-example/sequences directory. As an initial analysis step, the `distance.py` script can be run on the plasmids. First, navigate to the resistance-plasmid-example directory and run the `distance.py` script on the sequences:<br>
+A FASTA file containing sequences from the 3 plasmids can be found in the resistance-plasmid-example/sequences directory. As an initial analysis step (prior to visualisation), the `distance.py` script can be run on the plasmids. First, navigate to the resistance-plasmid-example directory and run the script on the sequences:<br>
 
 `distance.py -s sequences/plasmids.fasta -o atcgout --breakpoint --alnlenstats --trimmedalignments -t 4`
 
-Output of trimmed alignments is specified (these will be used for the visualisation step [below](#261-resistance-plasmid-comparison)).<br>
+The `--trimmedalignments` flag means trimmed alignments will produced (they will be used for the visualisation step [below](#261-resistance-plasmid-comparison)).<br>
 
 The output, shows that, across 79% of its length, pKPC-CAD1 is >99% similar to pCAD3, while across 37% of its length, pKPC-CAD1 is 99% similar to pKPC-CAD2. Note that these statistics differ slightly from those presented in the paper, due to differences in assembly methods and BLAST settings.
 
@@ -370,7 +371,7 @@ Finally, visualise the alignments. Note that the attributes field of the gff3 co
 `visualise.py -i atcgout/output -s trimmedalignments_GENOMENAME.tsv GENOMENAME.gff -l atcgout/seqlengths.tsv -c comparison.tsv -o atcgout_visualisation -f annotations --annotationtxt_name annotationtext`
 
 <br>
-<p align="center"><img src="example_visualisation/images/plasmids.PNG" alt="plasmid_comparison" width="600"></p>
+<p align="center"><img src="resistance-plasmid-example/images/plasmids.JPG" alt="plasmid_comparison" width="600"></p>
 <br>
 
 Note that the plot differs slightly from Fig.4A in the paper, due to differences in assembly methods and BLAST settings.

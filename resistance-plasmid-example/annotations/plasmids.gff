@@ -2,7 +2,7 @@
 ##sequence-region pKPC-CAD1_2 1 200396								
 ##sequence-region pKPC-CAD2_2 1 296027								
 ##sequence-region pKPC-CAD2_4 1 11063								
-##sequence-region pKPC-CAD3_3 1 151942								
+##sequence-region pCAD3_3 1 151942								
 pKPC-CAD1_2	Prodigal:2.60	CDS	1	1011	0	+	0	ID=KEHPLGBG_00001;Parent=KEHPLGBG_00001_gene;Name=repB_1;gene=repB_1;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q57154;locus_tag=KEHPLGBG_00001;product=RepFIB replication protein A
 pKPC-CAD1_2	prokka	gene	1	1011	0	+	0	ID=KEHPLGBG_00001_gene;Name=repB_1;gene=repB_1;locus_tag=KEHPLGBG_00001
 pKPC-CAD1_2	Prodigal:2.60	CDS	1348	1629	0	-	0	ID=KEHPLGBG_00002;Parent=KEHPLGBG_00002_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00002;product=hypothetical protein
@@ -1091,304 +1091,304 @@ pKPC-CAD2_4	Prodigal:2.60	CDS	6703	9636	0	-	0	ID=KEHPLGBG_00543;Parent=KEHPLGBG_
 pKPC-CAD2_4	prokka	gene	6703	9636	0	-	0	ID=KEHPLGBG_00543_gene;locus_tag=KEHPLGBG_00543
 pKPC-CAD2_4	Prodigal:2.60	CDS	9633	10970	0	-	0	ID=KEHPLGBG_00544;Parent=KEHPLGBG_00544_gene;Name=xerC_4;gene=xerC_4;inference=ab initio prediction:Prodigal:2.60,protein motif:HAMAP:MF_01808;locus_tag=KEHPLGBG_00544;product=Tyrosine recombinase XerC
 pKPC-CAD2_4	prokka	gene	9633	10970	0	-	0	ID=KEHPLGBG_00544_gene;Name=xerC_4;gene=xerC_4;locus_tag=KEHPLGBG_00544
-pKPC-CAD3_3	Prodigal:2.60	CDS	1	1011	0	+	0	ID=KEHPLGBG_00545;Parent=KEHPLGBG_00545_gene;Name=repB_3;gene=repB_3;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q57154;locus_tag=KEHPLGBG_00545;product=RepFIB replication protein A
-pKPC-CAD3_3	prokka	gene	1	1011	0	+	0	ID=KEHPLGBG_00545_gene;Name=repB_3;gene=repB_3;locus_tag=KEHPLGBG_00545
-pKPC-CAD3_3	Prodigal:2.60	CDS	1348	1629	0	-	0	ID=KEHPLGBG_00546;Parent=KEHPLGBG_00546_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00546;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	1348	1629	0	-	0	ID=KEHPLGBG_00546_gene;locus_tag=KEHPLGBG_00546
-pKPC-CAD3_3	Prodigal:2.60	CDS	1728	2468	0	-	0	ID=KEHPLGBG_00547;Parent=KEHPLGBG_00547_gene;Name=xerD_4;gene=xerD_4;inference=ab initio prediction:Prodigal:2.60,protein motif:HAMAP:MF_01807;locus_tag=KEHPLGBG_00547;product=Tyrosine recombinase XerD
-pKPC-CAD3_3	prokka	gene	1728	2468	0	-	0	ID=KEHPLGBG_00547_gene;Name=xerD_4;gene=xerD_4;locus_tag=KEHPLGBG_00547
-pKPC-CAD3_3	Prodigal:2.60	CDS	3117	3389	0	-	0	ID=KEHPLGBG_00548;Parent=KEHPLGBG_00548_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00548;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	3117	3389	0	-	0	ID=KEHPLGBG_00548_gene;locus_tag=KEHPLGBG_00548
-pKPC-CAD3_3	Prodigal:2.60	CDS	3614	5287	0	-	0	ID=KEHPLGBG_00549;Parent=KEHPLGBG_00549_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00549;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	3614	5287	0	-	0	ID=KEHPLGBG_00549_gene;locus_tag=KEHPLGBG_00549
-pKPC-CAD3_3	Prodigal:2.60	CDS	5852	6661	0	-	0	ID=KEHPLGBG_00550;Parent=KEHPLGBG_00550_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00550;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	5852	6661	0	-	0	ID=KEHPLGBG_00550_gene;locus_tag=KEHPLGBG_00550
-pKPC-CAD3_3	Prodigal:2.60	CDS	6679	7041	0	-	0	ID=KEHPLGBG_00551;Parent=KEHPLGBG_00551_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00551;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	6679	7041	0	-	0	ID=KEHPLGBG_00551_gene;locus_tag=KEHPLGBG_00551
-pKPC-CAD3_3	Prodigal:2.60	CDS	7604	7834	0	+	0	ID=KEHPLGBG_00552;Parent=KEHPLGBG_00552_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00552;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	7604	7834	0	+	0	ID=KEHPLGBG_00552_gene;locus_tag=KEHPLGBG_00552
-pKPC-CAD3_3	Prodigal:2.60	CDS	7846	8247	0	+	0	ID=KEHPLGBG_00553;Parent=KEHPLGBG_00553_gene;eC_number=3.1.-.-;Name=vapC_2;db_xref=COG:COG1487;gene=vapC_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q8ZM86;locus_tag=KEHPLGBG_00553;product=tRNA(fMet)-specific endonuclease VapC
-pKPC-CAD3_3	prokka	gene	7846	8247	0	+	0	ID=KEHPLGBG_00553_gene;Name=vapC_2;gene=vapC_2;locus_tag=KEHPLGBG_00553
-pKPC-CAD3_3	Prodigal:2.60	CDS	8321	9883	0	+	0	ID=KEHPLGBG_00554;Parent=KEHPLGBG_00554_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00554;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	8321	9883	0	+	0	ID=KEHPLGBG_00554_gene;locus_tag=KEHPLGBG_00554
-pKPC-CAD3_3	Prodigal:2.60	CDS	9868	10890	0	+	0	ID=KEHPLGBG_00555;Parent=KEHPLGBG_00555_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00555;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	9868	10890	0	+	0	ID=KEHPLGBG_00555_gene;locus_tag=KEHPLGBG_00555
-pKPC-CAD3_3	Prodigal:2.60	CDS	11071	11466	0	-	0	ID=KEHPLGBG_00556;Parent=KEHPLGBG_00556_gene;db_xref=COG:COG1662;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1N;locus_tag=KEHPLGBG_00556;product=IS1 family transposase IS1N
-pKPC-CAD3_3	prokka	gene	11071	11466	0	-	0	ID=KEHPLGBG_00556_gene;locus_tag=KEHPLGBG_00556
-pKPC-CAD3_3	Prodigal:2.60	CDS	11493	11765	0	-	0	ID=KEHPLGBG_00557;Parent=KEHPLGBG_00557_gene;db_xref=COG:COG1662;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1N;locus_tag=KEHPLGBG_00557;product=IS1 family transposase IS1N
-pKPC-CAD3_3	prokka	gene	11493	11765	0	-	0	ID=KEHPLGBG_00557_gene;locus_tag=KEHPLGBG_00557
-pKPC-CAD3_3	Prodigal:2.60	CDS	11858	12040	0	+	0	ID=KEHPLGBG_00558;Parent=KEHPLGBG_00558_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISKpn26;locus_tag=KEHPLGBG_00558;product=IS5 family transposase ISKpn26
-pKPC-CAD3_3	prokka	gene	11858	12040	0	+	0	ID=KEHPLGBG_00558_gene;locus_tag=KEHPLGBG_00558
-pKPC-CAD3_3	Prodigal:2.60	CDS	12141	12506	0	-	0	ID=KEHPLGBG_00559;Parent=KEHPLGBG_00559_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00559;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	12141	12506	0	-	0	ID=KEHPLGBG_00559_gene;locus_tag=KEHPLGBG_00559
-pKPC-CAD3_3	Prodigal:2.60	CDS	12503	12988	0	-	0	ID=KEHPLGBG_00560;Parent=KEHPLGBG_00560_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00560;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	12503	12988	0	-	0	ID=KEHPLGBG_00560_gene;locus_tag=KEHPLGBG_00560
-pKPC-CAD3_3	Prodigal:2.60	CDS	13746	14546	0	+	0	ID=KEHPLGBG_00561;Parent=KEHPLGBG_00561_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00561;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	13746	14546	0	+	0	ID=KEHPLGBG_00561_gene;locus_tag=KEHPLGBG_00561
-pKPC-CAD3_3	Prodigal:2.60	CDS	14640	15620	0	+	0	ID=KEHPLGBG_00562;Parent=KEHPLGBG_00562_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISKpn26;locus_tag=KEHPLGBG_00562;product=IS5 family transposase ISKpn26
-pKPC-CAD3_3	prokka	gene	14640	15620	0	+	0	ID=KEHPLGBG_00562_gene;locus_tag=KEHPLGBG_00562
-pKPC-CAD3_3	Prodigal:2.60	CDS	15990	16772	0	+	0	ID=KEHPLGBG_00563;Parent=KEHPLGBG_00563_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00563;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	15990	16772	0	+	0	ID=KEHPLGBG_00563_gene;locus_tag=KEHPLGBG_00563
-pKPC-CAD3_3	Prodigal:2.60	CDS	17347	17568	0	+	0	ID=KEHPLGBG_00564;Parent=KEHPLGBG_00564_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00564;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	17347	17568	0	+	0	ID=KEHPLGBG_00564_gene;locus_tag=KEHPLGBG_00564
-pKPC-CAD3_3	Prodigal:2.60	CDS	17866	18369	0	+	0	ID=KEHPLGBG_00565;Parent=KEHPLGBG_00565_gene;db_xref=COG:COG1662;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1R;locus_tag=KEHPLGBG_00565;product=IS1 family transposase IS1R
-pKPC-CAD3_3	prokka	gene	17866	18369	0	+	0	ID=KEHPLGBG_00565_gene;locus_tag=KEHPLGBG_00565
-pKPC-CAD3_3	Prodigal:2.60	CDS	18753	19757	0	-	0	ID=KEHPLGBG_00566;Parent=KEHPLGBG_00566_gene;Name=cra_2;db_xref=COG:COG1609;gene=cra_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0ACP1;locus_tag=KEHPLGBG_00566;product=Catabolite repressor/activator
-pKPC-CAD3_3	prokka	gene	18753	19757	0	-	0	ID=KEHPLGBG_00566_gene;Name=cra_2;gene=cra_2;locus_tag=KEHPLGBG_00566
-pKPC-CAD3_3	Prodigal:2.60	CDS	19787	21187	0	-	0	ID=KEHPLGBG_00567;Parent=KEHPLGBG_00567_gene;eC_number=3.2.1.26;Name=scrB_2;db_xref=COG:COG1621;gene=scrB_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P27217;locus_tag=KEHPLGBG_00567;product=Sucrose-6-phosphate hydrolase
-pKPC-CAD3_3	prokka	gene	19787	21187	0	-	0	ID=KEHPLGBG_00567_gene;Name=scrB_2;gene=scrB_2;locus_tag=KEHPLGBG_00567
-pKPC-CAD3_3	Prodigal:2.60	CDS	21187	22557	0	-	0	ID=KEHPLGBG_00568;Parent=KEHPLGBG_00568_gene;Name=sacX_2;db_xref=COG:COG1263;gene=sacX_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P15400;locus_tag=KEHPLGBG_00568;product=Negative regulator of SacY activity
-pKPC-CAD3_3	prokka	gene	21187	22557	0	-	0	ID=KEHPLGBG_00568_gene;Name=sacX_2;gene=sacX_2;locus_tag=KEHPLGBG_00568
-pKPC-CAD3_3	Prodigal:2.60	CDS	22695	24212	0	-	0	ID=KEHPLGBG_00569;Parent=KEHPLGBG_00569_gene;Name=scrY_2;gene=scrY_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P22340;locus_tag=KEHPLGBG_00569;product=Sucrose porin
-pKPC-CAD3_3	prokka	gene	22695	24212	0	-	0	ID=KEHPLGBG_00569_gene;Name=scrY_2;gene=scrY_2;locus_tag=KEHPLGBG_00569
-pKPC-CAD3_3	Prodigal:2.60	CDS	24378	25301	0	-	0	ID=KEHPLGBG_00570;Parent=KEHPLGBG_00570_gene;eC_number=2.7.1.4;Name=scrK_2;db_xref=COG:COG0524;gene=scrK_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P26420;locus_tag=KEHPLGBG_00570;product=Fructokinase
-pKPC-CAD3_3	prokka	gene	24378	25301	0	-	0	ID=KEHPLGBG_00570_gene;Name=scrK_2;gene=scrK_2;locus_tag=KEHPLGBG_00570
-pKPC-CAD3_3	Prodigal:2.60	CDS	25656	25922	0	+	0	ID=KEHPLGBG_00571;Parent=KEHPLGBG_00571_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISEhe3;locus_tag=KEHPLGBG_00571;product=IS3 family transposase ISEhe3
-pKPC-CAD3_3	prokka	gene	25656	25922	0	+	0	ID=KEHPLGBG_00571_gene;locus_tag=KEHPLGBG_00571
-pKPC-CAD3_3	Prodigal:2.60	CDS	25956	26660	0	-	0	ID=KEHPLGBG_00572;Parent=KEHPLGBG_00572_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00572;product=IS6 family transposase IS26
-pKPC-CAD3_3	prokka	gene	25956	26660	0	-	0	ID=KEHPLGBG_00572_gene;locus_tag=KEHPLGBG_00572
-pKPC-CAD3_3	Prodigal:2.60	CDS	26751	28022	0	-	0	ID=KEHPLGBG_00573;Parent=KEHPLGBG_00573_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00573;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	26751	28022	0	-	0	ID=KEHPLGBG_00573_gene;locus_tag=KEHPLGBG_00573
-pKPC-CAD3_3	Prodigal:2.60	CDS	28205	28699	0	+	0	ID=KEHPLGBG_00574;Parent=KEHPLGBG_00574_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00574;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	28205	28699	0	+	0	ID=KEHPLGBG_00574_gene;locus_tag=KEHPLGBG_00574
-pKPC-CAD3_3	Prodigal:2.60	CDS	28809	29627	0	+	0	ID=KEHPLGBG_00575;Parent=KEHPLGBG_00575_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00575;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	28809	29627	0	+	0	ID=KEHPLGBG_00575_gene;locus_tag=KEHPLGBG_00575
-pKPC-CAD3_3	Prodigal:2.60	CDS	29928	30890	0	-	0	ID=KEHPLGBG_00576;Parent=KEHPLGBG_00576_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS903;locus_tag=KEHPLGBG_00576;product=IS5 family transposase IS903
-pKPC-CAD3_3	prokka	gene	29928	30890	0	-	0	ID=KEHPLGBG_00576_gene;locus_tag=KEHPLGBG_00576
-pKPC-CAD3_3	Prodigal:2.60	CDS	30916	31896	0	+	0	ID=KEHPLGBG_00577;Parent=KEHPLGBG_00577_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISKpn26;locus_tag=KEHPLGBG_00577;product=IS5 family transposase ISKpn26
-pKPC-CAD3_3	prokka	gene	30916	31896	0	+	0	ID=KEHPLGBG_00577_gene;locus_tag=KEHPLGBG_00577
-pKPC-CAD3_3	Prodigal:2.60	CDS	31953	32357	0	+	0	ID=KEHPLGBG_00578;Parent=KEHPLGBG_00578_gene;eC_number=3.4.21.-;Name=umuD_3;db_xref=COG:COG1974;gene=umuD_3;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0AG11;locus_tag=KEHPLGBG_00578;product=Protein UmuD
-pKPC-CAD3_3	prokka	gene	31953	32357	0	+	0	ID=KEHPLGBG_00578_gene;Name=umuD_3;gene=umuD_3;locus_tag=KEHPLGBG_00578
-pKPC-CAD3_3	Prodigal:2.60	CDS	32357	33628	0	+	0	ID=KEHPLGBG_00579;Parent=KEHPLGBG_00579_gene;Name=umuC_3;db_xref=COG:COG0389;gene=umuC_3;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P04152;locus_tag=KEHPLGBG_00579;product=Protein UmuC
-pKPC-CAD3_3	prokka	gene	32357	33628	0	+	0	ID=KEHPLGBG_00579_gene;Name=umuC_3;gene=umuC_3;locus_tag=KEHPLGBG_00579
-pKPC-CAD3_3	Prodigal:2.60	CDS	33729	34172	0	+	0	ID=KEHPLGBG_00580;Parent=KEHPLGBG_00580_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00580;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	33729	34172	0	+	0	ID=KEHPLGBG_00580_gene;locus_tag=KEHPLGBG_00580
-pKPC-CAD3_3	Prodigal:2.60	CDS	34169	34639	0	+	0	ID=KEHPLGBG_00581;Parent=KEHPLGBG_00581_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00581;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	34169	34639	0	+	0	ID=KEHPLGBG_00581_gene;locus_tag=KEHPLGBG_00581
-pKPC-CAD3_3	Prodigal:2.60	CDS	34749	35009	0	-	0	ID=KEHPLGBG_00582;Parent=KEHPLGBG_00582_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00582;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	34749	35009	0	-	0	ID=KEHPLGBG_00582_gene;locus_tag=KEHPLGBG_00582
-pKPC-CAD3_3	Prodigal:2.60	CDS	35708	36232	0	+	0	ID=KEHPLGBG_00583;Parent=KEHPLGBG_00583_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00583;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	35708	36232	0	+	0	ID=KEHPLGBG_00583_gene;locus_tag=KEHPLGBG_00583
-pKPC-CAD3_3	Prodigal:2.60	CDS	36180	36398	0	+	0	ID=KEHPLGBG_00584;Parent=KEHPLGBG_00584_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00584;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	36180	36398	0	+	0	ID=KEHPLGBG_00584_gene;locus_tag=KEHPLGBG_00584
-pKPC-CAD3_3	Prodigal:2.60	CDS	36320	37195	0	-	0	ID=KEHPLGBG_00585;Parent=KEHPLGBG_00585_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS903;locus_tag=KEHPLGBG_00585;product=IS5 family transposase IS903
-pKPC-CAD3_3	prokka	gene	36320	37195	0	-	0	ID=KEHPLGBG_00585_gene;locus_tag=KEHPLGBG_00585
-pKPC-CAD3_3	Prodigal:2.60	CDS	37217	37438	0	-	0	ID=KEHPLGBG_00586;Parent=KEHPLGBG_00586_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00586;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	37217	37438	0	-	0	ID=KEHPLGBG_00586_gene;locus_tag=KEHPLGBG_00586
-pKPC-CAD3_3	Prodigal:2.60	CDS	37452	37655	0	-	0	ID=KEHPLGBG_00587;Parent=KEHPLGBG_00587_gene;Name=ymoA_2;gene=ymoA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0A3X1;locus_tag=KEHPLGBG_00587;product=Modulating protein YmoA
-pKPC-CAD3_3	prokka	gene	37452	37655	0	-	0	ID=KEHPLGBG_00587_gene;Name=ymoA_2;gene=ymoA_2;locus_tag=KEHPLGBG_00587
-pKPC-CAD3_3	Prodigal:2.60	CDS	37716	38207	0	-	0	ID=KEHPLGBG_00588;Parent=KEHPLGBG_00588_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00588;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	37716	38207	0	-	0	ID=KEHPLGBG_00588_gene;locus_tag=KEHPLGBG_00588
-pKPC-CAD3_3	Prodigal:2.60	CDS	38591	39295	0	-	0	ID=KEHPLGBG_00589;Parent=KEHPLGBG_00589_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00589;product=IS6 family transposase IS26
-pKPC-CAD3_3	prokka	gene	38591	39295	0	-	0	ID=KEHPLGBG_00589_gene;locus_tag=KEHPLGBG_00589
-pKPC-CAD3_3	Prodigal:2.60	CDS	39373	40308	0	+	0	ID=KEHPLGBG_00590;Parent=KEHPLGBG_00590_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISEc63;locus_tag=KEHPLGBG_00590;product=Tn3 family transposase ISEc63
-pKPC-CAD3_3	prokka	gene	39373	40308	0	+	0	ID=KEHPLGBG_00590_gene;locus_tag=KEHPLGBG_00590
-pKPC-CAD3_3	Prodigal:2.60	CDS	40432	40908	0	+	0	ID=KEHPLGBG_00591;Parent=KEHPLGBG_00591_gene;db_xref=COG:COG0783;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P45173;locus_tag=KEHPLGBG_00591;product=putative protein
-pKPC-CAD3_3	prokka	gene	40432	40908	0	+	0	ID=KEHPLGBG_00591_gene;locus_tag=KEHPLGBG_00591
-pKPC-CAD3_3	Prodigal:2.60	CDS	41213	41563	0	-	0	ID=KEHPLGBG_00592;Parent=KEHPLGBG_00592_gene;Name=bigR_2;db_xref=COG:COG0640;gene=bigR_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q9PFB1;locus_tag=KEHPLGBG_00592;product=Biofilm growth-associated repressor
-pKPC-CAD3_3	prokka	gene	41213	41563	0	-	0	ID=KEHPLGBG_00592_gene;Name=bigR_2;gene=bigR_2;locus_tag=KEHPLGBG_00592
-pKPC-CAD3_3	Prodigal:2.60	CDS	41725	42036	0	+	0	ID=KEHPLGBG_00593;Parent=KEHPLGBG_00593_gene;eC_number=1.8.1.14;Name=cdr_2;gene=cdr_2;inference=ab initio prediction:Prodigal:2.60,protein motif:HAMAP:MF_01608;locus_tag=KEHPLGBG_00593;product=Coenzyme A disulfide reductase
-pKPC-CAD3_3	prokka	gene	41725	42036	0	+	0	ID=KEHPLGBG_00593_gene;Name=cdr_2;gene=cdr_2;locus_tag=KEHPLGBG_00593
-pKPC-CAD3_3	Prodigal:2.60	CDS	42181	42444	0	+	0	ID=KEHPLGBG_00594;Parent=KEHPLGBG_00594_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1222;locus_tag=KEHPLGBG_00594;product=IS3 family transposase IS1222
-pKPC-CAD3_3	prokka	gene	42181	42444	0	+	0	ID=KEHPLGBG_00594_gene;locus_tag=KEHPLGBG_00594
-pKPC-CAD3_3	Prodigal:2.60	CDS	42471	43301	0	+	0	ID=KEHPLGBG_00595;Parent=KEHPLGBG_00595_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISRaq1;locus_tag=KEHPLGBG_00595;product=IS3 family transposase ISRaq1
-pKPC-CAD3_3	prokka	gene	42471	43301	0	+	0	ID=KEHPLGBG_00595_gene;locus_tag=KEHPLGBG_00595
-pKPC-CAD3_3	Prodigal:2.60	CDS	43369	43788	0	-	0	ID=KEHPLGBG_00596;Parent=KEHPLGBG_00596_gene;Name=higA_2;db_xref=COG:COG5499;gene=higA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P67701;locus_tag=KEHPLGBG_00596;product=Antitoxin HigA
-pKPC-CAD3_3	prokka	gene	43369	43788	0	-	0	ID=KEHPLGBG_00596_gene;Name=higA_2;gene=higA_2;locus_tag=KEHPLGBG_00596
-pKPC-CAD3_3	Prodigal:2.60	CDS	43785	44096	0	-	0	ID=KEHPLGBG_00597;Parent=KEHPLGBG_00597_gene;eC_number=3.1.-.-;Name=higB_2;db_xref=COG:COG4680;gene=higB_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P64578;locus_tag=KEHPLGBG_00597;product=mRNA interferase toxin HigB
-pKPC-CAD3_3	prokka	gene	43785	44096	0	-	0	ID=KEHPLGBG_00597_gene;Name=higB_2;gene=higB_2;locus_tag=KEHPLGBG_00597
-pKPC-CAD3_3	Prodigal:2.60	CDS	44250	44687	0	+	0	ID=KEHPLGBG_00598;Parent=KEHPLGBG_00598_gene;Name=gntP_2;db_xref=COG:COG2610;gene=gntP_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0AC94;locus_tag=KEHPLGBG_00598;product=High-affinity gluconate transporter
-pKPC-CAD3_3	prokka	gene	44250	44687	0	+	0	ID=KEHPLGBG_00598_gene;Name=gntP_2;gene=gntP_2;locus_tag=KEHPLGBG_00598
-pKPC-CAD3_3	Prodigal:2.60	CDS	44737	45192	0	-	0	ID=KEHPLGBG_00599;Parent=KEHPLGBG_00599_gene;Name=lutC_2;db_xref=COG:COG1556;gene=lutC_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:O32259;locus_tag=KEHPLGBG_00599;product=Lactate utilization protein C
-pKPC-CAD3_3	prokka	gene	44737	45192	0	-	0	ID=KEHPLGBG_00599_gene;Name=lutC_2;gene=lutC_2;locus_tag=KEHPLGBG_00599
-pKPC-CAD3_3	Prodigal:2.60	CDS	45263	45967	0	+	0	ID=KEHPLGBG_00600;Parent=KEHPLGBG_00600_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00600;product=IS6 family transposase IS26
-pKPC-CAD3_3	prokka	gene	45263	45967	0	+	0	ID=KEHPLGBG_00600_gene;locus_tag=KEHPLGBG_00600
-pKPC-CAD3_3	Prodigal:2.60	CDS	46071	46877	0	+	0	ID=KEHPLGBG_00601;Parent=KEHPLGBG_00601_gene;Name=puuP_2;db_xref=COG:COG0531;gene=puuP_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P76037;locus_tag=KEHPLGBG_00601;product=Putrescine importer PuuP
-pKPC-CAD3_3	prokka	gene	46071	46877	0	+	0	ID=KEHPLGBG_00601_gene;Name=puuP_2;gene=puuP_2;locus_tag=KEHPLGBG_00601
-pKPC-CAD3_3	Prodigal:2.60	CDS	46985	47932	0	-	0	ID=KEHPLGBG_00602;Parent=KEHPLGBG_00602_gene;eC_number=4.2.2.-;Name=mltB_2;db_xref=COG:COG2951;gene=mltB_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P41052;locus_tag=KEHPLGBG_00602;product=Membrane-bound lytic murein transglycosylase B
-pKPC-CAD3_3	prokka	gene	46985	47932	0	-	0	ID=KEHPLGBG_00602_gene;Name=mltB_2;gene=mltB_2;locus_tag=KEHPLGBG_00602
-pKPC-CAD3_3	Prodigal:2.60	CDS	48077	48580	0	-	0	ID=KEHPLGBG_00603;Parent=KEHPLGBG_00603_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00603;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	48077	48580	0	-	0	ID=KEHPLGBG_00603_gene;locus_tag=KEHPLGBG_00603
-pKPC-CAD3_3	Prodigal:2.60	CDS	48825	49349	0	-	0	ID=KEHPLGBG_00604;Parent=KEHPLGBG_00604_gene;eC_number=4.4.1.8;Name=metC_2;db_xref=COG:COG0626;gene=metC_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q83A83;locus_tag=KEHPLGBG_00604;product=Cystathionine beta-lyase
-pKPC-CAD3_3	prokka	gene	48825	49349	0	-	0	ID=KEHPLGBG_00604_gene;Name=metC_2;gene=metC_2;locus_tag=KEHPLGBG_00604
-pKPC-CAD3_3	Prodigal:2.60	CDS	49431	50708	0	-	0	ID=KEHPLGBG_00605;Parent=KEHPLGBG_00605_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P42626;locus_tag=KEHPLGBG_00605;note=UPF0597 protein YhaM;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	49431	50708	0	-	0	ID=KEHPLGBG_00605_gene;locus_tag=KEHPLGBG_00605
-pKPC-CAD3_3	Prodigal:2.60	CDS	51056	51697	0	-	0	ID=KEHPLGBG_00606;Parent=KEHPLGBG_00606_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00606;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	51056	51697	0	-	0	ID=KEHPLGBG_00606_gene;locus_tag=KEHPLGBG_00606
-pKPC-CAD3_3	Prodigal:2.60	CDS	51697	52635	0	-	0	ID=KEHPLGBG_00607;Parent=KEHPLGBG_00607_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00607;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	51697	52635	0	-	0	ID=KEHPLGBG_00607_gene;locus_tag=KEHPLGBG_00607
-pKPC-CAD3_3	Prodigal:2.60	CDS	52637	53428	0	-	0	ID=KEHPLGBG_00608;Parent=KEHPLGBG_00608_gene;Name=mkl_2;db_xref=COG:COG1127;gene=mkl_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P9WQL5;locus_tag=KEHPLGBG_00608;product=putative ribonucleotide transport ATP-binding protein mkl
-pKPC-CAD3_3	prokka	gene	52637	53428	0	-	0	ID=KEHPLGBG_00608_gene;Name=mkl_2;gene=mkl_2;locus_tag=KEHPLGBG_00608
-pKPC-CAD3_3	Prodigal:2.60	CDS	53434	54579	0	-	0	ID=KEHPLGBG_00609;Parent=KEHPLGBG_00609_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00609;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	53434	54579	0	-	0	ID=KEHPLGBG_00609_gene;locus_tag=KEHPLGBG_00609
-pKPC-CAD3_3	Prodigal:2.60	CDS	55003	55707	0	+	0	ID=KEHPLGBG_00610;Parent=KEHPLGBG_00610_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00610;product=IS6 family transposase IS26
-pKPC-CAD3_3	prokka	gene	55003	55707	0	+	0	ID=KEHPLGBG_00610_gene;locus_tag=KEHPLGBG_00610
-pKPC-CAD3_3	Prodigal:2.60	CDS	55912	56826	0	+	0	ID=KEHPLGBG_00611;Parent=KEHPLGBG_00611_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00611;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	55912	56826	0	+	0	ID=KEHPLGBG_00611_gene;locus_tag=KEHPLGBG_00611
-pKPC-CAD3_3	Prodigal:2.60	CDS	56819	58441	0	+	0	ID=KEHPLGBG_00612;Parent=KEHPLGBG_00612_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00612;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	56819	58441	0	+	0	ID=KEHPLGBG_00612_gene;locus_tag=KEHPLGBG_00612
-pKPC-CAD3_3	Prodigal:2.60	CDS	59058	59312	0	+	0	ID=KEHPLGBG_00613;Parent=KEHPLGBG_00613_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00613;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	59058	59312	0	+	0	ID=KEHPLGBG_00613_gene;locus_tag=KEHPLGBG_00613
-pKPC-CAD3_3	Prodigal:2.60	CDS	59312	59575	0	+	0	ID=KEHPLGBG_00614;Parent=KEHPLGBG_00614_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00614;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	59312	59575	0	+	0	ID=KEHPLGBG_00614_gene;locus_tag=KEHPLGBG_00614
-pKPC-CAD3_3	Prodigal:2.60	CDS	59803	60084	0	+	0	ID=KEHPLGBG_00615;Parent=KEHPLGBG_00615_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00615;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	59803	60084	0	+	0	ID=KEHPLGBG_00615_gene;locus_tag=KEHPLGBG_00615
-pKPC-CAD3_3	Prodigal:2.60	CDS	60120	60689	0	+	0	ID=KEHPLGBG_00616;Parent=KEHPLGBG_00616_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00616;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	60120	60689	0	+	0	ID=KEHPLGBG_00616_gene;locus_tag=KEHPLGBG_00616
-pKPC-CAD3_3	Prodigal:2.60	CDS	60787	63636	0	+	0	ID=KEHPLGBG_00617;Parent=KEHPLGBG_00617_gene;Name=clpC_2;gene=clpC_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q2YSD6;locus_tag=KEHPLGBG_00617;product=ATP-dependent Clp protease ATP-binding subunit ClpC
-pKPC-CAD3_3	prokka	gene	60787	63636	0	+	0	ID=KEHPLGBG_00617_gene;Name=clpC_2;gene=clpC_2;locus_tag=KEHPLGBG_00617
-pKPC-CAD3_3	Prodigal:2.60	CDS	63653	65083	0	+	0	ID=KEHPLGBG_00618;Parent=KEHPLGBG_00618_gene;eC_number=2.7.8.-;Name=clsA_2;db_xref=COG:COG1502;gene=clsA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P71040;locus_tag=KEHPLGBG_00618;product=Major cardiolipin synthase ClsA
-pKPC-CAD3_3	prokka	gene	63653	65083	0	+	0	ID=KEHPLGBG_00618_gene;Name=clsA_2;gene=clsA_2;locus_tag=KEHPLGBG_00618
-pKPC-CAD3_3	Prodigal:2.60	CDS	65111	66940	0	+	0	ID=KEHPLGBG_00619;Parent=KEHPLGBG_00619_gene;eC_number=3.4.24.-;Name=ftsH4_2;gene=ftsH4_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P73437;locus_tag=KEHPLGBG_00619;product=ATP-dependent zinc metalloprotease FtsH 4
-pKPC-CAD3_3	prokka	gene	65111	66940	0	+	0	ID=KEHPLGBG_00619_gene;Name=ftsH4_2;gene=ftsH4_2;locus_tag=KEHPLGBG_00619
-pKPC-CAD3_3	Prodigal:2.60	CDS	67019	67477	0	+	0	ID=KEHPLGBG_00620;Parent=KEHPLGBG_00620_gene;Name=hspA_2;db_xref=COG:COG0071;gene=hspA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q06823;locus_tag=KEHPLGBG_00620;product=Spore protein SP21
-pKPC-CAD3_3	prokka	gene	67019	67477	0	+	0	ID=KEHPLGBG_00620_gene;Name=hspA_2;gene=hspA_2;locus_tag=KEHPLGBG_00620
-pKPC-CAD3_3	Prodigal:2.60	CDS	67499	68407	0	+	0	ID=KEHPLGBG_00621;Parent=KEHPLGBG_00621_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00621;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	67499	68407	0	+	0	ID=KEHPLGBG_00621_gene;locus_tag=KEHPLGBG_00621
-pKPC-CAD3_3	Prodigal:2.60	CDS	68510	69397	0	+	0	ID=KEHPLGBG_00622;Parent=KEHPLGBG_00622_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00622;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	68510	69397	0	+	0	ID=KEHPLGBG_00622_gene;locus_tag=KEHPLGBG_00622
-pKPC-CAD3_3	Prodigal:2.60	CDS	69494	70105	0	+	0	ID=KEHPLGBG_00623;Parent=KEHPLGBG_00623_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00623;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	69494	70105	0	+	0	ID=KEHPLGBG_00623_gene;locus_tag=KEHPLGBG_00623
-pKPC-CAD3_3	Prodigal:2.60	CDS	70185	71330	0	+	0	ID=KEHPLGBG_00624;Parent=KEHPLGBG_00624_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00624;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	70185	71330	0	+	0	ID=KEHPLGBG_00624_gene;locus_tag=KEHPLGBG_00624
-pKPC-CAD3_3	Prodigal:2.60	CDS	71320	71760	0	+	0	ID=KEHPLGBG_00625;Parent=KEHPLGBG_00625_gene;eC_number=1.8.1.8;Name=trxC_2;db_xref=COG:COG0526;gene=trxC_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0AGG4;locus_tag=KEHPLGBG_00625;product=Thioredoxin 2
-pKPC-CAD3_3	prokka	gene	71320	71760	0	+	0	ID=KEHPLGBG_00625_gene;Name=trxC_2;gene=trxC_2;locus_tag=KEHPLGBG_00625
-pKPC-CAD3_3	Prodigal:2.60	CDS	71764	73479	0	+	0	ID=KEHPLGBG_00626;Parent=KEHPLGBG_00626_gene;Name=kefC_2;db_xref=COG:COG0475;gene=kefC_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P03819;locus_tag=KEHPLGBG_00626;product=Glutathione-regulated potassium-efflux system protein KefC
-pKPC-CAD3_3	prokka	gene	71764	73479	0	+	0	ID=KEHPLGBG_00626_gene;Name=kefC_2;gene=kefC_2;locus_tag=KEHPLGBG_00626
-pKPC-CAD3_3	Prodigal:2.60	CDS	73476	73973	0	+	0	ID=KEHPLGBG_00627;Parent=KEHPLGBG_00627_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00627;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	73476	73973	0	+	0	ID=KEHPLGBG_00627_gene;locus_tag=KEHPLGBG_00627
-pKPC-CAD3_3	Prodigal:2.60	CDS	73951	74916	0	+	0	ID=KEHPLGBG_00628;Parent=KEHPLGBG_00628_gene;eC_number=3.4.24.-;Name=htpX_2;db_xref=COG:COG0501;gene=htpX_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P9WHS5;locus_tag=KEHPLGBG_00628;product=Protease HtpX 
-pKPC-CAD3_3	prokka	gene	73951	74916	0	+	0	ID=KEHPLGBG_00628_gene;Name=htpX_2;gene=htpX_2;locus_tag=KEHPLGBG_00628
-pKPC-CAD3_3	Prodigal:2.60	CDS	74941	76092	0	+	0	ID=KEHPLGBG_00629;Parent=KEHPLGBG_00629_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00629;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	74941	76092	0	+	0	ID=KEHPLGBG_00629_gene;locus_tag=KEHPLGBG_00629
-pKPC-CAD3_3	Prodigal:2.60	CDS	76317	76706	0	-	0	ID=KEHPLGBG_00630;Parent=KEHPLGBG_00630_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISThi1;locus_tag=KEHPLGBG_00630;product=IS5 family transposase ISThi1
-pKPC-CAD3_3	prokka	gene	76317	76706	0	-	0	ID=KEHPLGBG_00630_gene;locus_tag=KEHPLGBG_00630
-pKPC-CAD3_3	Prodigal:2.60	CDS	76937	77932	0	+	0	ID=KEHPLGBG_00631;Parent=KEHPLGBG_00631_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1663;locus_tag=KEHPLGBG_00631;product=IS110 family transposase IS1663
-pKPC-CAD3_3	prokka	gene	76937	77932	0	+	0	ID=KEHPLGBG_00631_gene;locus_tag=KEHPLGBG_00631
-pKPC-CAD3_3	Prodigal:2.60	CDS	78231	79469	0	+	0	ID=KEHPLGBG_00632;Parent=KEHPLGBG_00632_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISEsa2;locus_tag=KEHPLGBG_00632;product=IS110 family transposase ISEsa2
-pKPC-CAD3_3	prokka	gene	78231	79469	0	+	0	ID=KEHPLGBG_00632_gene;locus_tag=KEHPLGBG_00632
-pKPC-CAD3_3	Prodigal:2.60	CDS	79566	79901	0	-	0	ID=KEHPLGBG_00633;Parent=KEHPLGBG_00633_gene;Name=csaA_2;db_xref=COG:COG0073;gene=csaA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P37584;locus_tag=KEHPLGBG_00633;product=putative chaperone CsaA
-pKPC-CAD3_3	prokka	gene	79566	79901	0	-	0	ID=KEHPLGBG_00633_gene;Name=csaA_2;gene=csaA_2;locus_tag=KEHPLGBG_00633
-pKPC-CAD3_3	Prodigal:2.60	CDS	79898	80110	0	-	0	ID=KEHPLGBG_00634;Parent=KEHPLGBG_00634_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00634;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	79898	80110	0	-	0	ID=KEHPLGBG_00634_gene;locus_tag=KEHPLGBG_00634
-pKPC-CAD3_3	Prodigal:2.60	CDS	80391	81395	0	-	0	ID=KEHPLGBG_00635;Parent=KEHPLGBG_00635_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS4321R;locus_tag=KEHPLGBG_00635;product=IS110 family transposase IS4321R
-pKPC-CAD3_3	prokka	gene	80391	81395	0	-	0	ID=KEHPLGBG_00635_gene;locus_tag=KEHPLGBG_00635
-pKPC-CAD3_3	Prodigal:2.60	CDS	81730	82752	0	-	0	ID=KEHPLGBG_00636;Parent=KEHPLGBG_00636_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS5708;locus_tag=KEHPLGBG_00636;product=IS110 family transposase IS5708
-pKPC-CAD3_3	prokka	gene	81730	82752	0	-	0	ID=KEHPLGBG_00636_gene;locus_tag=KEHPLGBG_00636
-pKPC-CAD3_3	Prodigal:2.60	CDS	82837	83322	0	-	0	ID=KEHPLGBG_00637;Parent=KEHPLGBG_00637_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISSba14;locus_tag=KEHPLGBG_00637;product=Tn3 family transposase ISSba14
-pKPC-CAD3_3	prokka	gene	82837	83322	0	-	0	ID=KEHPLGBG_00637_gene;locus_tag=KEHPLGBG_00637
-pKPC-CAD3_3	Prodigal:2.60	CDS	83585	83911	0	+	0	ID=KEHPLGBG_00638;Parent=KEHPLGBG_00638_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00638;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	83585	83911	0	+	0	ID=KEHPLGBG_00638_gene;locus_tag=KEHPLGBG_00638
-pKPC-CAD3_3	Prodigal:2.60	CDS	83881	84819	0	+	0	ID=KEHPLGBG_00639;Parent=KEHPLGBG_00639_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISEc78;locus_tag=KEHPLGBG_00639;product=IS66 family transposase ISEc78
-pKPC-CAD3_3	prokka	gene	83881	84819	0	+	0	ID=KEHPLGBG_00639_gene;locus_tag=KEHPLGBG_00639
-pKPC-CAD3_3	Prodigal:2.60	CDS	85237	85566	0	+	0	ID=KEHPLGBG_00640;Parent=KEHPLGBG_00640_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00640;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	85237	85566	0	+	0	ID=KEHPLGBG_00640_gene;locus_tag=KEHPLGBG_00640
-pKPC-CAD3_3	Prodigal:2.60	CDS	85547	85828	0	+	0	ID=KEHPLGBG_00641;Parent=KEHPLGBG_00641_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00641;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	85547	85828	0	+	0	ID=KEHPLGBG_00641_gene;locus_tag=KEHPLGBG_00641
-pKPC-CAD3_3	Prodigal:2.60	CDS	86106	86312	0	+	0	ID=KEHPLGBG_00642;Parent=KEHPLGBG_00642_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISKpn26;locus_tag=KEHPLGBG_00642;product=IS5 family transposase ISKpn26
-pKPC-CAD3_3	prokka	gene	86106	86312	0	+	0	ID=KEHPLGBG_00642_gene;locus_tag=KEHPLGBG_00642
-pKPC-CAD3_3	Prodigal:2.60	CDS	86346	87050	0	-	0	ID=KEHPLGBG_00643;Parent=KEHPLGBG_00643_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00643;product=IS6 family transposase IS26
-pKPC-CAD3_3	prokka	gene	86346	87050	0	-	0	ID=KEHPLGBG_00643_gene;locus_tag=KEHPLGBG_00643
-pKPC-CAD3_3	Prodigal:2.60	CDS	87319	88422	0	+	0	ID=KEHPLGBG_00644;Parent=KEHPLGBG_00644_gene;eC_number=1.1.1.6;Name=gldA_2;db_xref=COG:COG0371;gene=gldA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0A9S5;locus_tag=KEHPLGBG_00644;product=Glycerol dehydrogenase
-pKPC-CAD3_3	prokka	gene	87319	88422	0	+	0	ID=KEHPLGBG_00644_gene;Name=gldA_2;gene=gldA_2;locus_tag=KEHPLGBG_00644
-pKPC-CAD3_3	Prodigal:2.60	CDS	88467	89288	0	-	0	ID=KEHPLGBG_00645;Parent=KEHPLGBG_00645_gene;Name=yijE_2;gene=yijE_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0ABT8;locus_tag=KEHPLGBG_00645;product=putative cystine transporter YijE
-pKPC-CAD3_3	prokka	gene	88467	89288	0	-	0	ID=KEHPLGBG_00645_gene;Name=yijE_2;gene=yijE_2;locus_tag=KEHPLGBG_00645
-pKPC-CAD3_3	Prodigal:2.60	CDS	89364	90068	0	-	0	ID=KEHPLGBG_00646;Parent=KEHPLGBG_00646_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00646;product=IS6 family transposase IS26
-pKPC-CAD3_3	prokka	gene	89364	90068	0	-	0	ID=KEHPLGBG_00646_gene;locus_tag=KEHPLGBG_00646
-pKPC-CAD3_3	Prodigal:2.60	CDS	90217	90471	0	+	0	ID=KEHPLGBG_00647;Parent=KEHPLGBG_00647_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00647;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	90217	90471	0	+	0	ID=KEHPLGBG_00647_gene;locus_tag=KEHPLGBG_00647
-pKPC-CAD3_3	Prodigal:2.60	CDS	90718	91974	0	-	0	ID=KEHPLGBG_00648;Parent=KEHPLGBG_00648_gene;Name=ulaA_2;db_xref=COG:COG3037;gene=ulaA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P39301;locus_tag=KEHPLGBG_00648;product=Ascorbate-specific PTS system EIIC component
-pKPC-CAD3_3	prokka	gene	90718	91974	0	-	0	ID=KEHPLGBG_00648_gene;Name=ulaA_2;gene=ulaA_2;locus_tag=KEHPLGBG_00648
-pKPC-CAD3_3	Prodigal:2.60	CDS	91987	92274	0	-	0	ID=KEHPLGBG_00649;Parent=KEHPLGBG_00649_gene;eC_number=2.7.1.194;Name=ulaB_2;gene=ulaB_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q9EXD8;locus_tag=KEHPLGBG_00649;product=Ascorbate-specific PTS system EIIB component
-pKPC-CAD3_3	prokka	gene	91987	92274	0	-	0	ID=KEHPLGBG_00649_gene;Name=ulaB_2;gene=ulaB_2;locus_tag=KEHPLGBG_00649
-pKPC-CAD3_3	Prodigal:2.60	CDS	92290	92733	0	-	0	ID=KEHPLGBG_00650;Parent=KEHPLGBG_00650_gene;Name=ulaC_2;db_xref=COG:COG1762;gene=ulaC_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P69820;locus_tag=KEHPLGBG_00650;product=Ascorbate-specific PTS system EIIA component
-pKPC-CAD3_3	prokka	gene	92290	92733	0	-	0	ID=KEHPLGBG_00650_gene;Name=ulaC_2;gene=ulaC_2;locus_tag=KEHPLGBG_00650
-pKPC-CAD3_3	Prodigal:2.60	CDS	93004	94035	0	+	0	ID=KEHPLGBG_00651;Parent=KEHPLGBG_00651_gene;Name=gntR_2;gene=gntR_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0ACP5;locus_tag=KEHPLGBG_00651;product=HTH-type transcriptional regulator GntR
-pKPC-CAD3_3	prokka	gene	93004	94035	0	+	0	ID=KEHPLGBG_00651_gene;Name=gntR_2;gene=gntR_2;locus_tag=KEHPLGBG_00651
-pKPC-CAD3_3	Prodigal:2.60	CDS	94126	94830	0	+	0	ID=KEHPLGBG_00652;Parent=KEHPLGBG_00652_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00652;product=IS6 family transposase IS26
-pKPC-CAD3_3	prokka	gene	94126	94830	0	+	0	ID=KEHPLGBG_00652_gene;locus_tag=KEHPLGBG_00652
-pKPC-CAD3_3	Prodigal:2.60	CDS	94864	95115	0	-	0	ID=KEHPLGBG_00653;Parent=KEHPLGBG_00653_gene;Name=tnpR_2;gene=tnpR_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0ADI2;locus_tag=KEHPLGBG_00653;product=Transposon Tn3 resolvase
-pKPC-CAD3_3	prokka	gene	94864	95115	0	-	0	ID=KEHPLGBG_00653_gene;Name=tnpR_2;gene=tnpR_2;locus_tag=KEHPLGBG_00653
-pKPC-CAD3_3	Prodigal:2.60	CDS	95275	98283	0	+	0	ID=KEHPLGBG_00654;Parent=KEHPLGBG_00654_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISEc63;locus_tag=KEHPLGBG_00654;product=Tn3 family transposase ISEc63
-pKPC-CAD3_3	prokka	gene	95275	98283	0	+	0	ID=KEHPLGBG_00654_gene;locus_tag=KEHPLGBG_00654
-pKPC-CAD3_3	Prodigal:2.60	CDS	98348	98992	0	+	0	ID=KEHPLGBG_00655;Parent=KEHPLGBG_00655_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00655;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	98348	98992	0	+	0	ID=KEHPLGBG_00655_gene;locus_tag=KEHPLGBG_00655
-pKPC-CAD3_3	Prodigal:2.60	CDS	99228	100274	0	-	0	ID=KEHPLGBG_00656;Parent=KEHPLGBG_00656_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00656;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	99228	100274	0	-	0	ID=KEHPLGBG_00656_gene;locus_tag=KEHPLGBG_00656
-pKPC-CAD3_3	Prodigal:2.60	CDS	100326	101732	0	-	0	ID=KEHPLGBG_00657;Parent=KEHPLGBG_00657_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISBcen27;locus_tag=KEHPLGBG_00657;product=ISNCY family transposase ISBcen27
-pKPC-CAD3_3	prokka	gene	100326	101732	0	-	0	ID=KEHPLGBG_00657_gene;locus_tag=KEHPLGBG_00657
-pKPC-CAD3_3	Prodigal:2.60	CDS	101905	103062	0	+	0	ID=KEHPLGBG_00658;Parent=KEHPLGBG_00658_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISLad2;locus_tag=KEHPLGBG_00658;product=ISNCY family transposase ISLad2
-pKPC-CAD3_3	prokka	gene	101905	103062	0	+	0	ID=KEHPLGBG_00658_gene;locus_tag=KEHPLGBG_00658
-pKPC-CAD3_3	Prodigal:2.60	CDS	103099	103443	0	+	0	ID=KEHPLGBG_00659;Parent=KEHPLGBG_00659_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00659;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	103099	103443	0	+	0	ID=KEHPLGBG_00659_gene;locus_tag=KEHPLGBG_00659
-pKPC-CAD3_3	Prodigal:2.60	CDS	103599	104621	0	-	0	ID=KEHPLGBG_00660;Parent=KEHPLGBG_00660_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS5708;locus_tag=KEHPLGBG_00660;product=IS110 family transposase IS5708
-pKPC-CAD3_3	prokka	gene	103599	104621	0	-	0	ID=KEHPLGBG_00660_gene;locus_tag=KEHPLGBG_00660
-pKPC-CAD3_3	Prodigal:2.60	CDS	104705	105166	0	+	0	ID=KEHPLGBG_00661;Parent=KEHPLGBG_00661_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00661;product=IS6 family transposase IS26
-pKPC-CAD3_3	prokka	gene	104705	105166	0	+	0	ID=KEHPLGBG_00661_gene;locus_tag=KEHPLGBG_00661
-pKPC-CAD3_3	Prodigal:2.60	CDS	105658	106515	0	-	0	ID=KEHPLGBG_00662;Parent=KEHPLGBG_00662_gene;Name=rpoH_2;db_xref=COG:COG0568;gene=rpoH_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0AGB3;locus_tag=KEHPLGBG_00662;product=RNA polymerase sigma factor RpoH
-pKPC-CAD3_3	prokka	gene	105658	106515	0	-	0	ID=KEHPLGBG_00662_gene;Name=rpoH_2;gene=rpoH_2;locus_tag=KEHPLGBG_00662
-pKPC-CAD3_3	Prodigal:2.60	CDS	106613	107581	0	+	0	ID=KEHPLGBG_00663;Parent=KEHPLGBG_00663_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS903;locus_tag=KEHPLGBG_00663;product=IS5 family transposase IS903
-pKPC-CAD3_3	prokka	gene	106613	107581	0	+	0	ID=KEHPLGBG_00663_gene;locus_tag=KEHPLGBG_00663
-pKPC-CAD3_3	Prodigal:2.60	CDS	107976	108479	0	+	0	ID=KEHPLGBG_00664;Parent=KEHPLGBG_00664_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00664;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	107976	108479	0	+	0	ID=KEHPLGBG_00664_gene;locus_tag=KEHPLGBG_00664
-pKPC-CAD3_3	Prodigal:2.60	CDS	108638	109246	0	-	0	ID=KEHPLGBG_00665;Parent=KEHPLGBG_00665_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS15;locus_tag=KEHPLGBG_00665;product=IS6 family transposase IS15
-pKPC-CAD3_3	prokka	gene	108638	109246	0	-	0	ID=KEHPLGBG_00665_gene;locus_tag=KEHPLGBG_00665
-pKPC-CAD3_3	Prodigal:2.60	CDS	109306	110085	0	-	0	ID=KEHPLGBG_00666;Parent=KEHPLGBG_00666_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISSen3;locus_tag=KEHPLGBG_00666;product=IS21 family transposase ISSen3
-pKPC-CAD3_3	prokka	gene	109306	110085	0	-	0	ID=KEHPLGBG_00666_gene;locus_tag=KEHPLGBG_00666
-pKPC-CAD3_3	Prodigal:2.60	CDS	110085	111107	0	-	0	ID=KEHPLGBG_00667;Parent=KEHPLGBG_00667_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00667;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	110085	111107	0	-	0	ID=KEHPLGBG_00667_gene;locus_tag=KEHPLGBG_00667
-pKPC-CAD3_3	Prodigal:2.60	CDS	111154	111303	0	-	0	ID=KEHPLGBG_00668;Parent=KEHPLGBG_00668_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00668;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	111154	111303	0	-	0	ID=KEHPLGBG_00668_gene;locus_tag=KEHPLGBG_00668
-pKPC-CAD3_3	Prodigal:2.60	CDS	111684	111839	0	+	0	ID=KEHPLGBG_00669;Parent=KEHPLGBG_00669_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00669;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	111684	111839	0	+	0	ID=KEHPLGBG_00669_gene;locus_tag=KEHPLGBG_00669
-pKPC-CAD3_3	Prodigal:2.60	CDS	111888	112880	0	+	0	ID=KEHPLGBG_00670;Parent=KEHPLGBG_00670_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00670;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	111888	112880	0	+	0	ID=KEHPLGBG_00670_gene;locus_tag=KEHPLGBG_00670
-pKPC-CAD3_3	Prodigal:2.60	CDS	113064	113678	0	-	0	ID=KEHPLGBG_00671;Parent=KEHPLGBG_00671_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00671;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	113064	113678	0	-	0	ID=KEHPLGBG_00671_gene;locus_tag=KEHPLGBG_00671
-pKPC-CAD3_3	Prodigal:2.60	CDS	113732	114013	0	-	0	ID=KEHPLGBG_00672;Parent=KEHPLGBG_00672_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00672;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	113732	114013	0	-	0	ID=KEHPLGBG_00672_gene;locus_tag=KEHPLGBG_00672
-pKPC-CAD3_3	Prodigal:2.60	CDS	114186	114521	0	+	0	ID=KEHPLGBG_00673;Parent=KEHPLGBG_00673_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00673;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	114186	114521	0	+	0	ID=KEHPLGBG_00673_gene;locus_tag=KEHPLGBG_00673
-pKPC-CAD3_3	Prodigal:2.60	CDS	115002	115631	0	+	0	ID=KEHPLGBG_00674;Parent=KEHPLGBG_00674_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1663;locus_tag=KEHPLGBG_00674;product=IS110 family transposase IS1663
-pKPC-CAD3_3	prokka	gene	115002	115631	0	+	0	ID=KEHPLGBG_00674_gene;locus_tag=KEHPLGBG_00674
-pKPC-CAD3_3	Prodigal:2.60	CDS	115625	116128	0	-	0	ID=KEHPLGBG_00675;Parent=KEHPLGBG_00675_gene;db_xref=COG:COG1662;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1R;locus_tag=KEHPLGBG_00675;product=IS1 family transposase IS1R
-pKPC-CAD3_3	prokka	gene	115625	116128	0	-	0	ID=KEHPLGBG_00675_gene;locus_tag=KEHPLGBG_00675
-pKPC-CAD3_3	Prodigal:2.60	CDS	116636	116968	0	-	0	ID=KEHPLGBG_00676;Parent=KEHPLGBG_00676_gene;eC_number=3.1.-.-;Name=pemK_2;gene=pemK_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P13976;locus_tag=KEHPLGBG_00676;product=Endoribonuclease PemK
-pKPC-CAD3_3	prokka	gene	116636	116968	0	-	0	ID=KEHPLGBG_00676_gene;Name=pemK_2;gene=pemK_2;locus_tag=KEHPLGBG_00676
-pKPC-CAD3_3	Prodigal:2.60	CDS	116970	117227	0	-	0	ID=KEHPLGBG_00677;Parent=KEHPLGBG_00677_gene;Name=pemI_2;gene=pemI_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P13975;locus_tag=KEHPLGBG_00677;product=Antitoxin PemI
-pKPC-CAD3_3	prokka	gene	116970	117227	0	-	0	ID=KEHPLGBG_00677_gene;Name=pemI_2;gene=pemI_2;locus_tag=KEHPLGBG_00677
-pKPC-CAD3_3	Prodigal:2.60	CDS	117320	117973	0	-	0	ID=KEHPLGBG_00678;Parent=KEHPLGBG_00678_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00678;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	117320	117973	0	-	0	ID=KEHPLGBG_00678_gene;locus_tag=KEHPLGBG_00678
-pKPC-CAD3_3	Prodigal:2.60	CDS	119049	119768	0	-	0	ID=KEHPLGBG_00679;Parent=KEHPLGBG_00679_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00679;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	119049	119768	0	-	0	ID=KEHPLGBG_00679_gene;locus_tag=KEHPLGBG_00679
-pKPC-CAD3_3	Prodigal:2.60	CDS	120070	120327	0	-	0	ID=KEHPLGBG_00680;Parent=KEHPLGBG_00680_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00680;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	120070	120327	0	-	0	ID=KEHPLGBG_00680_gene;locus_tag=KEHPLGBG_00680
-pKPC-CAD3_3	Prodigal:2.60	CDS	120567	121061	0	-	0	ID=KEHPLGBG_00681;Parent=KEHPLGBG_00681_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00681;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	120567	121061	0	-	0	ID=KEHPLGBG_00681_gene;locus_tag=KEHPLGBG_00681
-pKPC-CAD3_3	Prodigal:2.60	CDS	121372	121875	0	+	0	ID=KEHPLGBG_00682;Parent=KEHPLGBG_00682_gene;db_xref=COG:COG1662;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1R;locus_tag=KEHPLGBG_00682;product=IS1 family transposase IS1R
-pKPC-CAD3_3	prokka	gene	121372	121875	0	+	0	ID=KEHPLGBG_00682_gene;locus_tag=KEHPLGBG_00682
-pKPC-CAD3_3	Prodigal:2.60	CDS	121877	122260	0	+	0	ID=KEHPLGBG_00683;Parent=KEHPLGBG_00683_gene;eC_number=6.5.1.4;Name=rtcA_2;db_xref=COG:COG0430;gene=rtcA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P46849;locus_tag=KEHPLGBG_00683;product=RNA 3'-terminal phosphate cyclase
-pKPC-CAD3_3	prokka	gene	121877	122260	0	+	0	ID=KEHPLGBG_00683_gene;Name=rtcA_2;gene=rtcA_2;locus_tag=KEHPLGBG_00683
-pKPC-CAD3_3	Prodigal:2.60	CDS	122678	125383	0	-	0	ID=KEHPLGBG_00684;Parent=KEHPLGBG_00684_gene;Name=malT_2;db_xref=COG:COG2909;gene=malT_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P06993;locus_tag=KEHPLGBG_00684;product=HTH-type transcriptional regulator MalT
-pKPC-CAD3_3	prokka	gene	122678	125383	0	-	0	ID=KEHPLGBG_00684_gene;Name=malT_2;gene=malT_2;locus_tag=KEHPLGBG_00684
-pKPC-CAD3_3	Prodigal:2.60	CDS	125906	126409	0	+	0	ID=KEHPLGBG_00685;Parent=KEHPLGBG_00685_gene;db_xref=COG:COG1662;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1R;locus_tag=KEHPLGBG_00685;product=IS1 family transposase IS1R
-pKPC-CAD3_3	prokka	gene	125906	126409	0	+	0	ID=KEHPLGBG_00685_gene;locus_tag=KEHPLGBG_00685
-pKPC-CAD3_3	Prodigal:2.60	CDS	126562	128694	0	-	0	ID=KEHPLGBG_00686;Parent=KEHPLGBG_00686_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00686;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	126562	128694	0	-	0	ID=KEHPLGBG_00686_gene;locus_tag=KEHPLGBG_00686
-pKPC-CAD3_3	Prodigal:2.60	CDS	128696	130069	0	-	0	ID=KEHPLGBG_00687;Parent=KEHPLGBG_00687_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00687;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	128696	130069	0	-	0	ID=KEHPLGBG_00687_gene;locus_tag=KEHPLGBG_00687
-pKPC-CAD3_3	Prodigal:2.60	CDS	130042	130923	0	-	0	ID=KEHPLGBG_00688;Parent=KEHPLGBG_00688_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00688;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	130042	130923	0	-	0	ID=KEHPLGBG_00688_gene;locus_tag=KEHPLGBG_00688
-pKPC-CAD3_3	Prodigal:2.60	CDS	130938	132854	0	-	0	ID=KEHPLGBG_00689;Parent=KEHPLGBG_00689_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00689;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	130938	132854	0	-	0	ID=KEHPLGBG_00689_gene;locus_tag=KEHPLGBG_00689
-pKPC-CAD3_3	Aragorn:1.2	tRNA	135455	135553	0	+	0	ID=KEHPLGBG_00690;Parent=KEHPLGBG_00690_gene;inference=COORDINATES:profile:Aragorn:1.2;locus_tag=KEHPLGBG_00690;product=tRNA-Gly(gcc)
-pKPC-CAD3_3	prokka	gene	135455	135553	0	+	0	ID=KEHPLGBG_00690_gene;locus_tag=KEHPLGBG_00690
-pKPC-CAD3_3	Prodigal:2.60	CDS	146855	147835	0	+	0	ID=KEHPLGBG_00691;Parent=KEHPLGBG_00691_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISKpn26;locus_tag=KEHPLGBG_00691;product=IS5 family transposase ISKpn26
-pKPC-CAD3_3	prokka	gene	146855	147835	0	+	0	ID=KEHPLGBG_00691_gene;locus_tag=KEHPLGBG_00691
-pKPC-CAD3_3	Prodigal:2.60	CDS	149054	150025	0	-	0	ID=KEHPLGBG_00692;Parent=KEHPLGBG_00692_gene;Name=sopB_2;gene=sopB_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P62558;locus_tag=KEHPLGBG_00692;product=Protein SopB
-pKPC-CAD3_3	prokka	gene	149054	150025	0	-	0	ID=KEHPLGBG_00692_gene;Name=sopB_2;gene=sopB_2;locus_tag=KEHPLGBG_00692
-pKPC-CAD3_3	Prodigal:2.60	CDS	150025	151191	0	-	0	ID=KEHPLGBG_00693;Parent=KEHPLGBG_00693_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00693;product=hypothetical protein
-pKPC-CAD3_3	prokka	gene	150025	151191	0	-	0	ID=KEHPLGBG_00693_gene;locus_tag=KEHPLGBG_00693
+pCAD3_3	Prodigal:2.60	CDS	1	1011	0	+	0	ID=KEHPLGBG_00545;Parent=KEHPLGBG_00545_gene;Name=repB_3;gene=repB_3;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q57154;locus_tag=KEHPLGBG_00545;product=RepFIB replication protein A
+pCAD3_3	prokka	gene	1	1011	0	+	0	ID=KEHPLGBG_00545_gene;Name=repB_3;gene=repB_3;locus_tag=KEHPLGBG_00545
+pCAD3_3	Prodigal:2.60	CDS	1348	1629	0	-	0	ID=KEHPLGBG_00546;Parent=KEHPLGBG_00546_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00546;product=hypothetical protein
+pCAD3_3	prokka	gene	1348	1629	0	-	0	ID=KEHPLGBG_00546_gene;locus_tag=KEHPLGBG_00546
+pCAD3_3	Prodigal:2.60	CDS	1728	2468	0	-	0	ID=KEHPLGBG_00547;Parent=KEHPLGBG_00547_gene;Name=xerD_4;gene=xerD_4;inference=ab initio prediction:Prodigal:2.60,protein motif:HAMAP:MF_01807;locus_tag=KEHPLGBG_00547;product=Tyrosine recombinase XerD
+pCAD3_3	prokka	gene	1728	2468	0	-	0	ID=KEHPLGBG_00547_gene;Name=xerD_4;gene=xerD_4;locus_tag=KEHPLGBG_00547
+pCAD3_3	Prodigal:2.60	CDS	3117	3389	0	-	0	ID=KEHPLGBG_00548;Parent=KEHPLGBG_00548_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00548;product=hypothetical protein
+pCAD3_3	prokka	gene	3117	3389	0	-	0	ID=KEHPLGBG_00548_gene;locus_tag=KEHPLGBG_00548
+pCAD3_3	Prodigal:2.60	CDS	3614	5287	0	-	0	ID=KEHPLGBG_00549;Parent=KEHPLGBG_00549_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00549;product=hypothetical protein
+pCAD3_3	prokka	gene	3614	5287	0	-	0	ID=KEHPLGBG_00549_gene;locus_tag=KEHPLGBG_00549
+pCAD3_3	Prodigal:2.60	CDS	5852	6661	0	-	0	ID=KEHPLGBG_00550;Parent=KEHPLGBG_00550_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00550;product=hypothetical protein
+pCAD3_3	prokka	gene	5852	6661	0	-	0	ID=KEHPLGBG_00550_gene;locus_tag=KEHPLGBG_00550
+pCAD3_3	Prodigal:2.60	CDS	6679	7041	0	-	0	ID=KEHPLGBG_00551;Parent=KEHPLGBG_00551_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00551;product=hypothetical protein
+pCAD3_3	prokka	gene	6679	7041	0	-	0	ID=KEHPLGBG_00551_gene;locus_tag=KEHPLGBG_00551
+pCAD3_3	Prodigal:2.60	CDS	7604	7834	0	+	0	ID=KEHPLGBG_00552;Parent=KEHPLGBG_00552_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00552;product=hypothetical protein
+pCAD3_3	prokka	gene	7604	7834	0	+	0	ID=KEHPLGBG_00552_gene;locus_tag=KEHPLGBG_00552
+pCAD3_3	Prodigal:2.60	CDS	7846	8247	0	+	0	ID=KEHPLGBG_00553;Parent=KEHPLGBG_00553_gene;eC_number=3.1.-.-;Name=vapC_2;db_xref=COG:COG1487;gene=vapC_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q8ZM86;locus_tag=KEHPLGBG_00553;product=tRNA(fMet)-specific endonuclease VapC
+pCAD3_3	prokka	gene	7846	8247	0	+	0	ID=KEHPLGBG_00553_gene;Name=vapC_2;gene=vapC_2;locus_tag=KEHPLGBG_00553
+pCAD3_3	Prodigal:2.60	CDS	8321	9883	0	+	0	ID=KEHPLGBG_00554;Parent=KEHPLGBG_00554_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00554;product=hypothetical protein
+pCAD3_3	prokka	gene	8321	9883	0	+	0	ID=KEHPLGBG_00554_gene;locus_tag=KEHPLGBG_00554
+pCAD3_3	Prodigal:2.60	CDS	9868	10890	0	+	0	ID=KEHPLGBG_00555;Parent=KEHPLGBG_00555_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00555;product=hypothetical protein
+pCAD3_3	prokka	gene	9868	10890	0	+	0	ID=KEHPLGBG_00555_gene;locus_tag=KEHPLGBG_00555
+pCAD3_3	Prodigal:2.60	CDS	11071	11466	0	-	0	ID=KEHPLGBG_00556;Parent=KEHPLGBG_00556_gene;db_xref=COG:COG1662;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1N;locus_tag=KEHPLGBG_00556;product=IS1 family transposase IS1N
+pCAD3_3	prokka	gene	11071	11466	0	-	0	ID=KEHPLGBG_00556_gene;locus_tag=KEHPLGBG_00556
+pCAD3_3	Prodigal:2.60	CDS	11493	11765	0	-	0	ID=KEHPLGBG_00557;Parent=KEHPLGBG_00557_gene;db_xref=COG:COG1662;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1N;locus_tag=KEHPLGBG_00557;product=IS1 family transposase IS1N
+pCAD3_3	prokka	gene	11493	11765	0	-	0	ID=KEHPLGBG_00557_gene;locus_tag=KEHPLGBG_00557
+pCAD3_3	Prodigal:2.60	CDS	11858	12040	0	+	0	ID=KEHPLGBG_00558;Parent=KEHPLGBG_00558_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISKpn26;locus_tag=KEHPLGBG_00558;product=IS5 family transposase ISKpn26
+pCAD3_3	prokka	gene	11858	12040	0	+	0	ID=KEHPLGBG_00558_gene;locus_tag=KEHPLGBG_00558
+pCAD3_3	Prodigal:2.60	CDS	12141	12506	0	-	0	ID=KEHPLGBG_00559;Parent=KEHPLGBG_00559_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00559;product=hypothetical protein
+pCAD3_3	prokka	gene	12141	12506	0	-	0	ID=KEHPLGBG_00559_gene;locus_tag=KEHPLGBG_00559
+pCAD3_3	Prodigal:2.60	CDS	12503	12988	0	-	0	ID=KEHPLGBG_00560;Parent=KEHPLGBG_00560_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00560;product=hypothetical protein
+pCAD3_3	prokka	gene	12503	12988	0	-	0	ID=KEHPLGBG_00560_gene;locus_tag=KEHPLGBG_00560
+pCAD3_3	Prodigal:2.60	CDS	13746	14546	0	+	0	ID=KEHPLGBG_00561;Parent=KEHPLGBG_00561_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00561;product=hypothetical protein
+pCAD3_3	prokka	gene	13746	14546	0	+	0	ID=KEHPLGBG_00561_gene;locus_tag=KEHPLGBG_00561
+pCAD3_3	Prodigal:2.60	CDS	14640	15620	0	+	0	ID=KEHPLGBG_00562;Parent=KEHPLGBG_00562_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISKpn26;locus_tag=KEHPLGBG_00562;product=IS5 family transposase ISKpn26
+pCAD3_3	prokka	gene	14640	15620	0	+	0	ID=KEHPLGBG_00562_gene;locus_tag=KEHPLGBG_00562
+pCAD3_3	Prodigal:2.60	CDS	15990	16772	0	+	0	ID=KEHPLGBG_00563;Parent=KEHPLGBG_00563_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00563;product=hypothetical protein
+pCAD3_3	prokka	gene	15990	16772	0	+	0	ID=KEHPLGBG_00563_gene;locus_tag=KEHPLGBG_00563
+pCAD3_3	Prodigal:2.60	CDS	17347	17568	0	+	0	ID=KEHPLGBG_00564;Parent=KEHPLGBG_00564_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00564;product=hypothetical protein
+pCAD3_3	prokka	gene	17347	17568	0	+	0	ID=KEHPLGBG_00564_gene;locus_tag=KEHPLGBG_00564
+pCAD3_3	Prodigal:2.60	CDS	17866	18369	0	+	0	ID=KEHPLGBG_00565;Parent=KEHPLGBG_00565_gene;db_xref=COG:COG1662;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1R;locus_tag=KEHPLGBG_00565;product=IS1 family transposase IS1R
+pCAD3_3	prokka	gene	17866	18369	0	+	0	ID=KEHPLGBG_00565_gene;locus_tag=KEHPLGBG_00565
+pCAD3_3	Prodigal:2.60	CDS	18753	19757	0	-	0	ID=KEHPLGBG_00566;Parent=KEHPLGBG_00566_gene;Name=cra_2;db_xref=COG:COG1609;gene=cra_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0ACP1;locus_tag=KEHPLGBG_00566;product=Catabolite repressor/activator
+pCAD3_3	prokka	gene	18753	19757	0	-	0	ID=KEHPLGBG_00566_gene;Name=cra_2;gene=cra_2;locus_tag=KEHPLGBG_00566
+pCAD3_3	Prodigal:2.60	CDS	19787	21187	0	-	0	ID=KEHPLGBG_00567;Parent=KEHPLGBG_00567_gene;eC_number=3.2.1.26;Name=scrB_2;db_xref=COG:COG1621;gene=scrB_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P27217;locus_tag=KEHPLGBG_00567;product=Sucrose-6-phosphate hydrolase
+pCAD3_3	prokka	gene	19787	21187	0	-	0	ID=KEHPLGBG_00567_gene;Name=scrB_2;gene=scrB_2;locus_tag=KEHPLGBG_00567
+pCAD3_3	Prodigal:2.60	CDS	21187	22557	0	-	0	ID=KEHPLGBG_00568;Parent=KEHPLGBG_00568_gene;Name=sacX_2;db_xref=COG:COG1263;gene=sacX_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P15400;locus_tag=KEHPLGBG_00568;product=Negative regulator of SacY activity
+pCAD3_3	prokka	gene	21187	22557	0	-	0	ID=KEHPLGBG_00568_gene;Name=sacX_2;gene=sacX_2;locus_tag=KEHPLGBG_00568
+pCAD3_3	Prodigal:2.60	CDS	22695	24212	0	-	0	ID=KEHPLGBG_00569;Parent=KEHPLGBG_00569_gene;Name=scrY_2;gene=scrY_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P22340;locus_tag=KEHPLGBG_00569;product=Sucrose porin
+pCAD3_3	prokka	gene	22695	24212	0	-	0	ID=KEHPLGBG_00569_gene;Name=scrY_2;gene=scrY_2;locus_tag=KEHPLGBG_00569
+pCAD3_3	Prodigal:2.60	CDS	24378	25301	0	-	0	ID=KEHPLGBG_00570;Parent=KEHPLGBG_00570_gene;eC_number=2.7.1.4;Name=scrK_2;db_xref=COG:COG0524;gene=scrK_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P26420;locus_tag=KEHPLGBG_00570;product=Fructokinase
+pCAD3_3	prokka	gene	24378	25301	0	-	0	ID=KEHPLGBG_00570_gene;Name=scrK_2;gene=scrK_2;locus_tag=KEHPLGBG_00570
+pCAD3_3	Prodigal:2.60	CDS	25656	25922	0	+	0	ID=KEHPLGBG_00571;Parent=KEHPLGBG_00571_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISEhe3;locus_tag=KEHPLGBG_00571;product=IS3 family transposase ISEhe3
+pCAD3_3	prokka	gene	25656	25922	0	+	0	ID=KEHPLGBG_00571_gene;locus_tag=KEHPLGBG_00571
+pCAD3_3	Prodigal:2.60	CDS	25956	26660	0	-	0	ID=KEHPLGBG_00572;Parent=KEHPLGBG_00572_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00572;product=IS6 family transposase IS26
+pCAD3_3	prokka	gene	25956	26660	0	-	0	ID=KEHPLGBG_00572_gene;locus_tag=KEHPLGBG_00572
+pCAD3_3	Prodigal:2.60	CDS	26751	28022	0	-	0	ID=KEHPLGBG_00573;Parent=KEHPLGBG_00573_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00573;product=hypothetical protein
+pCAD3_3	prokka	gene	26751	28022	0	-	0	ID=KEHPLGBG_00573_gene;locus_tag=KEHPLGBG_00573
+pCAD3_3	Prodigal:2.60	CDS	28205	28699	0	+	0	ID=KEHPLGBG_00574;Parent=KEHPLGBG_00574_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00574;product=hypothetical protein
+pCAD3_3	prokka	gene	28205	28699	0	+	0	ID=KEHPLGBG_00574_gene;locus_tag=KEHPLGBG_00574
+pCAD3_3	Prodigal:2.60	CDS	28809	29627	0	+	0	ID=KEHPLGBG_00575;Parent=KEHPLGBG_00575_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00575;product=hypothetical protein
+pCAD3_3	prokka	gene	28809	29627	0	+	0	ID=KEHPLGBG_00575_gene;locus_tag=KEHPLGBG_00575
+pCAD3_3	Prodigal:2.60	CDS	29928	30890	0	-	0	ID=KEHPLGBG_00576;Parent=KEHPLGBG_00576_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS903;locus_tag=KEHPLGBG_00576;product=IS5 family transposase IS903
+pCAD3_3	prokka	gene	29928	30890	0	-	0	ID=KEHPLGBG_00576_gene;locus_tag=KEHPLGBG_00576
+pCAD3_3	Prodigal:2.60	CDS	30916	31896	0	+	0	ID=KEHPLGBG_00577;Parent=KEHPLGBG_00577_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISKpn26;locus_tag=KEHPLGBG_00577;product=IS5 family transposase ISKpn26
+pCAD3_3	prokka	gene	30916	31896	0	+	0	ID=KEHPLGBG_00577_gene;locus_tag=KEHPLGBG_00577
+pCAD3_3	Prodigal:2.60	CDS	31953	32357	0	+	0	ID=KEHPLGBG_00578;Parent=KEHPLGBG_00578_gene;eC_number=3.4.21.-;Name=umuD_3;db_xref=COG:COG1974;gene=umuD_3;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0AG11;locus_tag=KEHPLGBG_00578;product=Protein UmuD
+pCAD3_3	prokka	gene	31953	32357	0	+	0	ID=KEHPLGBG_00578_gene;Name=umuD_3;gene=umuD_3;locus_tag=KEHPLGBG_00578
+pCAD3_3	Prodigal:2.60	CDS	32357	33628	0	+	0	ID=KEHPLGBG_00579;Parent=KEHPLGBG_00579_gene;Name=umuC_3;db_xref=COG:COG0389;gene=umuC_3;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P04152;locus_tag=KEHPLGBG_00579;product=Protein UmuC
+pCAD3_3	prokka	gene	32357	33628	0	+	0	ID=KEHPLGBG_00579_gene;Name=umuC_3;gene=umuC_3;locus_tag=KEHPLGBG_00579
+pCAD3_3	Prodigal:2.60	CDS	33729	34172	0	+	0	ID=KEHPLGBG_00580;Parent=KEHPLGBG_00580_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00580;product=hypothetical protein
+pCAD3_3	prokka	gene	33729	34172	0	+	0	ID=KEHPLGBG_00580_gene;locus_tag=KEHPLGBG_00580
+pCAD3_3	Prodigal:2.60	CDS	34169	34639	0	+	0	ID=KEHPLGBG_00581;Parent=KEHPLGBG_00581_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00581;product=hypothetical protein
+pCAD3_3	prokka	gene	34169	34639	0	+	0	ID=KEHPLGBG_00581_gene;locus_tag=KEHPLGBG_00581
+pCAD3_3	Prodigal:2.60	CDS	34749	35009	0	-	0	ID=KEHPLGBG_00582;Parent=KEHPLGBG_00582_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00582;product=hypothetical protein
+pCAD3_3	prokka	gene	34749	35009	0	-	0	ID=KEHPLGBG_00582_gene;locus_tag=KEHPLGBG_00582
+pCAD3_3	Prodigal:2.60	CDS	35708	36232	0	+	0	ID=KEHPLGBG_00583;Parent=KEHPLGBG_00583_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00583;product=hypothetical protein
+pCAD3_3	prokka	gene	35708	36232	0	+	0	ID=KEHPLGBG_00583_gene;locus_tag=KEHPLGBG_00583
+pCAD3_3	Prodigal:2.60	CDS	36180	36398	0	+	0	ID=KEHPLGBG_00584;Parent=KEHPLGBG_00584_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00584;product=hypothetical protein
+pCAD3_3	prokka	gene	36180	36398	0	+	0	ID=KEHPLGBG_00584_gene;locus_tag=KEHPLGBG_00584
+pCAD3_3	Prodigal:2.60	CDS	36320	37195	0	-	0	ID=KEHPLGBG_00585;Parent=KEHPLGBG_00585_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS903;locus_tag=KEHPLGBG_00585;product=IS5 family transposase IS903
+pCAD3_3	prokka	gene	36320	37195	0	-	0	ID=KEHPLGBG_00585_gene;locus_tag=KEHPLGBG_00585
+pCAD3_3	Prodigal:2.60	CDS	37217	37438	0	-	0	ID=KEHPLGBG_00586;Parent=KEHPLGBG_00586_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00586;product=hypothetical protein
+pCAD3_3	prokka	gene	37217	37438	0	-	0	ID=KEHPLGBG_00586_gene;locus_tag=KEHPLGBG_00586
+pCAD3_3	Prodigal:2.60	CDS	37452	37655	0	-	0	ID=KEHPLGBG_00587;Parent=KEHPLGBG_00587_gene;Name=ymoA_2;gene=ymoA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0A3X1;locus_tag=KEHPLGBG_00587;product=Modulating protein YmoA
+pCAD3_3	prokka	gene	37452	37655	0	-	0	ID=KEHPLGBG_00587_gene;Name=ymoA_2;gene=ymoA_2;locus_tag=KEHPLGBG_00587
+pCAD3_3	Prodigal:2.60	CDS	37716	38207	0	-	0	ID=KEHPLGBG_00588;Parent=KEHPLGBG_00588_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00588;product=hypothetical protein
+pCAD3_3	prokka	gene	37716	38207	0	-	0	ID=KEHPLGBG_00588_gene;locus_tag=KEHPLGBG_00588
+pCAD3_3	Prodigal:2.60	CDS	38591	39295	0	-	0	ID=KEHPLGBG_00589;Parent=KEHPLGBG_00589_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00589;product=IS6 family transposase IS26
+pCAD3_3	prokka	gene	38591	39295	0	-	0	ID=KEHPLGBG_00589_gene;locus_tag=KEHPLGBG_00589
+pCAD3_3	Prodigal:2.60	CDS	39373	40308	0	+	0	ID=KEHPLGBG_00590;Parent=KEHPLGBG_00590_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISEc63;locus_tag=KEHPLGBG_00590;product=Tn3 family transposase ISEc63
+pCAD3_3	prokka	gene	39373	40308	0	+	0	ID=KEHPLGBG_00590_gene;locus_tag=KEHPLGBG_00590
+pCAD3_3	Prodigal:2.60	CDS	40432	40908	0	+	0	ID=KEHPLGBG_00591;Parent=KEHPLGBG_00591_gene;db_xref=COG:COG0783;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P45173;locus_tag=KEHPLGBG_00591;product=putative protein
+pCAD3_3	prokka	gene	40432	40908	0	+	0	ID=KEHPLGBG_00591_gene;locus_tag=KEHPLGBG_00591
+pCAD3_3	Prodigal:2.60	CDS	41213	41563	0	-	0	ID=KEHPLGBG_00592;Parent=KEHPLGBG_00592_gene;Name=bigR_2;db_xref=COG:COG0640;gene=bigR_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q9PFB1;locus_tag=KEHPLGBG_00592;product=Biofilm growth-associated repressor
+pCAD3_3	prokka	gene	41213	41563	0	-	0	ID=KEHPLGBG_00592_gene;Name=bigR_2;gene=bigR_2;locus_tag=KEHPLGBG_00592
+pCAD3_3	Prodigal:2.60	CDS	41725	42036	0	+	0	ID=KEHPLGBG_00593;Parent=KEHPLGBG_00593_gene;eC_number=1.8.1.14;Name=cdr_2;gene=cdr_2;inference=ab initio prediction:Prodigal:2.60,protein motif:HAMAP:MF_01608;locus_tag=KEHPLGBG_00593;product=Coenzyme A disulfide reductase
+pCAD3_3	prokka	gene	41725	42036	0	+	0	ID=KEHPLGBG_00593_gene;Name=cdr_2;gene=cdr_2;locus_tag=KEHPLGBG_00593
+pCAD3_3	Prodigal:2.60	CDS	42181	42444	0	+	0	ID=KEHPLGBG_00594;Parent=KEHPLGBG_00594_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1222;locus_tag=KEHPLGBG_00594;product=IS3 family transposase IS1222
+pCAD3_3	prokka	gene	42181	42444	0	+	0	ID=KEHPLGBG_00594_gene;locus_tag=KEHPLGBG_00594
+pCAD3_3	Prodigal:2.60	CDS	42471	43301	0	+	0	ID=KEHPLGBG_00595;Parent=KEHPLGBG_00595_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISRaq1;locus_tag=KEHPLGBG_00595;product=IS3 family transposase ISRaq1
+pCAD3_3	prokka	gene	42471	43301	0	+	0	ID=KEHPLGBG_00595_gene;locus_tag=KEHPLGBG_00595
+pCAD3_3	Prodigal:2.60	CDS	43369	43788	0	-	0	ID=KEHPLGBG_00596;Parent=KEHPLGBG_00596_gene;Name=higA_2;db_xref=COG:COG5499;gene=higA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P67701;locus_tag=KEHPLGBG_00596;product=Antitoxin HigA
+pCAD3_3	prokka	gene	43369	43788	0	-	0	ID=KEHPLGBG_00596_gene;Name=higA_2;gene=higA_2;locus_tag=KEHPLGBG_00596
+pCAD3_3	Prodigal:2.60	CDS	43785	44096	0	-	0	ID=KEHPLGBG_00597;Parent=KEHPLGBG_00597_gene;eC_number=3.1.-.-;Name=higB_2;db_xref=COG:COG4680;gene=higB_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P64578;locus_tag=KEHPLGBG_00597;product=mRNA interferase toxin HigB
+pCAD3_3	prokka	gene	43785	44096	0	-	0	ID=KEHPLGBG_00597_gene;Name=higB_2;gene=higB_2;locus_tag=KEHPLGBG_00597
+pCAD3_3	Prodigal:2.60	CDS	44250	44687	0	+	0	ID=KEHPLGBG_00598;Parent=KEHPLGBG_00598_gene;Name=gntP_2;db_xref=COG:COG2610;gene=gntP_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0AC94;locus_tag=KEHPLGBG_00598;product=High-affinity gluconate transporter
+pCAD3_3	prokka	gene	44250	44687	0	+	0	ID=KEHPLGBG_00598_gene;Name=gntP_2;gene=gntP_2;locus_tag=KEHPLGBG_00598
+pCAD3_3	Prodigal:2.60	CDS	44737	45192	0	-	0	ID=KEHPLGBG_00599;Parent=KEHPLGBG_00599_gene;Name=lutC_2;db_xref=COG:COG1556;gene=lutC_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:O32259;locus_tag=KEHPLGBG_00599;product=Lactate utilization protein C
+pCAD3_3	prokka	gene	44737	45192	0	-	0	ID=KEHPLGBG_00599_gene;Name=lutC_2;gene=lutC_2;locus_tag=KEHPLGBG_00599
+pCAD3_3	Prodigal:2.60	CDS	45263	45967	0	+	0	ID=KEHPLGBG_00600;Parent=KEHPLGBG_00600_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00600;product=IS6 family transposase IS26
+pCAD3_3	prokka	gene	45263	45967	0	+	0	ID=KEHPLGBG_00600_gene;locus_tag=KEHPLGBG_00600
+pCAD3_3	Prodigal:2.60	CDS	46071	46877	0	+	0	ID=KEHPLGBG_00601;Parent=KEHPLGBG_00601_gene;Name=puuP_2;db_xref=COG:COG0531;gene=puuP_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P76037;locus_tag=KEHPLGBG_00601;product=Putrescine importer PuuP
+pCAD3_3	prokka	gene	46071	46877	0	+	0	ID=KEHPLGBG_00601_gene;Name=puuP_2;gene=puuP_2;locus_tag=KEHPLGBG_00601
+pCAD3_3	Prodigal:2.60	CDS	46985	47932	0	-	0	ID=KEHPLGBG_00602;Parent=KEHPLGBG_00602_gene;eC_number=4.2.2.-;Name=mltB_2;db_xref=COG:COG2951;gene=mltB_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P41052;locus_tag=KEHPLGBG_00602;product=Membrane-bound lytic murein transglycosylase B
+pCAD3_3	prokka	gene	46985	47932	0	-	0	ID=KEHPLGBG_00602_gene;Name=mltB_2;gene=mltB_2;locus_tag=KEHPLGBG_00602
+pCAD3_3	Prodigal:2.60	CDS	48077	48580	0	-	0	ID=KEHPLGBG_00603;Parent=KEHPLGBG_00603_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00603;product=hypothetical protein
+pCAD3_3	prokka	gene	48077	48580	0	-	0	ID=KEHPLGBG_00603_gene;locus_tag=KEHPLGBG_00603
+pCAD3_3	Prodigal:2.60	CDS	48825	49349	0	-	0	ID=KEHPLGBG_00604;Parent=KEHPLGBG_00604_gene;eC_number=4.4.1.8;Name=metC_2;db_xref=COG:COG0626;gene=metC_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q83A83;locus_tag=KEHPLGBG_00604;product=Cystathionine beta-lyase
+pCAD3_3	prokka	gene	48825	49349	0	-	0	ID=KEHPLGBG_00604_gene;Name=metC_2;gene=metC_2;locus_tag=KEHPLGBG_00604
+pCAD3_3	Prodigal:2.60	CDS	49431	50708	0	-	0	ID=KEHPLGBG_00605;Parent=KEHPLGBG_00605_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P42626;locus_tag=KEHPLGBG_00605;note=UPF0597 protein YhaM;product=hypothetical protein
+pCAD3_3	prokka	gene	49431	50708	0	-	0	ID=KEHPLGBG_00605_gene;locus_tag=KEHPLGBG_00605
+pCAD3_3	Prodigal:2.60	CDS	51056	51697	0	-	0	ID=KEHPLGBG_00606;Parent=KEHPLGBG_00606_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00606;product=hypothetical protein
+pCAD3_3	prokka	gene	51056	51697	0	-	0	ID=KEHPLGBG_00606_gene;locus_tag=KEHPLGBG_00606
+pCAD3_3	Prodigal:2.60	CDS	51697	52635	0	-	0	ID=KEHPLGBG_00607;Parent=KEHPLGBG_00607_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00607;product=hypothetical protein
+pCAD3_3	prokka	gene	51697	52635	0	-	0	ID=KEHPLGBG_00607_gene;locus_tag=KEHPLGBG_00607
+pCAD3_3	Prodigal:2.60	CDS	52637	53428	0	-	0	ID=KEHPLGBG_00608;Parent=KEHPLGBG_00608_gene;Name=mkl_2;db_xref=COG:COG1127;gene=mkl_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P9WQL5;locus_tag=KEHPLGBG_00608;product=putative ribonucleotide transport ATP-binding protein mkl
+pCAD3_3	prokka	gene	52637	53428	0	-	0	ID=KEHPLGBG_00608_gene;Name=mkl_2;gene=mkl_2;locus_tag=KEHPLGBG_00608
+pCAD3_3	Prodigal:2.60	CDS	53434	54579	0	-	0	ID=KEHPLGBG_00609;Parent=KEHPLGBG_00609_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00609;product=hypothetical protein
+pCAD3_3	prokka	gene	53434	54579	0	-	0	ID=KEHPLGBG_00609_gene;locus_tag=KEHPLGBG_00609
+pCAD3_3	Prodigal:2.60	CDS	55003	55707	0	+	0	ID=KEHPLGBG_00610;Parent=KEHPLGBG_00610_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00610;product=IS6 family transposase IS26
+pCAD3_3	prokka	gene	55003	55707	0	+	0	ID=KEHPLGBG_00610_gene;locus_tag=KEHPLGBG_00610
+pCAD3_3	Prodigal:2.60	CDS	55912	56826	0	+	0	ID=KEHPLGBG_00611;Parent=KEHPLGBG_00611_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00611;product=hypothetical protein
+pCAD3_3	prokka	gene	55912	56826	0	+	0	ID=KEHPLGBG_00611_gene;locus_tag=KEHPLGBG_00611
+pCAD3_3	Prodigal:2.60	CDS	56819	58441	0	+	0	ID=KEHPLGBG_00612;Parent=KEHPLGBG_00612_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00612;product=hypothetical protein
+pCAD3_3	prokka	gene	56819	58441	0	+	0	ID=KEHPLGBG_00612_gene;locus_tag=KEHPLGBG_00612
+pCAD3_3	Prodigal:2.60	CDS	59058	59312	0	+	0	ID=KEHPLGBG_00613;Parent=KEHPLGBG_00613_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00613;product=hypothetical protein
+pCAD3_3	prokka	gene	59058	59312	0	+	0	ID=KEHPLGBG_00613_gene;locus_tag=KEHPLGBG_00613
+pCAD3_3	Prodigal:2.60	CDS	59312	59575	0	+	0	ID=KEHPLGBG_00614;Parent=KEHPLGBG_00614_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00614;product=hypothetical protein
+pCAD3_3	prokka	gene	59312	59575	0	+	0	ID=KEHPLGBG_00614_gene;locus_tag=KEHPLGBG_00614
+pCAD3_3	Prodigal:2.60	CDS	59803	60084	0	+	0	ID=KEHPLGBG_00615;Parent=KEHPLGBG_00615_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00615;product=hypothetical protein
+pCAD3_3	prokka	gene	59803	60084	0	+	0	ID=KEHPLGBG_00615_gene;locus_tag=KEHPLGBG_00615
+pCAD3_3	Prodigal:2.60	CDS	60120	60689	0	+	0	ID=KEHPLGBG_00616;Parent=KEHPLGBG_00616_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00616;product=hypothetical protein
+pCAD3_3	prokka	gene	60120	60689	0	+	0	ID=KEHPLGBG_00616_gene;locus_tag=KEHPLGBG_00616
+pCAD3_3	Prodigal:2.60	CDS	60787	63636	0	+	0	ID=KEHPLGBG_00617;Parent=KEHPLGBG_00617_gene;Name=clpC_2;gene=clpC_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q2YSD6;locus_tag=KEHPLGBG_00617;product=ATP-dependent Clp protease ATP-binding subunit ClpC
+pCAD3_3	prokka	gene	60787	63636	0	+	0	ID=KEHPLGBG_00617_gene;Name=clpC_2;gene=clpC_2;locus_tag=KEHPLGBG_00617
+pCAD3_3	Prodigal:2.60	CDS	63653	65083	0	+	0	ID=KEHPLGBG_00618;Parent=KEHPLGBG_00618_gene;eC_number=2.7.8.-;Name=clsA_2;db_xref=COG:COG1502;gene=clsA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P71040;locus_tag=KEHPLGBG_00618;product=Major cardiolipin synthase ClsA
+pCAD3_3	prokka	gene	63653	65083	0	+	0	ID=KEHPLGBG_00618_gene;Name=clsA_2;gene=clsA_2;locus_tag=KEHPLGBG_00618
+pCAD3_3	Prodigal:2.60	CDS	65111	66940	0	+	0	ID=KEHPLGBG_00619;Parent=KEHPLGBG_00619_gene;eC_number=3.4.24.-;Name=ftsH4_2;gene=ftsH4_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P73437;locus_tag=KEHPLGBG_00619;product=ATP-dependent zinc metalloprotease FtsH 4
+pCAD3_3	prokka	gene	65111	66940	0	+	0	ID=KEHPLGBG_00619_gene;Name=ftsH4_2;gene=ftsH4_2;locus_tag=KEHPLGBG_00619
+pCAD3_3	Prodigal:2.60	CDS	67019	67477	0	+	0	ID=KEHPLGBG_00620;Parent=KEHPLGBG_00620_gene;Name=hspA_2;db_xref=COG:COG0071;gene=hspA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q06823;locus_tag=KEHPLGBG_00620;product=Spore protein SP21
+pCAD3_3	prokka	gene	67019	67477	0	+	0	ID=KEHPLGBG_00620_gene;Name=hspA_2;gene=hspA_2;locus_tag=KEHPLGBG_00620
+pCAD3_3	Prodigal:2.60	CDS	67499	68407	0	+	0	ID=KEHPLGBG_00621;Parent=KEHPLGBG_00621_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00621;product=hypothetical protein
+pCAD3_3	prokka	gene	67499	68407	0	+	0	ID=KEHPLGBG_00621_gene;locus_tag=KEHPLGBG_00621
+pCAD3_3	Prodigal:2.60	CDS	68510	69397	0	+	0	ID=KEHPLGBG_00622;Parent=KEHPLGBG_00622_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00622;product=hypothetical protein
+pCAD3_3	prokka	gene	68510	69397	0	+	0	ID=KEHPLGBG_00622_gene;locus_tag=KEHPLGBG_00622
+pCAD3_3	Prodigal:2.60	CDS	69494	70105	0	+	0	ID=KEHPLGBG_00623;Parent=KEHPLGBG_00623_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00623;product=hypothetical protein
+pCAD3_3	prokka	gene	69494	70105	0	+	0	ID=KEHPLGBG_00623_gene;locus_tag=KEHPLGBG_00623
+pCAD3_3	Prodigal:2.60	CDS	70185	71330	0	+	0	ID=KEHPLGBG_00624;Parent=KEHPLGBG_00624_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00624;product=hypothetical protein
+pCAD3_3	prokka	gene	70185	71330	0	+	0	ID=KEHPLGBG_00624_gene;locus_tag=KEHPLGBG_00624
+pCAD3_3	Prodigal:2.60	CDS	71320	71760	0	+	0	ID=KEHPLGBG_00625;Parent=KEHPLGBG_00625_gene;eC_number=1.8.1.8;Name=trxC_2;db_xref=COG:COG0526;gene=trxC_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0AGG4;locus_tag=KEHPLGBG_00625;product=Thioredoxin 2
+pCAD3_3	prokka	gene	71320	71760	0	+	0	ID=KEHPLGBG_00625_gene;Name=trxC_2;gene=trxC_2;locus_tag=KEHPLGBG_00625
+pCAD3_3	Prodigal:2.60	CDS	71764	73479	0	+	0	ID=KEHPLGBG_00626;Parent=KEHPLGBG_00626_gene;Name=kefC_2;db_xref=COG:COG0475;gene=kefC_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P03819;locus_tag=KEHPLGBG_00626;product=Glutathione-regulated potassium-efflux system protein KefC
+pCAD3_3	prokka	gene	71764	73479	0	+	0	ID=KEHPLGBG_00626_gene;Name=kefC_2;gene=kefC_2;locus_tag=KEHPLGBG_00626
+pCAD3_3	Prodigal:2.60	CDS	73476	73973	0	+	0	ID=KEHPLGBG_00627;Parent=KEHPLGBG_00627_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00627;product=hypothetical protein
+pCAD3_3	prokka	gene	73476	73973	0	+	0	ID=KEHPLGBG_00627_gene;locus_tag=KEHPLGBG_00627
+pCAD3_3	Prodigal:2.60	CDS	73951	74916	0	+	0	ID=KEHPLGBG_00628;Parent=KEHPLGBG_00628_gene;eC_number=3.4.24.-;Name=htpX_2;db_xref=COG:COG0501;gene=htpX_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P9WHS5;locus_tag=KEHPLGBG_00628;product=Protease HtpX 
+pCAD3_3	prokka	gene	73951	74916	0	+	0	ID=KEHPLGBG_00628_gene;Name=htpX_2;gene=htpX_2;locus_tag=KEHPLGBG_00628
+pCAD3_3	Prodigal:2.60	CDS	74941	76092	0	+	0	ID=KEHPLGBG_00629;Parent=KEHPLGBG_00629_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00629;product=hypothetical protein
+pCAD3_3	prokka	gene	74941	76092	0	+	0	ID=KEHPLGBG_00629_gene;locus_tag=KEHPLGBG_00629
+pCAD3_3	Prodigal:2.60	CDS	76317	76706	0	-	0	ID=KEHPLGBG_00630;Parent=KEHPLGBG_00630_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISThi1;locus_tag=KEHPLGBG_00630;product=IS5 family transposase ISThi1
+pCAD3_3	prokka	gene	76317	76706	0	-	0	ID=KEHPLGBG_00630_gene;locus_tag=KEHPLGBG_00630
+pCAD3_3	Prodigal:2.60	CDS	76937	77932	0	+	0	ID=KEHPLGBG_00631;Parent=KEHPLGBG_00631_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1663;locus_tag=KEHPLGBG_00631;product=IS110 family transposase IS1663
+pCAD3_3	prokka	gene	76937	77932	0	+	0	ID=KEHPLGBG_00631_gene;locus_tag=KEHPLGBG_00631
+pCAD3_3	Prodigal:2.60	CDS	78231	79469	0	+	0	ID=KEHPLGBG_00632;Parent=KEHPLGBG_00632_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISEsa2;locus_tag=KEHPLGBG_00632;product=IS110 family transposase ISEsa2
+pCAD3_3	prokka	gene	78231	79469	0	+	0	ID=KEHPLGBG_00632_gene;locus_tag=KEHPLGBG_00632
+pCAD3_3	Prodigal:2.60	CDS	79566	79901	0	-	0	ID=KEHPLGBG_00633;Parent=KEHPLGBG_00633_gene;Name=csaA_2;db_xref=COG:COG0073;gene=csaA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P37584;locus_tag=KEHPLGBG_00633;product=putative chaperone CsaA
+pCAD3_3	prokka	gene	79566	79901	0	-	0	ID=KEHPLGBG_00633_gene;Name=csaA_2;gene=csaA_2;locus_tag=KEHPLGBG_00633
+pCAD3_3	Prodigal:2.60	CDS	79898	80110	0	-	0	ID=KEHPLGBG_00634;Parent=KEHPLGBG_00634_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00634;product=hypothetical protein
+pCAD3_3	prokka	gene	79898	80110	0	-	0	ID=KEHPLGBG_00634_gene;locus_tag=KEHPLGBG_00634
+pCAD3_3	Prodigal:2.60	CDS	80391	81395	0	-	0	ID=KEHPLGBG_00635;Parent=KEHPLGBG_00635_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS4321R;locus_tag=KEHPLGBG_00635;product=IS110 family transposase IS4321R
+pCAD3_3	prokka	gene	80391	81395	0	-	0	ID=KEHPLGBG_00635_gene;locus_tag=KEHPLGBG_00635
+pCAD3_3	Prodigal:2.60	CDS	81730	82752	0	-	0	ID=KEHPLGBG_00636;Parent=KEHPLGBG_00636_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS5708;locus_tag=KEHPLGBG_00636;product=IS110 family transposase IS5708
+pCAD3_3	prokka	gene	81730	82752	0	-	0	ID=KEHPLGBG_00636_gene;locus_tag=KEHPLGBG_00636
+pCAD3_3	Prodigal:2.60	CDS	82837	83322	0	-	0	ID=KEHPLGBG_00637;Parent=KEHPLGBG_00637_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISSba14;locus_tag=KEHPLGBG_00637;product=Tn3 family transposase ISSba14
+pCAD3_3	prokka	gene	82837	83322	0	-	0	ID=KEHPLGBG_00637_gene;locus_tag=KEHPLGBG_00637
+pCAD3_3	Prodigal:2.60	CDS	83585	83911	0	+	0	ID=KEHPLGBG_00638;Parent=KEHPLGBG_00638_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00638;product=hypothetical protein
+pCAD3_3	prokka	gene	83585	83911	0	+	0	ID=KEHPLGBG_00638_gene;locus_tag=KEHPLGBG_00638
+pCAD3_3	Prodigal:2.60	CDS	83881	84819	0	+	0	ID=KEHPLGBG_00639;Parent=KEHPLGBG_00639_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISEc78;locus_tag=KEHPLGBG_00639;product=IS66 family transposase ISEc78
+pCAD3_3	prokka	gene	83881	84819	0	+	0	ID=KEHPLGBG_00639_gene;locus_tag=KEHPLGBG_00639
+pCAD3_3	Prodigal:2.60	CDS	85237	85566	0	+	0	ID=KEHPLGBG_00640;Parent=KEHPLGBG_00640_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00640;product=hypothetical protein
+pCAD3_3	prokka	gene	85237	85566	0	+	0	ID=KEHPLGBG_00640_gene;locus_tag=KEHPLGBG_00640
+pCAD3_3	Prodigal:2.60	CDS	85547	85828	0	+	0	ID=KEHPLGBG_00641;Parent=KEHPLGBG_00641_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00641;product=hypothetical protein
+pCAD3_3	prokka	gene	85547	85828	0	+	0	ID=KEHPLGBG_00641_gene;locus_tag=KEHPLGBG_00641
+pCAD3_3	Prodigal:2.60	CDS	86106	86312	0	+	0	ID=KEHPLGBG_00642;Parent=KEHPLGBG_00642_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISKpn26;locus_tag=KEHPLGBG_00642;product=IS5 family transposase ISKpn26
+pCAD3_3	prokka	gene	86106	86312	0	+	0	ID=KEHPLGBG_00642_gene;locus_tag=KEHPLGBG_00642
+pCAD3_3	Prodigal:2.60	CDS	86346	87050	0	-	0	ID=KEHPLGBG_00643;Parent=KEHPLGBG_00643_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00643;product=IS6 family transposase IS26
+pCAD3_3	prokka	gene	86346	87050	0	-	0	ID=KEHPLGBG_00643_gene;locus_tag=KEHPLGBG_00643
+pCAD3_3	Prodigal:2.60	CDS	87319	88422	0	+	0	ID=KEHPLGBG_00644;Parent=KEHPLGBG_00644_gene;eC_number=1.1.1.6;Name=gldA_2;db_xref=COG:COG0371;gene=gldA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0A9S5;locus_tag=KEHPLGBG_00644;product=Glycerol dehydrogenase
+pCAD3_3	prokka	gene	87319	88422	0	+	0	ID=KEHPLGBG_00644_gene;Name=gldA_2;gene=gldA_2;locus_tag=KEHPLGBG_00644
+pCAD3_3	Prodigal:2.60	CDS	88467	89288	0	-	0	ID=KEHPLGBG_00645;Parent=KEHPLGBG_00645_gene;Name=yijE_2;gene=yijE_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0ABT8;locus_tag=KEHPLGBG_00645;product=putative cystine transporter YijE
+pCAD3_3	prokka	gene	88467	89288	0	-	0	ID=KEHPLGBG_00645_gene;Name=yijE_2;gene=yijE_2;locus_tag=KEHPLGBG_00645
+pCAD3_3	Prodigal:2.60	CDS	89364	90068	0	-	0	ID=KEHPLGBG_00646;Parent=KEHPLGBG_00646_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00646;product=IS6 family transposase IS26
+pCAD3_3	prokka	gene	89364	90068	0	-	0	ID=KEHPLGBG_00646_gene;locus_tag=KEHPLGBG_00646
+pCAD3_3	Prodigal:2.60	CDS	90217	90471	0	+	0	ID=KEHPLGBG_00647;Parent=KEHPLGBG_00647_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00647;product=hypothetical protein
+pCAD3_3	prokka	gene	90217	90471	0	+	0	ID=KEHPLGBG_00647_gene;locus_tag=KEHPLGBG_00647
+pCAD3_3	Prodigal:2.60	CDS	90718	91974	0	-	0	ID=KEHPLGBG_00648;Parent=KEHPLGBG_00648_gene;Name=ulaA_2;db_xref=COG:COG3037;gene=ulaA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P39301;locus_tag=KEHPLGBG_00648;product=Ascorbate-specific PTS system EIIC component
+pCAD3_3	prokka	gene	90718	91974	0	-	0	ID=KEHPLGBG_00648_gene;Name=ulaA_2;gene=ulaA_2;locus_tag=KEHPLGBG_00648
+pCAD3_3	Prodigal:2.60	CDS	91987	92274	0	-	0	ID=KEHPLGBG_00649;Parent=KEHPLGBG_00649_gene;eC_number=2.7.1.194;Name=ulaB_2;gene=ulaB_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:Q9EXD8;locus_tag=KEHPLGBG_00649;product=Ascorbate-specific PTS system EIIB component
+pCAD3_3	prokka	gene	91987	92274	0	-	0	ID=KEHPLGBG_00649_gene;Name=ulaB_2;gene=ulaB_2;locus_tag=KEHPLGBG_00649
+pCAD3_3	Prodigal:2.60	CDS	92290	92733	0	-	0	ID=KEHPLGBG_00650;Parent=KEHPLGBG_00650_gene;Name=ulaC_2;db_xref=COG:COG1762;gene=ulaC_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P69820;locus_tag=KEHPLGBG_00650;product=Ascorbate-specific PTS system EIIA component
+pCAD3_3	prokka	gene	92290	92733	0	-	0	ID=KEHPLGBG_00650_gene;Name=ulaC_2;gene=ulaC_2;locus_tag=KEHPLGBG_00650
+pCAD3_3	Prodigal:2.60	CDS	93004	94035	0	+	0	ID=KEHPLGBG_00651;Parent=KEHPLGBG_00651_gene;Name=gntR_2;gene=gntR_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0ACP5;locus_tag=KEHPLGBG_00651;product=HTH-type transcriptional regulator GntR
+pCAD3_3	prokka	gene	93004	94035	0	+	0	ID=KEHPLGBG_00651_gene;Name=gntR_2;gene=gntR_2;locus_tag=KEHPLGBG_00651
+pCAD3_3	Prodigal:2.60	CDS	94126	94830	0	+	0	ID=KEHPLGBG_00652;Parent=KEHPLGBG_00652_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00652;product=IS6 family transposase IS26
+pCAD3_3	prokka	gene	94126	94830	0	+	0	ID=KEHPLGBG_00652_gene;locus_tag=KEHPLGBG_00652
+pCAD3_3	Prodigal:2.60	CDS	94864	95115	0	-	0	ID=KEHPLGBG_00653;Parent=KEHPLGBG_00653_gene;Name=tnpR_2;gene=tnpR_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0ADI2;locus_tag=KEHPLGBG_00653;product=Transposon Tn3 resolvase
+pCAD3_3	prokka	gene	94864	95115	0	-	0	ID=KEHPLGBG_00653_gene;Name=tnpR_2;gene=tnpR_2;locus_tag=KEHPLGBG_00653
+pCAD3_3	Prodigal:2.60	CDS	95275	98283	0	+	0	ID=KEHPLGBG_00654;Parent=KEHPLGBG_00654_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISEc63;locus_tag=KEHPLGBG_00654;product=Tn3 family transposase ISEc63
+pCAD3_3	prokka	gene	95275	98283	0	+	0	ID=KEHPLGBG_00654_gene;locus_tag=KEHPLGBG_00654
+pCAD3_3	Prodigal:2.60	CDS	98348	98992	0	+	0	ID=KEHPLGBG_00655;Parent=KEHPLGBG_00655_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00655;product=hypothetical protein
+pCAD3_3	prokka	gene	98348	98992	0	+	0	ID=KEHPLGBG_00655_gene;locus_tag=KEHPLGBG_00655
+pCAD3_3	Prodigal:2.60	CDS	99228	100274	0	-	0	ID=KEHPLGBG_00656;Parent=KEHPLGBG_00656_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00656;product=hypothetical protein
+pCAD3_3	prokka	gene	99228	100274	0	-	0	ID=KEHPLGBG_00656_gene;locus_tag=KEHPLGBG_00656
+pCAD3_3	Prodigal:2.60	CDS	100326	101732	0	-	0	ID=KEHPLGBG_00657;Parent=KEHPLGBG_00657_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISBcen27;locus_tag=KEHPLGBG_00657;product=ISNCY family transposase ISBcen27
+pCAD3_3	prokka	gene	100326	101732	0	-	0	ID=KEHPLGBG_00657_gene;locus_tag=KEHPLGBG_00657
+pCAD3_3	Prodigal:2.60	CDS	101905	103062	0	+	0	ID=KEHPLGBG_00658;Parent=KEHPLGBG_00658_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISLad2;locus_tag=KEHPLGBG_00658;product=ISNCY family transposase ISLad2
+pCAD3_3	prokka	gene	101905	103062	0	+	0	ID=KEHPLGBG_00658_gene;locus_tag=KEHPLGBG_00658
+pCAD3_3	Prodigal:2.60	CDS	103099	103443	0	+	0	ID=KEHPLGBG_00659;Parent=KEHPLGBG_00659_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00659;product=hypothetical protein
+pCAD3_3	prokka	gene	103099	103443	0	+	0	ID=KEHPLGBG_00659_gene;locus_tag=KEHPLGBG_00659
+pCAD3_3	Prodigal:2.60	CDS	103599	104621	0	-	0	ID=KEHPLGBG_00660;Parent=KEHPLGBG_00660_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS5708;locus_tag=KEHPLGBG_00660;product=IS110 family transposase IS5708
+pCAD3_3	prokka	gene	103599	104621	0	-	0	ID=KEHPLGBG_00660_gene;locus_tag=KEHPLGBG_00660
+pCAD3_3	Prodigal:2.60	CDS	104705	105166	0	+	0	ID=KEHPLGBG_00661;Parent=KEHPLGBG_00661_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS26;locus_tag=KEHPLGBG_00661;product=IS6 family transposase IS26
+pCAD3_3	prokka	gene	104705	105166	0	+	0	ID=KEHPLGBG_00661_gene;locus_tag=KEHPLGBG_00661
+pCAD3_3	Prodigal:2.60	CDS	105658	106515	0	-	0	ID=KEHPLGBG_00662;Parent=KEHPLGBG_00662_gene;Name=rpoH_2;db_xref=COG:COG0568;gene=rpoH_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P0AGB3;locus_tag=KEHPLGBG_00662;product=RNA polymerase sigma factor RpoH
+pCAD3_3	prokka	gene	105658	106515	0	-	0	ID=KEHPLGBG_00662_gene;Name=rpoH_2;gene=rpoH_2;locus_tag=KEHPLGBG_00662
+pCAD3_3	Prodigal:2.60	CDS	106613	107581	0	+	0	ID=KEHPLGBG_00663;Parent=KEHPLGBG_00663_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS903;locus_tag=KEHPLGBG_00663;product=IS5 family transposase IS903
+pCAD3_3	prokka	gene	106613	107581	0	+	0	ID=KEHPLGBG_00663_gene;locus_tag=KEHPLGBG_00663
+pCAD3_3	Prodigal:2.60	CDS	107976	108479	0	+	0	ID=KEHPLGBG_00664;Parent=KEHPLGBG_00664_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00664;product=hypothetical protein
+pCAD3_3	prokka	gene	107976	108479	0	+	0	ID=KEHPLGBG_00664_gene;locus_tag=KEHPLGBG_00664
+pCAD3_3	Prodigal:2.60	CDS	108638	109246	0	-	0	ID=KEHPLGBG_00665;Parent=KEHPLGBG_00665_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS15;locus_tag=KEHPLGBG_00665;product=IS6 family transposase IS15
+pCAD3_3	prokka	gene	108638	109246	0	-	0	ID=KEHPLGBG_00665_gene;locus_tag=KEHPLGBG_00665
+pCAD3_3	Prodigal:2.60	CDS	109306	110085	0	-	0	ID=KEHPLGBG_00666;Parent=KEHPLGBG_00666_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISSen3;locus_tag=KEHPLGBG_00666;product=IS21 family transposase ISSen3
+pCAD3_3	prokka	gene	109306	110085	0	-	0	ID=KEHPLGBG_00666_gene;locus_tag=KEHPLGBG_00666
+pCAD3_3	Prodigal:2.60	CDS	110085	111107	0	-	0	ID=KEHPLGBG_00667;Parent=KEHPLGBG_00667_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00667;product=hypothetical protein
+pCAD3_3	prokka	gene	110085	111107	0	-	0	ID=KEHPLGBG_00667_gene;locus_tag=KEHPLGBG_00667
+pCAD3_3	Prodigal:2.60	CDS	111154	111303	0	-	0	ID=KEHPLGBG_00668;Parent=KEHPLGBG_00668_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00668;product=hypothetical protein
+pCAD3_3	prokka	gene	111154	111303	0	-	0	ID=KEHPLGBG_00668_gene;locus_tag=KEHPLGBG_00668
+pCAD3_3	Prodigal:2.60	CDS	111684	111839	0	+	0	ID=KEHPLGBG_00669;Parent=KEHPLGBG_00669_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00669;product=hypothetical protein
+pCAD3_3	prokka	gene	111684	111839	0	+	0	ID=KEHPLGBG_00669_gene;locus_tag=KEHPLGBG_00669
+pCAD3_3	Prodigal:2.60	CDS	111888	112880	0	+	0	ID=KEHPLGBG_00670;Parent=KEHPLGBG_00670_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00670;product=hypothetical protein
+pCAD3_3	prokka	gene	111888	112880	0	+	0	ID=KEHPLGBG_00670_gene;locus_tag=KEHPLGBG_00670
+pCAD3_3	Prodigal:2.60	CDS	113064	113678	0	-	0	ID=KEHPLGBG_00671;Parent=KEHPLGBG_00671_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00671;product=hypothetical protein
+pCAD3_3	prokka	gene	113064	113678	0	-	0	ID=KEHPLGBG_00671_gene;locus_tag=KEHPLGBG_00671
+pCAD3_3	Prodigal:2.60	CDS	113732	114013	0	-	0	ID=KEHPLGBG_00672;Parent=KEHPLGBG_00672_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00672;product=hypothetical protein
+pCAD3_3	prokka	gene	113732	114013	0	-	0	ID=KEHPLGBG_00672_gene;locus_tag=KEHPLGBG_00672
+pCAD3_3	Prodigal:2.60	CDS	114186	114521	0	+	0	ID=KEHPLGBG_00673;Parent=KEHPLGBG_00673_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00673;product=hypothetical protein
+pCAD3_3	prokka	gene	114186	114521	0	+	0	ID=KEHPLGBG_00673_gene;locus_tag=KEHPLGBG_00673
+pCAD3_3	Prodigal:2.60	CDS	115002	115631	0	+	0	ID=KEHPLGBG_00674;Parent=KEHPLGBG_00674_gene;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1663;locus_tag=KEHPLGBG_00674;product=IS110 family transposase IS1663
+pCAD3_3	prokka	gene	115002	115631	0	+	0	ID=KEHPLGBG_00674_gene;locus_tag=KEHPLGBG_00674
+pCAD3_3	Prodigal:2.60	CDS	115625	116128	0	-	0	ID=KEHPLGBG_00675;Parent=KEHPLGBG_00675_gene;db_xref=COG:COG1662;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1R;locus_tag=KEHPLGBG_00675;product=IS1 family transposase IS1R
+pCAD3_3	prokka	gene	115625	116128	0	-	0	ID=KEHPLGBG_00675_gene;locus_tag=KEHPLGBG_00675
+pCAD3_3	Prodigal:2.60	CDS	116636	116968	0	-	0	ID=KEHPLGBG_00676;Parent=KEHPLGBG_00676_gene;eC_number=3.1.-.-;Name=pemK_2;gene=pemK_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P13976;locus_tag=KEHPLGBG_00676;product=Endoribonuclease PemK
+pCAD3_3	prokka	gene	116636	116968	0	-	0	ID=KEHPLGBG_00676_gene;Name=pemK_2;gene=pemK_2;locus_tag=KEHPLGBG_00676
+pCAD3_3	Prodigal:2.60	CDS	116970	117227	0	-	0	ID=KEHPLGBG_00677;Parent=KEHPLGBG_00677_gene;Name=pemI_2;gene=pemI_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P13975;locus_tag=KEHPLGBG_00677;product=Antitoxin PemI
+pCAD3_3	prokka	gene	116970	117227	0	-	0	ID=KEHPLGBG_00677_gene;Name=pemI_2;gene=pemI_2;locus_tag=KEHPLGBG_00677
+pCAD3_3	Prodigal:2.60	CDS	117320	117973	0	-	0	ID=KEHPLGBG_00678;Parent=KEHPLGBG_00678_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00678;product=hypothetical protein
+pCAD3_3	prokka	gene	117320	117973	0	-	0	ID=KEHPLGBG_00678_gene;locus_tag=KEHPLGBG_00678
+pCAD3_3	Prodigal:2.60	CDS	119049	119768	0	-	0	ID=KEHPLGBG_00679;Parent=KEHPLGBG_00679_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00679;product=hypothetical protein
+pCAD3_3	prokka	gene	119049	119768	0	-	0	ID=KEHPLGBG_00679_gene;locus_tag=KEHPLGBG_00679
+pCAD3_3	Prodigal:2.60	CDS	120070	120327	0	-	0	ID=KEHPLGBG_00680;Parent=KEHPLGBG_00680_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00680;product=hypothetical protein
+pCAD3_3	prokka	gene	120070	120327	0	-	0	ID=KEHPLGBG_00680_gene;locus_tag=KEHPLGBG_00680
+pCAD3_3	Prodigal:2.60	CDS	120567	121061	0	-	0	ID=KEHPLGBG_00681;Parent=KEHPLGBG_00681_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00681;product=hypothetical protein
+pCAD3_3	prokka	gene	120567	121061	0	-	0	ID=KEHPLGBG_00681_gene;locus_tag=KEHPLGBG_00681
+pCAD3_3	Prodigal:2.60	CDS	121372	121875	0	+	0	ID=KEHPLGBG_00682;Parent=KEHPLGBG_00682_gene;db_xref=COG:COG1662;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1R;locus_tag=KEHPLGBG_00682;product=IS1 family transposase IS1R
+pCAD3_3	prokka	gene	121372	121875	0	+	0	ID=KEHPLGBG_00682_gene;locus_tag=KEHPLGBG_00682
+pCAD3_3	Prodigal:2.60	CDS	121877	122260	0	+	0	ID=KEHPLGBG_00683;Parent=KEHPLGBG_00683_gene;eC_number=6.5.1.4;Name=rtcA_2;db_xref=COG:COG0430;gene=rtcA_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P46849;locus_tag=KEHPLGBG_00683;product=RNA 3'-terminal phosphate cyclase
+pCAD3_3	prokka	gene	121877	122260	0	+	0	ID=KEHPLGBG_00683_gene;Name=rtcA_2;gene=rtcA_2;locus_tag=KEHPLGBG_00683
+pCAD3_3	Prodigal:2.60	CDS	122678	125383	0	-	0	ID=KEHPLGBG_00684;Parent=KEHPLGBG_00684_gene;Name=malT_2;db_xref=COG:COG2909;gene=malT_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P06993;locus_tag=KEHPLGBG_00684;product=HTH-type transcriptional regulator MalT
+pCAD3_3	prokka	gene	122678	125383	0	-	0	ID=KEHPLGBG_00684_gene;Name=malT_2;gene=malT_2;locus_tag=KEHPLGBG_00684
+pCAD3_3	Prodigal:2.60	CDS	125906	126409	0	+	0	ID=KEHPLGBG_00685;Parent=KEHPLGBG_00685_gene;db_xref=COG:COG1662;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:IS1R;locus_tag=KEHPLGBG_00685;product=IS1 family transposase IS1R
+pCAD3_3	prokka	gene	125906	126409	0	+	0	ID=KEHPLGBG_00685_gene;locus_tag=KEHPLGBG_00685
+pCAD3_3	Prodigal:2.60	CDS	126562	128694	0	-	0	ID=KEHPLGBG_00686;Parent=KEHPLGBG_00686_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00686;product=hypothetical protein
+pCAD3_3	prokka	gene	126562	128694	0	-	0	ID=KEHPLGBG_00686_gene;locus_tag=KEHPLGBG_00686
+pCAD3_3	Prodigal:2.60	CDS	128696	130069	0	-	0	ID=KEHPLGBG_00687;Parent=KEHPLGBG_00687_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00687;product=hypothetical protein
+pCAD3_3	prokka	gene	128696	130069	0	-	0	ID=KEHPLGBG_00687_gene;locus_tag=KEHPLGBG_00687
+pCAD3_3	Prodigal:2.60	CDS	130042	130923	0	-	0	ID=KEHPLGBG_00688;Parent=KEHPLGBG_00688_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00688;product=hypothetical protein
+pCAD3_3	prokka	gene	130042	130923	0	-	0	ID=KEHPLGBG_00688_gene;locus_tag=KEHPLGBG_00688
+pCAD3_3	Prodigal:2.60	CDS	130938	132854	0	-	0	ID=KEHPLGBG_00689;Parent=KEHPLGBG_00689_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00689;product=hypothetical protein
+pCAD3_3	prokka	gene	130938	132854	0	-	0	ID=KEHPLGBG_00689_gene;locus_tag=KEHPLGBG_00689
+pCAD3_3	Aragorn:1.2	tRNA	135455	135553	0	+	0	ID=KEHPLGBG_00690;Parent=KEHPLGBG_00690_gene;inference=COORDINATES:profile:Aragorn:1.2;locus_tag=KEHPLGBG_00690;product=tRNA-Gly(gcc)
+pCAD3_3	prokka	gene	135455	135553	0	+	0	ID=KEHPLGBG_00690_gene;locus_tag=KEHPLGBG_00690
+pCAD3_3	Prodigal:2.60	CDS	146855	147835	0	+	0	ID=KEHPLGBG_00691;Parent=KEHPLGBG_00691_gene;db_xref=COG:COG3039;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:ISfinder:ISKpn26;locus_tag=KEHPLGBG_00691;product=IS5 family transposase ISKpn26
+pCAD3_3	prokka	gene	146855	147835	0	+	0	ID=KEHPLGBG_00691_gene;locus_tag=KEHPLGBG_00691
+pCAD3_3	Prodigal:2.60	CDS	149054	150025	0	-	0	ID=KEHPLGBG_00692;Parent=KEHPLGBG_00692_gene;Name=sopB_2;gene=sopB_2;inference=ab initio prediction:Prodigal:2.60,similar to AA sequence:UniProtKB:P62558;locus_tag=KEHPLGBG_00692;product=Protein SopB
+pCAD3_3	prokka	gene	149054	150025	0	-	0	ID=KEHPLGBG_00692_gene;Name=sopB_2;gene=sopB_2;locus_tag=KEHPLGBG_00692
+pCAD3_3	Prodigal:2.60	CDS	150025	151191	0	-	0	ID=KEHPLGBG_00693;Parent=KEHPLGBG_00693_gene;inference=ab initio prediction:Prodigal:2.60;locus_tag=KEHPLGBG_00693;product=hypothetical protein
+pCAD3_3	prokka	gene	150025	151191	0	-	0	ID=KEHPLGBG_00693_gene;locus_tag=KEHPLGBG_00693
 pKPC-CAD1_2	Manual	CDS	65688	76151	0	0	0	gene_type=none;text_type=spanning;text_rotation=0;annotationtext=Tn4401 transposon
 pKPC-CAD2_2	Manual	CDS	52911	63374	0	0	0	gene_type=none;text_type=spanning;text_rotation=0;annotationtext=Tn4401 transposon
 ##FASTA								
@@ -9854,7 +9854,7 @@ TGATATTTTCCTGCATGGCATGCGTAGAGCGTTAACTCTGTGTGTGGGAGTCCCAGAGAG
 TTAGTGATATGAAAGGGAAAATTGCTGCTACCTCGATGTAACCGAAACATAGATGCCTCT								
 CACTTATGCTGGCAGCATATGGTAATTGCATTGATGTAACTGAATTGTTTATGAAGTGTA								
 CAACAACAGTGTTACATAGCAAA								
->pKPC-CAD3_3								
+>pCAD3_3								
 ATGACGAGCGAAAATAACAGCTTACTTCTGAACCTTCAGGAAGTTGATAAGACAACCGGC								
 GAAGTTGTTAAGCTGGATGTCAACAGCACCAGTACCGTGCAGCCAGTAGCGCTCATGAGA								
 CTCGGTCTCTTCGTCCCAACTCTGAAATCAACAGGGAAGAGCAAGGCGAACCGGAAAAAC								
