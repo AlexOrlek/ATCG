@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import argparse, os, sys, time,subprocess, signal
+from argparse import RawTextHelpFormatter
+
 sourcedir=os.path.dirname(os.path.abspath(__file__))
 cwdir=os.getcwd()
 sys.path.append(sourcedir)
@@ -24,7 +26,7 @@ def runtime():
     return(float(runtime))
 
 
-parser = argparse.ArgumentParser(description="ATCG: Alignment Based Tool for Comparative Genomics",add_help=False)
+parser = argparse.ArgumentParser(description="ATCG: Alignment Based Tool for Comparative Genomics",add_help=False,formatter_class=RawTextHelpFormatter)
 #Help options
 help_group = parser.add_argument_group('Help')
 help_group.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help='Show this help message and exit.')
@@ -55,6 +57,11 @@ other_group = parser.add_argument_group('Other')
 other_group.add_argument('-t','--threads', help='Number of threads to use (default: 1)', default=1, type=int)
 other_group.add_argument('-b','--boot', help='Number of bootstraps to run (default: no bootstrapping)', default=0, type=positiveint)
 output_group.add_argument('--blastonly', action='store_true', help='If flag is provided, only output pairwise blast results; do not calculate distance statistics (default: run full pipeline)')
+output_group.add_argument('--keep', default=1, choices=[0,1,2], type=int, help='Level of file retention (default: 1)\n  '
+                          ' 0 = do not retain splitfastas or blast directories,\n'
+                          '   1 = do not retain splitfastas directory,\n'
+                          '   2 = retain all intermediate output')
+
 args = parser.parse_args()
 outputpath=os.path.relpath(args.out, cwdir)
 
@@ -87,6 +94,11 @@ else:
         if args.wordsize<int(4):
             parser.error('if using megablast, word size must be at least 4, and a higher value would be sensible, to reduce computation time when running genome-genome searches')
 
+#check --keep flag and --blastonly flag are not used in combination (makes no sense)
+if args.keep==0 and args.blastonly==True:
+    parser.error('combining --keep 0 and --blastonly options will result in no final output being produced')
+
+            
 noblasthits=False
 
 if args.sequences!=None:
@@ -124,7 +136,10 @@ if args.sequences!=None:
         runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences),sourcedir])
         laterruntime=runtime()
         print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
-    
+
+    if args.keep==0 or args.keep==1:
+        runsubprocess(['rm -rf %s/splitfastas'%outputpath],shell=True)        
+
 if args.sequences==None:
     blasttype='pairwise'
     fastadir1='%s/splitfastas1'%outputpath
@@ -192,6 +207,11 @@ if args.sequences==None:
         laterruntime=runtime()
         print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
 
+    if args.keep==0 or args.keep==1:
+        runsubprocess(['rm -rf %s/splitfastas1'%outputpath],shell=True)
+        runsubprocess(['rm -rf %s/splitfastas2'%outputpath],shell=True)
+
+
 if args.blastonly!=True and noblasthits==False:
     runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.trimmedalignments)])
     laterruntime=runtime()
@@ -217,9 +237,8 @@ if args.blastonly!=True and noblasthits==False:
               laterruntime=runtime()
               print(laterruntime-startruntime, 'runtime; finished plotting tree(s) using distance score(s): %s'%args.distscore)
 
-
-
-
+if args.keep==0:
+    runsubprocess(['rm -rf %s/blast'%outputpath],shell=True)
 
 #OLD CODE
 # parser = argparse.ArgumentParser(description='Run pipeline scripts')
