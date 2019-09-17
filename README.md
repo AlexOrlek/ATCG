@@ -209,7 +209,7 @@ distobject_[score].rds | a "dist" object distance matrix derived from distancest
 * If 'phylogeny' is specified as the tree building method, then files with the phylo_ prefix will be produced, where currently the dend_ prefix is shown
 
 
-## 1.6 Example
+## 1.6 Examples
 
 ### 1.6.1 Toy example
 
@@ -356,7 +356,7 @@ Note that the default `--annotation_gene_type` is `side_bars`. These are tick ma
 
 Running the `visualisation.py` script will produce a plot as a pdf file and accompanying legend pdf file(s): one pdf contains the legends mapping +ve/-ve orientation alignment colour to percent identity values; if custom annotation symbol settings have been specified in the gff, a second pdf contains a legend mapping annotation symbols to annotation text.
 
-## 2.6 Example
+## 2.6 Examples
 
 ### 2.6.1 Resistance plasmid comparison
 
