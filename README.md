@@ -371,7 +371,7 @@ Finally, visualise the alignments. Note that the attributes field of the gff3 co
 `visualise.py -i atcgout/output -s trimmedalignments_GENOMENAME.tsv GENOMENAME.gff -l atcgout/seqlengths.tsv -c comparison.tsv -o atcgout_visualisation -f annotations --annotationtxt_name annotationtext`
 
 <br>
-<p align="center"><img src="resistance-plasmid-example/images/plasmids.JPG" alt="plasmid_comparison" width="600"></p>
+<p align="center"><img src="resistance-plasmid-example/images/plasmids.PNG" alt="plasmid_comparison" width="600"></p>
 <br>
 
 Note that the plot differs slightly from Fig.4A in the paper, due to differences in assembly methods and BLAST settings.
