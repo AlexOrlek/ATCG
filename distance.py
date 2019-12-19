@@ -110,21 +110,23 @@ if args.sequences!=None:
     runsubprocess(['python','%s/renamefastas.py'%sourcedir,outputpath, fastadir, str(args.sequences),fastafiles,blastdbs])
     runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastadir, fastafiles, str(args.threads),sourcedir])
     laterruntime=runtime()
-    print(laterruntime-startruntime, 'runtime; finished creating blast databases')
+    #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
+    print('finished creating blast databases')
     p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, str(args.sequences), blastdbs, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
-    try:
-        print('{} {}'.format(stdout.decode(), 'stdout'))
-    except:
-        pass
-    try:
-        print('{} {}'.format(stderr.decode(), 'stderr'))
-    except:
-        pass
+    #try:
+    #    print('{} {}'.format(stdout.decode(), 'stdout'))
+    #except:
+    #    pass
+    #try:
+    #    print('{} {}'.format(stderr.decode(), 'stderr'))
+    #except:
+    #    pass
     if p.returncode!=0:
-        sys.exit()
+        sys.exit('unexpected error when running runblast.sh')
     laterruntime=runtime()
-    print(laterruntime-startruntime, 'runtime; finished running blast')
+    #print(laterruntime-startruntime, 'runtime; finished running blast')
+    print('finished running blast')
     p=subprocess.Popen(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, blastdbs, sourcedir], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     if stdout.strip()=='no blast hits':
@@ -132,10 +134,12 @@ if args.sequences!=None:
         print('Warning: no blast alignments produced from genome comparison(s); pipeline terminated')
     if noblasthits==False:
         laterruntime=runtime()
-        print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
+        #print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
+        print('finished reformatting alignments')
         runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences),sourcedir])
         laterruntime=runtime()
-        print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
+        #print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
+        print('finished getting sequence lengths')
 
     if args.keep==0 or args.keep==1:
         runsubprocess(['rm -rf %s/splitfastas'%outputpath],shell=True)        
@@ -163,34 +167,36 @@ if args.sequences==None:
     runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastadir1, fastafiles1, str(args.threads),sourcedir])
     runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastadir2, fastafiles2, str(args.threads),sourcedir])
     laterruntime=runtime()
-    print(laterruntime-startruntime, 'runtime; finished creating blast databases')
+    #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
+    print('finished creating blast databases')
     p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, str(args.sequences1), blastdbs2, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
-    try:
-        print('{} {}'.format(stdout.decode(), 'stdout'))
-    except:
-        pass
-    try:
-        print('{} {}'.format(stderr.decode(), 'stderr'))
-    except:
-        pass
+    #try:
+    #    print('{} {}'.format(stdout.decode(), 'stdout'))
+    #except:
+    #    pass
+    #try:
+    #    print('{} {}'.format(stderr.decode(), 'stderr'))
+    #except:
+    #    pass
     if p.returncode!=0:
-        sys.exit()
+        sys.exit('unexpected error when running runblast.sh')
     p=subprocess.Popen(['bash','runblast.sh',outputpath, str(args.sequences2), blastdbs1, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
-    try:
-        print('{} {}'.format(stdout.decode(), 'stdout'))
-    except:
-        pass
-    try:
-        print('{} {}'.format(stderr.decode(), 'stderr'))
-    except:
-        pass
+    #try:
+    #    print('{} {}'.format(stdout.decode(), 'stdout'))
+    #except:
+    #    pass
+    #try:
+    #    print('{} {}'.format(stderr.decode(), 'stderr'))
+    #except:
+    #    pass
     if p.returncode!=0:
-        sys.exit()
+        sys.exit('unexpected error when running runblast.sh')
         
     laterruntime=runtime()
-    print(laterruntime-startruntime, 'runtime; finished running blast')
+    #print(laterruntime-startruntime, 'runtime; finished running blast')
+    print('finished running blast')
     
     blastdbs='%s/blastdbfilepaths_combined.tsv'%outputpath
     runsubprocess(['cat %s %s | sort -k1,1V > %s'%(blastdbs1,blastdbs2,blastdbs)],shell=True)
@@ -202,10 +208,12 @@ if args.sequences==None:
         print('Warning: no blast alignments produced from genome comparison(s); pipeline terminated')
     if noblasthits==False:
         laterruntime=runtime()
-        print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
+        #print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
+        print('finished reformatting alignments')
         runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences1),str(args.sequences2),sourcedir])
         laterruntime=runtime()
-        print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
+        #print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
+        print('finished getting sequence lengths')
 
     if args.keep==0 or args.keep==1:
         runsubprocess(['rm -rf %s/splitfastas1'%outputpath],shell=True)
@@ -215,7 +223,8 @@ if args.sequences==None:
 if args.blastonly!=True and noblasthits==False:
     runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.trimmedalignments)])
     laterruntime=runtime()
-    print(laterruntime-startruntime, 'runtime; finished trimming alignments')
+    #print(laterruntime-startruntime, 'runtime; finished trimming alignments')
+    print('finished trimming alignments')
     if blasttype=='allvallpairwise':
         if 'none' not in args.treemethod:
           if 'dendrogram' in args.treemethod:
@@ -235,7 +244,8 @@ if args.blastonly!=True and noblasthits==False:
               treeargs.extend(args.distscore)
               runsubprocess(treeargs)
               laterruntime=runtime()
-              print(laterruntime-startruntime, 'runtime; finished plotting tree(s) using distance score(s): %s'%args.distscore)
+              #print(laterruntime-startruntime, 'runtime; finished plotting tree(s) using distance score(s): %s'%args.distscore)
+              print('finished plotting tree(s) using distance score(s): %s'%args.distscore)
 
 if args.keep==0:
     runsubprocess(['rm -rf %s/blast'%outputpath],shell=True)
