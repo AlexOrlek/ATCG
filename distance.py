@@ -6,7 +6,7 @@ sourcedir=os.path.dirname(os.path.abspath(__file__))
 cwdir=os.getcwd()
 sys.path.append(sourcedir)
 
-from pythonmods import runsubprocess
+from pythonmods import runsubprocess,splitfastas
 
 
 def default_sigpipe():
@@ -32,9 +32,9 @@ help_group = parser.add_argument_group('Help')
 help_group.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help='Show this help message and exit.')
 #Input options                                                               
 input_group = parser.add_argument_group('Input')
-input_group.add_argument('-s','--sequences', help='Sequences, for all-vs-all pairwise comparison (required if -1 and -2 flags not provided)', required=False)
-input_group.add_argument('-1','--sequences1', help='First set of sequence(s), for pairwise comparison against second set (required if -s flag not provided)', required=False)
-input_group.add_argument('-2','--sequences2', help='Second set of sequence(s), for pairwise comparison against first set (required if -s flag not provided)', required=False)
+input_group.add_argument('-s','--sequences', help='Sequences, for all-vs-all pairwise comparison (required if -1 and -2 flags not provided)', required=False,nargs='?',type=argparse.FileType('r'),default=sys.stdin)
+input_group.add_argument('-1','--sequences1', help='First set of sequence(s), for pairwise comparison against second set (required if -s flag not provided)', required=False,nargs='?',type=argparse.FileType('r'),default=sys.stdin)
+input_group.add_argument('-2','--sequences2', help='Second set of sequence(s), for pairwise comparison against first set (required if -s flag not provided)', required=False,nargs='?',type=argparse.FileType('r'),default=sys.stdin)
 #Output options                                               
 output_group = parser.add_argument_group('Output')
 output_group.add_argument('-o','--out', help='Output directory (required)', required=True)
@@ -67,12 +67,12 @@ outputpath=os.path.relpath(args.out, cwdir)
 
 startruntime=runtime()
 
-#check sequence input flags used correctly
-if args.sequences==None and args.sequences1==None and args.sequences2==None:
+#check sequence input flags used correctly (if flags not provided, name of file handle will be <stdin> i.e. empty stdin)
+if args.sequences.name=='<stdin>' and args.sequences1=='<stdin>' and args.sequences2=='<stdin>':
     parser.error('as input, you must either provide --sequences or both --sequences1 and --sequences2')
-if args.sequences!=None and args.sequences1!=None and args.sequences2!=None:
+if args.sequences.name!='<stdin>' and args.sequences1.name!='<stdin>' and args.sequences2.name!='<stdin>':
     parser.error('as input, you must either provide --sequences or both --sequences1 and --sequences2')
-if (args.sequences1==None and args.sequences2!=None) or (args.sequences1!=None and args.sequences2==None):
+if (args.sequences1.name=='<stdin>' and args.sequences2.name!='<stdin>') or (args.sequences1.name!='<stdin>' and args.sequences2=='<stdin>'):
     parser.error('as input, you must either provide --sequences or both --sequences1 and --sequences2')
 
 #set default word sizes if none provided; check word size is within allowed limits for the blast task
@@ -98,21 +98,23 @@ else:
 if args.keep==0 and args.blastonly==True:
     parser.error('combining --keep 0 and --blastonly options will result in no final output being produced')
 
-            
+
+          
 noblasthits=False
 
-if args.sequences!=None:
+if args.sequences.name!='<stdin>':
     blasttype='allvallpairwise'
     fastadir='%s/splitfastas'%outputpath
     fastafiles='%s/fastafilepaths.tsv'%outputpath
     blastdbs='%s/blastdbfilepaths.tsv'%outputpath
-    runsubprocess(['bash','%s/splitfasta.sh'%sourcedir,outputpath, fastadir, str(args.sequences),str(args.threads)])
-    runsubprocess(['python','%s/renamefastas.py'%sourcedir,outputpath, fastadir, str(args.sequences),fastafiles,blastdbs])
-    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastadir, fastafiles, str(args.threads),sourcedir])
+    if os.path.exists(fastadir):
+        sys.exit('Error: %s directory already exists, delete directory and try again'%fastadir)
+    splitfastas(args.sequences,fastadir,fastafiles,blastdbs)
+    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastafiles,str(args.threads),sourcedir])
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
     print('finished creating blast databases')
-    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, str(args.sequences), blastdbs, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir, blastdbs, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     #try:
     #    print('{} {}'.format(stdout.decode(), 'stdout'))
@@ -136,7 +138,7 @@ if args.sequences!=None:
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
         print('finished reformatting alignments')
-        runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences),sourcedir])
+        runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,fastadir,sourcedir])
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
         print('finished getting sequence lengths')
@@ -144,7 +146,7 @@ if args.sequences!=None:
     if args.keep==0 or args.keep==1:
         runsubprocess(['rm -rf %s/splitfastas'%outputpath],shell=True)        
 
-if args.sequences==None:
+if args.sequences.name=='<stdin>':
     blasttype='pairwise'
     fastadir1='%s/splitfastas1'%outputpath
     fastadir2='%s/splitfastas2'%outputpath
@@ -152,10 +154,12 @@ if args.sequences==None:
     blastdbs1='%s/blastdbfilepaths1.tsv'%outputpath
     fastafiles2='%s/fastafilepaths2.tsv'%outputpath
     blastdbs2='%s/blastdbfilepaths2.tsv'%outputpath
-    runsubprocess(['bash','%s/splitfasta.sh'%sourcedir,outputpath, fastadir1, str(args.sequences1),str(args.threads)])
-    runsubprocess(['bash','%s/splitfasta.sh'%sourcedir,outputpath, fastadir2, str(args.sequences2),str(args.threads)])
-    runsubprocess(['python','%s/renamefastas.py'%sourcedir,outputpath, fastadir1, str(args.sequences1), fastafiles1,blastdbs1])
-    runsubprocess(['python','%s/renamefastas.py'%sourcedir,outputpath, fastadir2, str(args.sequences2), fastafiles2,blastdbs2])
+    if os.path.exists(fastadir1):
+        sys.exit('Error: %s directory already exists, delete directory and try again'%fastadir)
+    if os.path.exists(fastadir2):
+        sys.exit('Error: %s directory already exists, delete directory and try again'%fastadir)
+    splitfastas(args.sequences1,fastadir1,fastafiles1,blastdbs1)
+    splitfastas(args.sequences2,fastadir2,fastafiles2,blastdbs2)
     #check there is no overlap between fastas provided in -s1 and -s2
     s1dir=os.listdir('%s/splitfastas1'%outputpath)
     s2dir=os.listdir('%s/splitfastas2'%outputpath)
@@ -164,12 +168,12 @@ if args.sequences==None:
     overlap=len(set(s1fastas).intersection(set(s2fastas)))
     if overlap>0:
         parser.error('there must be no overlap between fasta identifiers contained within the fasta files provided using the -s1 and -s2 flags')
-    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastadir1, fastafiles1, str(args.threads),sourcedir])
-    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastadir2, fastafiles2, str(args.threads),sourcedir])
+    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastafiles1, str(args.threads),sourcedir])
+    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastafiles2, str(args.threads),sourcedir])
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
     print('finished creating blast databases')
-    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, str(args.sequences1), blastdbs2, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir1, blastdbs2, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     #try:
     #    print('{} {}'.format(stdout.decode(), 'stdout'))
@@ -181,7 +185,7 @@ if args.sequences==None:
     #    pass
     if p.returncode!=0:
         sys.exit('unexpected error when running runblast.sh')
-    p=subprocess.Popen(['bash','runblast.sh',outputpath, str(args.sequences2), blastdbs1, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p=subprocess.Popen(['bash','runblast.sh',outputpath, fastadir2, blastdbs1, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     #try:
     #    print('{} {}'.format(stdout.decode(), 'stdout'))
@@ -210,7 +214,7 @@ if args.sequences==None:
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
         print('finished reformatting alignments')
-        runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,str(args.sequences1),str(args.sequences2),sourcedir])
+        runsubprocess(['bash','%s/getseqlengths.sh'%sourcedir,outputpath,blasttype,fastadir1,fastadir2,sourcedir])
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished getting sequence lengths')
         print('finished getting sequence lengths')
@@ -236,7 +240,7 @@ if args.blastonly!=True and noblasthits==False:
           else:
               phylogeny='False'
 
-          linecount=int(runsubprocess(['wc -l < %s/included.txt'%outputpath],shell=True))
+          linecount=int(runsubprocess(['wc -l < %s/included.txt'%outputpath],shell=True,printstdout=False))
           if linecount < 3:
               print('Warning: there are only %i samples: a tree cannot be constructed'%linecount)
           else:

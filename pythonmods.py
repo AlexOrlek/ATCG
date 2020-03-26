@@ -1,13 +1,13 @@
 #Python modules
 
 ###wrapper for subprocess command
-def runsubprocess(args,verbose=False,shell=False,polling=False):
+def runsubprocess(args,verbose=False,shell=False,polling=False,printstdout=True):
     import subprocess,sys
     try:
         import thread
     except:
         import _thread
-    """takes a subprocess argument list and runs Popen/communicate or Popen/poll() (if polling=True); if verbose=True, processname (string giving command call) is printed to screen (processname is always printed if a process results in error); errors are handled at multiple levels i.e. subthread error handling"""
+    """takes a subprocess argument list and runs Popen/communicate or Popen/poll() (if polling=True); if verbose=True, processname (string giving command call) is printed to screen (processname is always printed if a process results in error); errors are handled at multiple levels i.e. subthread error handling; fuction can be used fruitfully (returns stdout)"""
     if shell==True:
         processname=args[0]
         processname=processname[0].split()
@@ -24,12 +24,14 @@ def runsubprocess(args,verbose=False,shell=False,polling=False):
                 if p.poll() is not None:
                     break
                 if stdout: #if stdout not empty...
-                    print('{}'.format(stdout.decode().strip()))
+                    if printstdout==True:
+                        print('{}'.format(stdout.decode().strip()))
         else:
             p=subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=shell)
             stdout, stderr= p.communicate()
             if stdout:
-                print('{}'.format(stdout.decode()))
+                if printstdout==True:
+                    print('{}'.format(stdout.decode()))
             if stderr:
                 try: #want to output to stderr stream
                     if (sys.version_info > (3, 0)):
@@ -55,6 +57,49 @@ def runsubprocess(args,verbose=False,shell=False,polling=False):
             thread.interrupt_main()
         except:
             _thread.interrupt_main()
+    else:
+        if stdout:
+            return stdout.decode().strip()
+
+
+
+###wrapper for splitting input fasta by sample
+def splitfastas(infile,fastadir,fastafilepaths,blastdbfilepaths):
+    """takes input fastafile from filepath or sys.stdin; splits by sample and writes to outdir; also writes fastafilepaths and blastdbfilepaths"""
+    from Bio import SeqIO
+    import re,os
+    from pythonmods import runsubprocess
+    #first create splitfasta output directory
+    runsubprocess(['mkdir -p %s'%fastadir],shell=True)
+    #parse fasta and store in recorddict
+    recorddict={}
+    for seq_record in SeqIO.parse(infile,'fasta'):
+        #remove description from fasta id if present
+        newfastaheader=re.sub(r'(\S+)(?: .*)?',r'\1',seq_record.id)
+        newfastaheader=newfastaheader.strip()
+        seq_record.id=newfastaheader
+        seq_record.description=''
+        #get sample name (fasta header format should be sample or sample|contig)
+        sample=re.match(r'^([^\|]*).*',newfastaheader)
+        sample=sample.group(1)
+        #write to dict
+        if sample not in recorddict:
+            recorddict[sample]=[]
+        recorddict[sample].append(seq_record)
+    #write records to splitfastas directory, split by sample
+    f2=open(fastafilepaths,'w')
+    f3=open(blastdbfilepaths,'w')
+    for sample in recorddict.keys():
+        for seq_record in recorddict[sample]:
+            fastafilepath='%s/%s.fasta'%(fastadir,sample)
+            blastdbfilepath=os.path.splitext(fastafilepath)[0]
+            blastdbfilepath='%s_db'%blastdbfilepath
+            f2.write('%s\t%s\n'%(sample,fastafilepath))
+            f3.write('%s\t%s\n'%(sample,blastdbfilepath))
+            SeqIO.write(seq_record,fastafilepath,'fasta')
+    f2.close()
+    f3.close()
+
 
 
 ###wrappers for blast commands
