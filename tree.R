@@ -1,8 +1,8 @@
 args = commandArgs(trailingOnly=TRUE)
-library('gsubfn')
-library('ape')
-library('foreach')
-library('doParallel')
+suppressWarnings(suppressMessages(library('gsubfn')))
+suppressWarnings(suppressMessages(library('ape')))
+suppressWarnings(suppressMessages(library('foreach')))
+suppressWarnings(suppressMessages(library('doParallel')))
 #library('phangorn')
 
 #args[1] is filepath to output folder; args[2] is threads; args[3] is bootstrap; subsequent argument(s) are distance score columns e.g. DistanceScore_d9
