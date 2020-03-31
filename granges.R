@@ -18,6 +18,7 @@ boot=as.integer(args[5])
 alnrankmethod=as.character(args[6])
 lengthfilter=as.integer(args[7])
 outputtrimmedalignments=as.character(args[8])
+outputdisjointalignments=as.character(args[9])
 
 ###define functions
 
@@ -85,22 +86,31 @@ rangeshifting<-function(reformattedname, seqlenreport, seqlenreportseqs) { #refo
   return(alladdlens)
 }
 
-
-
-
-#function to convert qtrimmed/strimmed lists to list of single dataframes which can then be written to file
-
-grtodf<-function(qtrimmed,strimmed) {
-  myqdf<-as.data.frame(qtrimmed)
-  mysdf<-as.data.frame(strimmed)
-  colnames(myqdf)<-c('seqnames','qstart','qend', 'qwidth', 'strand',names(mcols(qtrimmed)))
-  colnames(mysdf)<-c('seqnames','sstart','send', 'swidth', 'strand',names(mcols(strimmed)))
-  trimmeddf<-cbind(myqdf[c("seqnames","qcontignames","snames","scontignames","inputhsp","alnlen","pid","bitscore","mystrand","qstart","qend","qwidth")],mysdf[c("sstart","send","swidth")])
-  colnames(trimmeddf)<-c("qname","qcontig","sname","scontig","originalhspindex","originalalnlen","pid","bitscore","strand","qstart","qend","qwidth","sstart","send","swidth")
-  trimmeddf[c("qname","qcontig","sname","scontig")]<-sapply(trimmeddf[c("qname","qcontig","sname","scontig")],as.vector)
-  return(trimmeddf)
+#function which filters disjoint alignments to include only those present in both qfinal and sfinal; then sorts alignments by inputhsp
+intersectsortalignments<-function(qfinal,sfinal) {
+  #filter qfinal/sfinal alignments based on intersect of qfinal and sfinal hsps
+  finalhsps<-sort(intersect(mcols(qfinal)$inputhsp,mcols(sfinal)$inputhsp))
+  qfinal<-qfinal[mcols(qfinal)$inputhsp %in% finalhsps]
+  sfinal<-sfinal[mcols(sfinal)$inputhsp %in% finalhsps]
+  finalalignments<-report[finalhsps,]
+  #sort alignments
+  qfinal<-qfinal[order(mcols(qfinal)$inputhsp)]
+  sfinal<-sfinal[order(mcols(sfinal)$inputhsp)]
+  mylist<-list('qfinal'=qfinal,'sfinal'=sfinal,'finalalignments'=finalalignments)
+  return(mylist)
 }
 
+#function to convert qfinal/sfinal and qtrimmed/strimmed lists to list of single dataframes which can then be written to file
+grtodf<-function(qgr,sgr) {  #same but made generic
+  myqdf<-as.data.frame(qgr)
+  mysdf<-as.data.frame(sgr)
+  colnames(myqdf)<-c('seqnames','qstart','qend', 'qwidth', 'strand',names(mcols(qgr)))
+  colnames(mysdf)<-c('seqnames','sstart','send', 'swidth', 'strand',names(mcols(sgr)))
+  combineddf<-cbind(myqdf[c("seqnames","qcontignames","snames","scontignames","inputhsp","alnlen","pid","bitscore","mystrand","qstart","qend","qwidth")],mysdf[c("sstart","send","swidth")])
+  colnames(combineddf)<-c("qname","qcontig","sname","scontig","originalhspindex","originalalnlen","pid","bitscore","strand","qstart","qend","qwidth","sstart","send","swidth")
+  combineddf[c("qname","qcontig","sname","scontig")]<-sapply(combineddf[c("qname","qcontig","sname","scontig")],as.vector)
+  return(combineddf)
+}
 
 
 #trimming functions
@@ -195,16 +205,8 @@ canceldoubletrimwrapper<-function(qaddstart,qminusend,saddstart,sminusend,alldif
 }
 
 
-trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
-  #function first filters alignments to include only those present in both qfinal and sfinal; then trims alignments - trims query alignments based on subject trimming and vice-versa
-  #filter alignments of qfinal based on sfinal and vice-versa
-  finalhsps<-sort(intersect(mcols(qfinal)$inputhsp,mcols(sfinal)$inputhsp))
-  qfinal<-qfinal[mcols(qfinal)$inputhsp %in% finalhsps]
-  sfinal<-sfinal[mcols(sfinal)$inputhsp %in% finalhsps]
-  finalalignments<-report[finalhsps,]
-  #order alignments
-  qfinal<-qfinal[order(mcols(qfinal)$inputhsp)]
-  sfinal<-sfinal[order(mcols(sfinal)$inputhsp)]
+trimalignments<-function(qfinal,sfinal,finalalignments,qtrimonly=FALSE) {
+  #function trims disjoint alignments (after applying intersectsortalignments); trims query alignments based on subject trimming and vice-versa
   #trim QUERY alignments
   #get addstart/minusend vectors for query and subject
   qaddstart<-start(sfinal)-finalalignments$sstart #based on subject trimming, how much should be trimmed from query 
@@ -298,11 +300,11 @@ trimalignments<-function(qfinal,sfinal,qtrimonly=FALSE) {
 }
 
 
-reformattrimmeddf<-function(trimmeddf) {  #trimmeddf has separate genome/contig columns - merge these into a single column
-  trimmeddf$qname<-ifelse(is.na(trimmeddf$qcontig), trimmeddf$qname, paste(trimmeddf$qname,trimmeddf$qcontig,sep='|'))
-  trimmeddf$sname<-ifelse(is.na(trimmeddf$scontig), trimmeddf$sname, paste(trimmeddf$sname,trimmeddf$scontig,sep='|'))
-  trimmeddf<-trimmeddf[c("qname","sname","originalhspindex","originalalnlen","pid","strand","qstart","qend","qwidth","sstart","send","swidth")]
-  return(trimmeddf)
+reformatcombineddf<-function(combineddf) {  #disjointdf/trimmeddf has separate genome/contig columns - merge these into a single column
+  combineddf$qname<-ifelse(is.na(combineddf$qcontig), combineddf$qname, paste(combineddf$qname,combineddf$qcontig,sep='|'))
+  combineddf$sname<-ifelse(is.na(combineddf$scontig), combineddf$sname, paste(combineddf$sname,combineddf$scontig,sep='|'))
+  combineddf<-combineddf[c("qname","sname","originalhspindex","originalalnlen","pid","strand","qstart","qend","qwidth","sstart","send","swidth")]
+  return(combineddf)
 }
 
 
@@ -622,9 +624,27 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     shsplenpretrim<-as.data.frame(do.call(rbind,lapply(sfinal,gethsplength)))
     colnames(qhsplenpretrim)<-'qhsplenpretrim'
     colnames(shsplenpretrim)<-'shsplenpretrim'
+    #filter disjoint alignments - remove alignments not present in both qfinal and sfinal; then sort by inputhsp
+    intersectsortoutput<-transpose(mapply(intersectsortalignments,qfinal,sfinal,SIMPLIFY = FALSE))
+    qfinal<-intersectsortoutput$qfinal
+    sfinal<-intersectsortoutput$sfinal
+    finalalignments<-intersectsortoutput$finalalignments
+    #write disjoint alignments to file
+    if (outputdisjointalignments=='True') {
+      disjointdflist<-mapply(grtodf,qfinal,sfinal,SIMPLIFY=FALSE)
+      disjointdf<-do.call(rbind,disjointdflist)
+      minusqlens<-addqlens[disjointdf$originalhspindex]
+      minusslens<-addslens[disjointdf$originalhspindex]
+      disjointdf$qstart<-disjointdf$qstart-minusqlens
+      disjointdf$qend<-disjointdf$qend-minusqlens
+      disjointdf$sstart<-disjointdf$sstart-minusslens
+      disjointdf$send<-disjointdf$send-minusslens
+      disjointdf<-reformatcombineddf(disjointdf)
+      write.table(disjointdf, file=gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/output/disjointalignments_%2.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
+    }
     #trim alignments
     if (breakpoint=='True' || outputtrimmedalignments=='True') {
-      trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,SIMPLIFY = FALSE)) #!ADDED
+      trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,finalalignments,SIMPLIFY = FALSE)) #!ADDED
       qtrimmed<-trimmedalignments$qfinal
       strimmed<-trimmedalignments$sfinal
       includedalignmentindices<-lapply(qtrimmed,length)>0 & lapply(strimmed,length)>0 #safeguards against bug due to empty list element (probably unecessary)
@@ -645,7 +665,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       trimmeddf$qend<-trimmeddf$qend-minusqlens
       trimmeddf$sstart<-trimmeddf$sstart-minusslens
       trimmeddf$send<-trimmeddf$send-minusslens
-      trimmeddf<-reformattrimmeddf(trimmeddf)
+      trimmeddf<-reformatcombineddf(trimmeddf)
       write.table(trimmeddf, file=gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/output/trimmedalignments_%2.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
     }
     #get hsp id stats
