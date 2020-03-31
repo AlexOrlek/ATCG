@@ -90,13 +90,14 @@ def splitfastas(infile,fastadir,fastafilepaths,blastdbfilepaths):
     f2=open(fastafilepaths,'w')
     f3=open(blastdbfilepaths,'w')
     for sample in recorddict.keys():
-        for seq_record in recorddict[sample]:
-            fastafilepath='%s/%s.fasta'%(fastadir,sample)
-            blastdbfilepath=os.path.splitext(fastafilepath)[0]
-            blastdbfilepath='%s_db'%blastdbfilepath
-            f2.write('%s\t%s\n'%(sample,fastafilepath))
-            f3.write('%s\t%s\n'%(sample,blastdbfilepath))
-            SeqIO.write(seq_record,fastafilepath,'fasta')
+        fastafilepath='%s/%s.fasta'%(fastadir,sample)
+        blastdbfilepath=os.path.splitext(fastafilepath)[0]
+        blastdbfilepath='%s_db'%blastdbfilepath
+        f2.write('%s\t%s\n'%(sample,fastafilepath))
+        f3.write('%s\t%s\n'%(sample,blastdbfilepath))
+        with open(fastafilepath,'w') as output_handle:
+            for seq_record in recorddict[sample]:
+                SeqIO.write(seq_record,output_handle,'fasta')
     f2.close()
     f3.close()
 

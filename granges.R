@@ -651,7 +651,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       qtrimmed<-qtrimmed[includedalignmentindices]
       strimmed<-strimmed[includedalignmentindices]
     } else {
-      qtrimmed<-mapply(trimalignments,qfinal,sfinal,qtrimonly=TRUE,SIMPLIFY=FALSE)
+      qtrimmed<-mapply(trimalignments,qfinal,sfinal,finalalignments,qtrimonly=TRUE,SIMPLIFY=FALSE)
       qtrimmed<-qtrimmed[lapply(qtrimmed,length)>0]
     }
     #write trimmed alignments to file
