@@ -1,12 +1,13 @@
 args = commandArgs(trailingOnly=TRUE)
-library('gsubfn')
-library('GenomicRanges')
-library('purrr')
+suppressWarnings(suppressMessages(library('gsubfn',quietly=TRUE)))
+suppressWarnings(suppressMessages(library('GenomicRanges',quietly=TRUE)))  #gives masking messages even when warn.conflict=FALSE
+suppressWarnings(suppressMessages(library('purrr',quietly=TRUE)))
 reduce<-GenomicRanges::reduce
 shift<-GenomicRanges::shift
-library(data.table)
+suppressWarnings(suppressMessages(library('data.table',quietly=TRUE)))
 rbindlist<-data.table::rbindlist
 transpose<-purrr::transpose
+map2<-purrr::map2
 
 #args[1] is filepath to pipeline output folder; args[2] is threads; args[3] is breakpoint stats; args[4] is alignment length stats; arg[5] is bootstrap number; arg[6] is best alignment selection criterion; arg[7] is length threshold for filtering alignments prior to breakpoint calculation; arg[8] is trimmed alignment output
 
@@ -538,8 +539,8 @@ colnames(seqlenreport)<-c('sequence','length')
 seqlenreport<-seqlenreport[order(seqlenreport$sequence),]
 
 #read samples file
-library('foreach')
-library('doParallel')
+suppressWarnings(suppressMessages(library('foreach',quietly=TRUE)))
+suppressWarnings(suppressMessages(library('doParallel',quietly=TRUE)))
 
 cl<-makeCluster(as.integer(args[2]))
 registerDoParallel(cl)

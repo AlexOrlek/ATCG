@@ -5,3 +5,5 @@ std.out*
 std.err*
 __pycache__
 OLD
+TESTING
+.Rhistory
