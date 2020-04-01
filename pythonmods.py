@@ -73,19 +73,18 @@ def splitfastas(infile,fastadir,fastafilepaths,blastdbfilepaths):
     runsubprocess(['mkdir -p %s'%fastadir],shell=True)
     #parse fasta and store in recorddict
     recorddict={}
-    for seq_record in SeqIO.parse(infile,'fasta'):
+    for recordid,recordseq in SeqIO.FastaIO.SimpleFastaParser(infile):
         #remove description from fasta id if present
-        newfastaheader=re.sub(r'(\S+)(?: .*)?',r'\1',seq_record.id)
+        newfastaheader=re.sub(r'(\S+)(?: .*)?',r'\1',recordid)
         newfastaheader=newfastaheader.strip()
-        seq_record.id=newfastaheader
-        seq_record.description=''
+        recordid=newfastaheader
         #get sample name (fasta header format should be sample or sample|contig)
         sample=re.match(r'^([^\|]*).*',newfastaheader)
         sample=sample.group(1)
         #write to dict
         if sample not in recorddict:
             recorddict[sample]=[]
-        recorddict[sample].append(seq_record)
+        recorddict[sample].append((recordid,recordseq))
     #write records to splitfastas directory, split by sample
     f2=open(fastafilepaths,'w')
     f3=open(blastdbfilepaths,'w')
@@ -96,11 +95,10 @@ def splitfastas(infile,fastadir,fastafilepaths,blastdbfilepaths):
         f2.write('%s\t%s\n'%(sample,fastafilepath))
         f3.write('%s\t%s\n'%(sample,blastdbfilepath))
         with open(fastafilepath,'w') as output_handle:
-            for seq_record in recorddict[sample]:
-                SeqIO.write(seq_record,output_handle,'fasta')
+            for recordid,recordseq in recorddict[sample]:
+                output_handle.write(">%s\n%s\n" % (recordid, recordseq))
     f2.close()
     f3.close()
-
 
 
 ###wrappers for blast commands
