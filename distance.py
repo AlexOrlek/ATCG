@@ -49,6 +49,7 @@ blast_group = parser.add_argument_group('BLAST options')
 blast_group.add_argument('--evalue', help='BLAST e-value cutoff (default: 1e-8)', default=1e-8, type=float) #1e-8 is used in ggdc web pipeline - see Meier-Kolthoff 2014
 blast_group.add_argument('--wordsize', help='BLAST word size (ATCG default for blastn: 38; ATCG default for dc-megablast: 12; ATCG default for megablast: 28)', type=int) #38 is used in ggdc web pipleine?                 
 blast_group.add_argument('--task', help='BLAST task (default: blastn)', default='blastn', choices=['blastn','dc-megablast','megablast'], type=str)
+blast_group.add_argument('--bidirectionalblast', action='store_true', help='If flag is provided, BLAST is conducted in both directions and results are averaged (slower runtime) (default: conduct BLAST in one direction only)')
 #Alignment filtering options                                                   
 alignment_group = parser.add_argument_group('Alignment filtering options')
 alignment_group.add_argument('-l','--lengthfilter', help='Length threshold (in basepairs) used to filter trimmed alignments prior to calculating breakpoint distance and alignment length statistics (default: 100)', default=100, type=positiveint)
@@ -115,7 +116,7 @@ if args.sequences.name!='<stdin>':
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
     print('finished creating blast databases')
-    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir, blastdbs, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir, blastdbs, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     #try:
     #    print('{} {}'.format(stdout.decode(), 'stdout'))
@@ -130,7 +131,7 @@ if args.sequences.name!='<stdin>':
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished running blast')
     print('finished running blast')
-    p=subprocess.Popen(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, blastdbs, sourcedir], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p=subprocess.Popen(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, blastdbs, sourcedir,str(args.bidirectionalblast)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     if stdout.strip()=='no blast hits':
         noblasthits=True
@@ -186,7 +187,7 @@ if args.sequences.name=='<stdin>':
     #    pass
     if p.returncode!=0:
         sys.exit('unexpected error when running runblast.sh')
-    p=subprocess.Popen(['bash','runblast.sh',outputpath, fastadir2, blastdbs1, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p=subprocess.Popen(['bash','runblast.sh',outputpath, fastadir2, blastdbs1, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     #try:
     #    print('{} {}'.format(stdout.decode(), 'stdout'))
@@ -206,7 +207,7 @@ if args.sequences.name=='<stdin>':
     blastdbs='%s/blastdbfilepaths_combined.tsv'%outputpath
     runsubprocess(['cat %s %s | sort -k1,1V > %s'%(blastdbs1,blastdbs2,blastdbs)],shell=True)
 
-    p=subprocess.Popen(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, blastdbs, sourcedir], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p=subprocess.Popen(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, blastdbs, sourcedir,str(args.bidirectionalblast)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     if stdout.strip()=='no blast hits':
         noblasthits=True
@@ -226,10 +227,12 @@ if args.sequences.name=='<stdin>':
 
 
 if args.blastonly!=True and noblasthits==False:
-    runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.trimmedalignments),str(args.disjointalignments)])
+    runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.trimmedalignments),str(args.disjointalignments),str(args.bidirectionalblast)])
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished trimming alignments')
     print('finished trimming alignments')
+    #get included/excluded samples
+    runsubprocess(['python','%s/getincludedexcluded.py'%sourcedir,outputpath,blastdbs])
     if blasttype=='allvallpairwise':
         if 'none' not in args.treemethod:
           if 'dendrogram' in args.treemethod:
