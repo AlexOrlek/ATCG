@@ -58,7 +58,6 @@ ATCG is __not__ appropriate if you want to:
 __For distance metric calculation__<br>
 
 * [Biopython](https://biopython.org/) 1.61 or later
-* [SeqKit](https://github.com/shenwei356/seqkit)
 * [bioawk](https://github.com/lh3/bioawk)
 * [BLAST+](https://www.ncbi.nlm.nih.gov/books/NBK279690/) (`blastn`)
 * [GNU Parallel](https://www.gnu.org/software/parallel/)
