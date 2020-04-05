@@ -4,7 +4,7 @@ set -u
 set -o pipefail
 
 
-> ${1}/included.txt
+> ${1}/includedsubjects.txt
 #$1 is filepath to pipeline output folder
 bidirectionalblast=${4}
 
@@ -18,7 +18,7 @@ for sample in ${samples[@]}; do
         continue
     fi
     mkdir -p ${1}/blast/${sample}
-    cat ${1}/blast/${sample}_alignments.tsv | awk '{OFS="\t"; if($9 < $10) {qcovprop=($13/100); qcovhspprop=($14/100); $13=qcovprop; $14=qcovhspprop; print $0"\t""+"} else {qcovprop=($13/100); qcovhspprop=($14/100); $13=qcovprop; $14=qcovhspprop; sstart=$10; send=$9; $9=sstart; $10=send; print $0"\t""-"}}' | sed '1iqname\tsname\tpid\talnlen\tmismatches\tgapopens\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqcov\tqcovhsp\tqlength\tslength\tstrand' | tee ${1}/blast/${sample}/alignments.tsv | if [ $(wc -l) -gt 0 ]; then echo "${sample}" >> ${1}/included.txt; fi
+    cat ${1}/blast/${sample}_alignments.tsv | awk '{OFS="\t"; if($9 < $10) {qcovprop=($13/100); qcovhspprop=($14/100); $13=qcovprop; $14=qcovhspprop; print $0"\t""+"} else {qcovprop=($13/100); qcovhspprop=($14/100); $13=qcovprop; $14=qcovhspprop; sstart=$10; send=$9; $9=sstart; $10=send; print $0"\t""-"}}' | sed '1iqname\tsname\tpid\talnlen\tmismatches\tgapopens\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqcov\tqcovhsp\tqlength\tslength\tstrand' | tee ${1}/blast/${sample}/alignments.tsv | if [ $(wc -l) -gt 0 ]; then echo "${sample}" >> ${1}/includedsubjects.txt; fi
     rm ${1}/blast/${sample}_alignments.tsv
 done
 

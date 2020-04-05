@@ -146,7 +146,7 @@ if args.sequences.name!='<stdin>':
         print('finished getting sequence lengths')
 
     if args.keep==0 or args.keep==1:
-        runsubprocess(['rm -rf %s/splitfastas'%outputpath],shell=True)        
+        runsubprocess(['rm -rf %s/splitfastas'%outputpath],shell=True)
 
 if args.sequences.name=='<stdin>':
     blasttype='pairwise'
@@ -257,6 +257,10 @@ if args.blastonly!=True and noblasthits==False:
 
 if args.keep==0:
     runsubprocess(['rm -rf %s/blast'%outputpath],shell=True)
+
+if args.keep==0 or args.keep==1:
+    runsubprocess(['rm -rf %s/includedsubjects.txt'%outputpath],shell=True)
+
 
 #OLD CODE
 # parser = argparse.ArgumentParser(description='Run pipeline scripts')

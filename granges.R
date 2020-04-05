@@ -311,13 +311,25 @@ reformatcombineddf<-function(combineddf) {  #disjointdf/trimmeddf has separate g
 
 #breakpoint caluclation functions
 makepairs<-function(x) mapply(c, head(x,-1), tail(x,-1), SIMPLIFY = FALSE)
-BP<-function(x,y) { #this function works on signed permuations (numeric vectors with +/- indicated)
-  out<-makepairs(x)[!(makepairs(x) %in% makepairs(y) & unlist(lapply(makepairs(x), function(x) sum(sign(x))))==2 | makepairs(x) %in% makepairs(rev(y)) & unlist(lapply(makepairs(x), function(x) sum(sign(x))))==-2)]
-  return(out)
+
+BP<-function(x,y,contigsbool=FALSE,contigs=NULL,samecontigadjacencies=NULL,numpairs=NULL) { #this function works on signed permuations (numeric vectors with +/- indicated)
+  if (contigsbool==FALSE) {
+    makepairsx<-makepairs(x)
+    out<-makepairsx[!(makepairsx %in% makepairs(y) & unlist(lapply(makepairsx, function(x) sum(sign(x))))==2 | makepairsx %in% makepairs(rev(y)) & unlist(lapply(makepairsx, function(x) sum(sign(x))))==-2)]
+    bps<-length(out)
+    numpairs<-length(makepairsx) #==alignments-1
+  } else {
+    makepairsx<-makepairs(x)
+    out<-makepairsx[!(makepairsx %in% makepairs(y) & unlist(lapply(makepairsx, function(x) sum(sign(x))))==2 | makepairsx %in% makepairs(rev(y)) & unlist(lapply(makepairsx, function(x) sum(sign(x))))==-2) & samecontigadjacencies]
+    bps<-length(out)
+  }
+  return(list('bps'=bps,'numpairs'=numpairs))
 }
 
 BPfunc<-function(x,y) {  #apply to granges objects
   stopifnot(nrow(x)==nrow(y))
+  qcontigs<-mcols(x)$qcontignames
+  scontigs<-mcols(y)$scontignames
   alncount<-length(mcols(x)$inputhsp)
   xinputhsps<-mcols(x)$inputhsp
   yinputhsps<-mcols(y)$inputhsp
@@ -329,10 +341,24 @@ BPfunc<-function(x,y) {  #apply to granges objects
   ystrand[ystrand=='-']<--1
   xinputhsps<-xinputhsps*as.numeric(xstrand)
   yinputhsps<-yinputhsps*as.numeric(ystrand)
-  bpcount<-length(BP(xinputhsps,yinputhsps))
-  return(list("bpcount"=bpcount,"alncount"=alncount))
+  if (all(is.na(c(qcontigs,scontigs)))) {  #no contigs
+    out<-BP(xinputhsps,yinputhsps,contigsbool=FALSE)
+  } else {
+    qsamecontigadjacencies<-unlist(lapply(makepairs(qcontigs), function(x) length(unique(x))==1))
+    qnumpairs<-sum(qsamecontigadjacencies)
+    ssamecontigadjacencies<-unlist(lapply(makepairs(scontigs), function(x) length(unique(x))==1))
+    snumpairs<-sum(ssamecontigadjacencies)
+    minpairsindex<-which.min(c(qnumpairs,snumpairs))
+    if (minpairsindex==1) {  #calculate stats based on samples with fewest adjacencies (qcontigs)
+      out<-BP(xinputhsps,yinputhsps,contigsbool=TRUE,contigs=qcontigs,samecontigadjacencies=qsamecontigadjacencies,numpairs=qnumpairs)
+    } else {
+      out<-BP(yinputhsps,xinputhsps,contigsbool=TRUE,contigs=scontigs,samecontigadjacencies=ssamecontigadjacencies,numpairs=snumpairs)
+    }
+  }
+  bpcount<-out$bps
+  pairscount<-out$numpairs
+  return(c("bpcount"=bpcount,"alncount"=alncount,"pairscount"=pairscount))
 }
-
 
 breakpointcalc<-function(qtrimmed,strimmed,mydf) {
   #first filter short alignments (based on post-trimming alignment length)
@@ -347,22 +373,12 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
   }
   qtrimmed<-qtrimmed[includedindices]
   strimmed<-strimmed[includedindices]
-  #split by contig
-  qcontigsplit<-lapply(qtrimmed, function(x) split(x,bpsplit[mcols(x)$inputhsp])) 
-  scontigsplit<-lapply(strimmed, function(x) split(x,bpsplit[mcols(x)$inputhsp])) #nested lists- need to split by query and subject contigs before calculating breakpoints
-  bpout<-list()
-  for (qname in names(qcontigsplit)) {
-    #sort alignments by position
-    qcontigsplit[[qname]]<-lapply(qcontigsplit[[qname]], function(x) sort(x,ignore.strand=T))
-    scontigsplit[[qname]]<-lapply(scontigsplit[[qname]], function(x) sort(x,ignore.strand=T))
-    numsplits<-length(qcontigsplit[[qname]])
-    out<-mapply(BPfunc,qcontigsplit[[qname]],scontigsplit[[qname]],SIMPLIFY=TRUE) #apply breakpoint function to sublists
-    bpcount<-sum(unlist((out["bpcount",]))) #sum across subject contig splits to get count per query
-    alncount<-sum(unlist((out["alncount",])))
-    pairscount<-alncount-numsplits #ADDED
-    bpout[[qname]]<-c(bpcount,alncount,pairscount)
-  }
-  mydfbp<-as.data.frame(do.call(rbind, bpout))
+  #sort by inputhsp
+  qtrimmedsorted<-lapply(qtrimmed, function(x) sort(x,ignore.strand=T))
+  strimmedsorted<-lapply(strimmed, function(x) sort(x,ignore.strand=T))
+  #calculate breakpoint stats
+  bpout<-mapply(BPfunc,qtrimmedsorted,strimmedsorted,SIMPLIFY=TRUE)
+  mydfbp<-as.data.frame(t(bpout))
   colnames(mydfbp)<-c('breakpoints','alignments','pairs')
   mydfbp<-cbind(querysample=rownames(mydfbp),subjectsample=rep(sample,nrow(mydfbp)),mydfbp)
   #merge dataframes; replace missing breakpoint data with NA where necessary (if all alignments have been filtered due to filtered) - use all=TRUE argument to achieve NA missing cell replacement
@@ -558,7 +574,7 @@ suppressWarnings(suppressMessages(library('doParallel',quietly=TRUE)))
 cl<-makeCluster(as.integer(args[2]))
 registerDoParallel(cl)
 
-samples<-read.table(gsubfn('%1',list('%1'=args[1]),'%1/included.txt'),sep='\t',header=FALSE)
+samples<-read.table(gsubfn('%1',list('%1'=args[1]),'%1/includedsubjects.txt'),sep='\t',header=FALSE)
 samples<-as.character(samples[,1])
 #samples<-samples[1:6]
 allsampledflist<-list()
@@ -580,10 +596,6 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     reformattedsname<-as.factor(sapply(strsplit(as.vector(report$sname),"|",fixed=T),pastefunction))
     addqlens<-rangeshifting(reformattedqname, seqlenreport, seqlenreportseqs)
     addslens<-rangeshifting(reformattedsname, seqlenreport, seqlenreportseqs)
-    #
-    if (breakpoint=='True') {
-        bpsplit<-paste(reformattedqname,reformattedsname,sep='_') #required for breakpoint calculation
-    }
     #remove any contig information; save contig info to variables first
     qcontignames<-sapply(strsplit(as.vector(report$qname),"|",fixed=T),function(x) x=x[2])
     scontignames<-sapply(strsplit(as.vector(report$sname),"|",fixed=T),function(x) x=x[2])

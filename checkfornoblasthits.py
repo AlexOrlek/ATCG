@@ -1,7 +1,7 @@
 import sys
 
 sampleswithhits=[]
-with open('%s/included.txt'%sys.argv[1]) as f:
+with open('%s/includedsubjects.txt'%sys.argv[1]) as f:
     for line in f:
         sample=line.strip()
         sampleswithhits.append(sample)
