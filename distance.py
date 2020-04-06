@@ -109,6 +109,7 @@ if args.sequences.name!='<stdin>':
     fastadir='%s/splitfastas'%outputpath
     fastafiles='%s/fastafilepaths.tsv'%outputpath
     blastdbs='%s/blastdbfilepaths.tsv'%outputpath
+    subjectsamples='%s/allsubjects.txt'%outputpath
     if os.path.exists(fastadir):
         sys.exit('Error: %s directory already exists, delete directory and try again'%fastadir)
     splitfastas(args.sequences,fastadir,fastafiles,blastdbs)
@@ -116,7 +117,7 @@ if args.sequences.name!='<stdin>':
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
     print('finished creating blast databases')
-    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir, blastdbs, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir, blastdbs, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     #try:
     #    print('{} {}'.format(stdout.decode(), 'stdout'))
@@ -131,7 +132,7 @@ if args.sequences.name!='<stdin>':
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished running blast')
     print('finished running blast')
-    p=subprocess.Popen(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, blastdbs, sourcedir,str(args.bidirectionalblast)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p=subprocess.Popen(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, subjectsamples, sourcedir,str(args.bidirectionalblast)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     if stdout.strip()=='no blast hits':
         noblasthits=True
@@ -156,6 +157,7 @@ if args.sequences.name=='<stdin>':
     blastdbs1='%s/blastdbfilepaths1.tsv'%outputpath
     fastafiles2='%s/fastafilepaths2.tsv'%outputpath
     blastdbs2='%s/blastdbfilepaths2.tsv'%outputpath
+    subjectsamples='%s/allsubjects.txt'%outputpath
     if os.path.exists(fastadir1):
         sys.exit('Error: %s directory already exists, delete directory and try again'%fastadir)
     if os.path.exists(fastadir2):
@@ -175,7 +177,7 @@ if args.sequences.name=='<stdin>':
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
     print('finished creating blast databases')
-    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir1, blastdbs2, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir1, blastdbs2, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     #try:
     #    print('{} {}'.format(stdout.decode(), 'stdout'))
@@ -187,27 +189,25 @@ if args.sequences.name=='<stdin>':
     #    pass
     if p.returncode!=0:
         sys.exit('unexpected error when running runblast.sh')
-    p=subprocess.Popen(['bash','runblast.sh',outputpath, fastadir2, blastdbs1, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr= p.communicate()
-    #try:
-    #    print('{} {}'.format(stdout.decode(), 'stdout'))
-    #except:
-    #    pass
-    #try:
-    #    print('{} {}'.format(stderr.decode(), 'stderr'))
-    #except:
-    #    pass
-    if p.returncode!=0:
-        sys.exit('unexpected error when running runblast.sh')
-        
+    if str(args.bidirectionalblast)=='True':
+        p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir2, blastdbs1, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),'pairwiserun2'], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr= p.communicate()
+        #try:
+        #    print('{} {}'.format(stdout.decode(), 'stdout'))
+        #except:
+        #    pass
+        #try:
+        #    print('{} {}'.format(stderr.decode(), 'stderr'))
+        #except:
+        #    pass
+        if p.returncode!=0:
+            sys.exit('unexpected error when running runblast.sh')
+            
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished running blast')
     print('finished running blast')
-    
-    blastdbs='%s/blastdbfilepaths_combined.tsv'%outputpath
-    runsubprocess(['cat %s %s | sort -k1,1V > %s'%(blastdbs1,blastdbs2,blastdbs)],shell=True)
-
-    p=subprocess.Popen(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, blastdbs, sourcedir,str(args.bidirectionalblast)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
+    p=subprocess.Popen(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, subjectsamples, sourcedir,str(args.bidirectionalblast)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr= p.communicate()
     if stdout.strip()=='no blast hits':
         noblasthits=True
@@ -260,6 +260,7 @@ if args.keep==0:
 
 if args.keep==0 or args.keep==1:
     runsubprocess(['rm -rf %s/includedsubjects.txt'%outputpath],shell=True)
+    runsubprocess(['rm -rf %s/allsubjects.txt'%outputpath],shell=True)
 
 
 #OLD CODE

@@ -11,6 +11,7 @@ set -o pipefail
 #argv[6] is blast task
 #argv[7] is threads
 #argv[8] is blast bi-directional boolean flag (default False)
+#argv[9] is blast type (-s flag or -1/-2 flags)
 
 mkdir -p ${1}/blast
 mkdir -p ${1}/output
@@ -22,45 +23,64 @@ wordsize=${5}
 task=${6}
 threads=${7}
 bidirectionalblast=${8} #default is False
+blasttype=${9}  #allvallpairwise (-s flag) or pairwise (-1/-2 flags)
 
 sort -k1,1V -o ${databasefiles} ${databasefiles}  #-k command must precede -o command
 
-if [ ${bidirectionalblast} == 'False' ]; then
-    numsamples=$( cat ${databasefiles} | wc -l )
-    counter=0
-    while IFS=$'\t' read -r -a line
-    do
-        let counter=$counter+1
-        if [[ $counter -eq $numsamples ]]; then
-            continue
-        fi
-        sample="${line[0]}"
-        database="${line[1]}"
-        blastoutput="${1}/blast/${sample}_alignments.tsv"
-        if [[ $counter -gt 1 ]]; then
-            cat `find ${splitfastadir}/ -maxdepth 1 -mindepth 1 -name "*.fasta" ! -name "${sample}.fasta" | grep -v -F -f <(printf "%s\n" "${excludesamples[@]}")` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
-            excludesamples=(${excludesamples[@]} "${splitfastadir}/${sample}.fasta")
-        else
+if [ ${blasttype} != 'pairwiserun2' ]; then #prevents writing to file twice in the case of pairwise blasttype
+    > ${1}/allsubjects.txt  #used in reformatblastoutput.sh
+fi
+
+if [ ${blasttype} == 'allvallpairwise' ]; then
+    if [ ${bidirectionalblast} == 'False' ]; then
+        numsamples=$( cat ${databasefiles} | wc -l )
+        counter=0
+        while IFS=$'\t' read -r -a line
+        do
+            let counter=$counter+1
+            if [[ $counter -eq $numsamples ]]; then
+                continue
+            fi
+            sample="${line[0]}"
+            database="${line[1]}"
+            echo "${sample}" >> ${1}/allsubjects.txt
+            blastoutput="${1}/blast/${sample}_alignments.tsv"
+            if [[ $counter -gt 1 ]]; then
+                cat `find ${splitfastadir}/ -maxdepth 1 -mindepth 1 -name "*.fasta" ! -name "${sample}.fasta" | grep -v -F -f <(printf "%s\n" "${excludesamples[@]}")` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
+                excludesamples=(${excludesamples[@]} "${splitfastadir}/${sample}.fasta")
+            else
+                cat `find ${splitfastadir}/ -maxdepth 1 -mindepth 1 -name "*.fasta" ! -name "${sample}.fasta"` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
+                excludesamples=("${splitfastadir}/${sample}.fasta")
+            fi
+        done < ${databasefiles}
+    else
+        while IFS=$'\t' read -r -a line
+        do
+            sample="${line[0]}"
+            database="${line[1]}"
+            echo "${sample}" >> ${1}/allsubjects.txt
+            blastoutput="${1}/blast/${sample}_alignments.tsv"
             cat `find ${splitfastadir}/ -maxdepth 1 -mindepth 1 -name "*.fasta" ! -name "${sample}.fasta"` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
-            excludesamples=("${splitfastadir}/${sample}.fasta")
-        fi
-    done < ${databasefiles}
-else
+        done < ${databasefiles}
+    fi
+else   #blasttype==pairwise (or pairwiserun2 in the case of bidirectionalblast second run)
     while IFS=$'\t' read -r -a line
     do
         sample="${line[0]}"
         database="${line[1]}"
+        echo "${sample}" >> ${1}/allsubjects.txt
         blastoutput="${1}/blast/${sample}_alignments.tsv"
-        cat `find ${splitfastadir}/ -maxdepth 1 -mindepth 1 -name "*.fasta" ! -name "${sample}.fasta"` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
+        cat `find ${splitfastadir}/ -maxdepth 1 -mindepth 1 -name "*.fasta"` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
     done < ${databasefiles}
 fi
 
 
-> ${1}/blast/blastsettings.txt
-echo "e-value cutoff: ${evalue}" >> ${1}/blast/blastsettings.txt
-echo "word size: ${wordsize}" >> ${1}/blast/blastsettings.txt
-echo "bi-directional BLAST: ${bidirectionalblast}" >> ${1}/blast/blastsettings.txt
-
+if [ ${blasttype} != 'pairwiserun2' ]; then #prevents writing to file twice in the case of pairwise blasttype
+    > ${1}/blast/blastsettings.txt
+    echo "e-value cutoff: ${evalue}" >> ${1}/blast/blastsettings.txt
+    echo "word size: ${wordsize}" >> ${1}/blast/blastsettings.txt
+    echo "bi-directional BLAST: ${bidirectionalblast}" >> ${1}/blast/blastsettings.txt
+fi
 
 
 #OLD CODE
