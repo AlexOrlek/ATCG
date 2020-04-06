@@ -160,7 +160,8 @@ for (distarg in distargs) {
 
     if (dendrogram=='True') {
       bootdends<-lapply(bootdists, getdend)
-      boot.clades<-prop.clades(originaldend, bootdends) #if a clade of the original tree is not represented in any of the bootstrap trees, the node support value will be 'NA'; convert to 0; express values as percentage; then re-convert 0s + convert other low values to NA
+      bootdendspart<-prop.part(bootdends,check.labels = TRUE)
+      boot.clades<-prop.clades(originaldend, part=bootdendspart) #if a clade of the original tree is not represented in any of the bootstrap trees, the node support value will be 'NA'; convert to 0; express values as percentage; then re-convert 0s + convert other low values to NA
       boot.clades[is.na(boot.clades)]<-0
       boot.clades<-round(boot.clades/boot,2)*100 #express as percentage
       boot.clades[boot.clades<50]<-NA

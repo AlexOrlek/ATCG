@@ -13,6 +13,8 @@ def runsubprocess(args,verbose=False,shell=False,polling=False,printstdout=True,
         signal.signal(signal.SIGPIPE, signal.SIG_DFL)
     if preexec_fn=='sigpipefix':
         preexec_fn=subprocess_setup
+    else:
+        assert preexec_fn==None,'Error: unrecognised preexec_fn argument %s'%preexec_fn
     if shell==True:
         processname=args[0]
         processname=processname[0].split()
