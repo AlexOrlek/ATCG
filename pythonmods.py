@@ -1,24 +1,30 @@
 #Python modules
 
 ###wrapper for subprocess command
-def runsubprocess(args,verbose=False,shell=False,polling=False,printstdout=True):
-    import subprocess,sys
+def runsubprocess(args,verbose=False,shell=False,polling=False,printstdout=True,preexec_fn=None):
+    """takes a subprocess argument list and runs Popen/communicate or Popen/poll() (if polling=True); if verbose=True, processname (string giving command call) is printed to screen (processname is always printed if a process results in error); errors are handled at multiple levels i.e. subthread error handling; fuction can be used fruitfully (returns stdout)"""
+    #function setup
+    import subprocess,sys,signal
     try:
         import thread
     except:
         import _thread
-    """takes a subprocess argument list and runs Popen/communicate or Popen/poll() (if polling=True); if verbose=True, processname (string giving command call) is printed to screen (processname is always printed if a process results in error); errors are handled at multiple levels i.e. subthread error handling; fuction can be used fruitfully (returns stdout)"""
+    def subprocess_setup(): #see: https://github.com/vsbuffalo/devnotes/wiki/Python-and-SIGPIPE
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+    if preexec_fn=='sigpipefix':
+        preexec_fn=subprocess_setup
     if shell==True:
         processname=args[0]
         processname=processname[0].split()
         processname=(" ".join(a for a in processname))
     else:
         processname=(" ".join(a for a in args))
+    #
     if verbose==True:
         print('{} {}'.format(processname, 'processname'))
     try:
         if polling==True:
-            p=subprocess.Popen(args, stdout=subprocess.PIPE,shell=shell)
+            p=subprocess.Popen(args, stdout=subprocess.PIPE,shell=shell,preexec_fn=preexec_fn)
             while True:
                 stdout=p.stdout.readline()
                 if p.poll() is not None:
@@ -27,7 +33,7 @@ def runsubprocess(args,verbose=False,shell=False,polling=False,printstdout=True)
                     if printstdout==True:
                         print('{}'.format(stdout.decode().strip()))
         else:
-            p=subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=shell)
+            p=subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=shell,preexec_fn=preexec_fn)
             stdout, stderr= p.communicate()
             if stdout:
                 if printstdout==True:

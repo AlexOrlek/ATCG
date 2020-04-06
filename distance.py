@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import argparse, os, sys, time,subprocess, signal
+import argparse, os, sys, time,subprocess
 from argparse import RawTextHelpFormatter
 
 sourcedir=os.path.dirname(os.path.abspath(__file__))
@@ -7,10 +7,6 @@ cwdir=os.getcwd()
 sys.path.append(sourcedir)
 
 from pythonmods import runsubprocess,splitfastas
-
-
-def default_sigpipe():
-    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 def positiveint(x):
     x = int(x)
@@ -117,26 +113,17 @@ if args.sequences.name!='<stdin>':
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
     print('finished creating blast databases')
-    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir, blastdbs, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr= p.communicate()
-    #try:
-    #    print('{} {}'.format(stdout.decode(), 'stdout'))
-    #except:
-    #    pass
-    #try:
-    #    print('{} {}'.format(stderr.decode(), 'stderr'))
-    #except:
-    #    pass
-    if p.returncode!=0:
-        sys.exit('unexpected error when running runblast.sh')
+    runsubprocess(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir, blastdbs, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished running blast')
     print('finished running blast')
-    p=subprocess.Popen(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, subjectsamples, sourcedir,str(args.bidirectionalblast)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr= p.communicate()
-    if stdout.strip()=='no blast hits':
-        noblasthits=True
+    noblasthits=runsubprocess(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, subjectsamples, sourcedir,str(args.bidirectionalblast)],preexec_fn='sigpipefix',printstdout=False)
+    if str(noblasthits)=='no blast hits':
         print('Warning: no blast alignments produced from genome comparison(s); pipeline terminated')
+        noblasthits=True
+    else:
+        noblasthits=False
+
     if noblasthits==False:
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
@@ -177,41 +164,19 @@ if args.sequences.name=='<stdin>':
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
     print('finished creating blast databases')
-    p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir1, blastdbs2, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr= p.communicate()
-    #try:
-    #    print('{} {}'.format(stdout.decode(), 'stdout'))
-    #except:
-    #    pass
-    #try:
-    #    print('{} {}'.format(stderr.decode(), 'stderr'))
-    #except:
-    #    pass
-    if p.returncode!=0:
-        sys.exit('unexpected error when running runblast.sh')
+    runsubprocess(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir1, blastdbs2, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
     if str(args.bidirectionalblast)=='True':
-        p=subprocess.Popen(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir2, blastdbs1, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),'pairwiserun2'], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr= p.communicate()
-        #try:
-        #    print('{} {}'.format(stdout.decode(), 'stdout'))
-        #except:
-        #    pass
-        #try:
-        #    print('{} {}'.format(stderr.decode(), 'stderr'))
-        #except:
-        #    pass
-        if p.returncode!=0:
-            sys.exit('unexpected error when running runblast.sh')
-            
+        runsubprocess(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir2, blastdbs1, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),'pairwiserun2'],preexec_fn='sigpipefix')
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished running blast')
     print('finished running blast')
-        
-    p=subprocess.Popen(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, subjectsamples, sourcedir,str(args.bidirectionalblast)], preexec_fn=default_sigpipe, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr= p.communicate()
-    if stdout.strip()=='no blast hits':
-        noblasthits=True
+    noblasthits=runsubprocess(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, subjectsamples, sourcedir,str(args.bidirectionalblast)],preexec_fn='sigpipefix',printstdout=False)
+    if str(noblasthits)=='no blast hits':
         print('Warning: no blast alignments produced from genome comparison(s); pipeline terminated')
+        noblasthits=True
+    else:
+        noblasthits=False
+
     if noblasthits==False:
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
@@ -262,21 +227,3 @@ if args.keep==0 or args.keep==1:
     runsubprocess(['rm -rf %s/includedsubjects.txt'%outputpath],shell=True)
     runsubprocess(['rm -rf %s/allsubjects.txt'%outputpath],shell=True)
 
-
-#OLD CODE
-# parser = argparse.ArgumentParser(description='Run pipeline scripts')
-# parser.add_argument('-s','--sequences', help='Sequences, for all-vs-all pairwise comparison', required=False)
-# parser.add_argument('-s1','--sequences1', help='First set of sequence(s), for pairwise comparison against second set', required=False)
-# parser.add_argument('-s2','--sequences2', help='Second set of sequence(s), for pairwise comparison against first set', required=False)
-# parser.add_argument('-o','--out', help='Output directory (required)', required=True)
-# parser.add_argument('-e','--evalue', help='BLAST e-value cutoff (default: 1e-8)', default=1e-8, type=float) #1e-8 is used in ggdc web pipeline - see Meier-Kolthoff 2014
-# parser.add_argument('-w','--wordsize', help='BLAST word size (default: 38)', default=38, type=int) #38 is used in ggdc web pipleine?
-# parser.add_argument('-t','--threads', help='Number of threads to use (default: 1)', default=1, type=int)
-# parser.add_argument('-b','--boot', help='Number of bootstraps to run (default: no bootstrapping)', default=0, type=positiveint)
-# parser.add_argument('-l','--lengthfilter', help='Length threshold (in basepairs) used to filter alignments prior to calculating breakpoint distance (default: 800)', default=800, type=positiveint)
-# parser.add_argument('-d','--distscore', help='Distance score to use to construct tree (can specify multiple parameters; default: DistanceScore_d8 DistanceScore_d9)', nargs='+', default=['DistanceScore_d8', 'DistanceScore_d9'], choices=['DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9'], metavar='',type=str)
-# parser.add_argument('-m','--treemethod', help='Tree building method (can specify dendrogram and/or phylogeny, or none (i.e. no tree will be plotted); default: dendrogram)', nargs='+', default=['dendrogram'], choices=['dendrogram','phylogeny','none'], metavar='',type=str)
-# parser.add_argument('-r','--alnrankmethod', help='Parameter used for selecting best alignment; default: bitscore)', default='bitscore', choices=['bitscore','alnlen','pid'], metavar='',type=str)
-# parser.add_argument('--breakpoint', action='store_true', help='Calculate breakpoint statistics (default: do not calculate)')
-# parser.add_argument('--alnlenstats', action='store_true', help='Calculate alignment length distribution statistics (default: do not calculate)')
-# parser.add_argument('--trimmedalignments', action='store_true', help='Write to file trimmed alignments for each sample (default: do not output)')
