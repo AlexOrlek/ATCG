@@ -17,9 +17,10 @@ alnlenstats=as.character(args[4])
 boot=as.integer(args[5])
 alnrankmethod=as.character(args[6])
 lengthfilter=as.integer(args[7])
-outputtrimmedalignments=as.character(args[8])
-outputdisjointalignments=as.character(args[9])
-bidirectionalblast=as.character(args[10])
+outputbestblastalignments=as.character(args[8])
+outputnonoverlappingalignments=as.character(args[9])
+outputtrimmedalignments=as.character(args[10])
+bidirectionalblast=as.character(args[11])
 
 ###define functions
 
@@ -85,6 +86,13 @@ rangeshifting<-function(reformattedname, seqlenreport, seqlenreportseqs) { #refo
     alladdlens<-c(alladdlens,addlens)  #append addlens from each genome
   }
   return(alladdlens)
+}
+
+#function which filters original blast report to include only best alignments (retained in qfinal and/or sfinal after selecting best hsps from disjoins)
+getbestblasthits<-function(qfinal,sfinal) {
+  besthitindices<-unique(qfinal$inputhsp,sfinal$inputhsp)
+  besthitreport<-originalreport[besthitindices,]
+  return(besthitreport)
 }
 
 #function which filters disjoint alignments to include only those present in both qfinal and sfinal; then sorts alignments by inputhsp
@@ -592,6 +600,8 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     sample<-samples[i]
     #report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,4,7,8,9,10,12,17),sep='\t') #same subject, different queries
     report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c('qname','sname','pid','alnlen','qstart','qend','sstart','send','bitscore','strand'),colClasses = list('character'=c('qname','sname','strand'), 'numeric'=c('pid','bitscore'),'integer'=c('alnlen','qstart','qend','sstart','send')),header=TRUE,sep='\t')
+    originalreport<-report
+    originalreport$originalhspindex<-rownames(originalreport)
     #colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
     #colnames(report)<-c('qname','sname','pid','alnlen','qstart','qend','sstart','send','bitscore','strand')
     #get information for shifting query and subject ranges where there are multiple contigs)
@@ -646,6 +656,13 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #add pid, strand, subject name, and alignment length
     qfinal<-lapply(qreducedoutput, function(x) x=addcols(x))
     sfinal<-lapply(sreducedoutput, function(x) x=addcols(x))
+    #write best blast alignments to file
+    if (outputbestblastalignments=='True') {
+      bestblasthitslist<-mapply(getbestblasthits,qfinal,sfinal,SIMPLIFY = FALSE)
+      bestblasthitsdf<-do.call(rbind,bestblasthitslist)
+      bestblasthitsdf<-bestblasthitsdf[with(bestblasthitsdf,order(bestblasthitsdf$qname,bestblasthitsdf$sname,-bestblasthitsdf$bitscore)),]
+      write.table(bestblasthitsdf, file=gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/output/bestblastalignments_%2.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
+    }
     #get pre-trimmmed hsplength and hspidpositions
     qhsplenpretrim<-as.data.frame(do.call(rbind,lapply(qfinal,gethsplength)))
     shsplenpretrim<-as.data.frame(do.call(rbind,lapply(sfinal,gethsplength)))
@@ -660,8 +677,8 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     qfinal<-intersectsortoutput$qfinal
     sfinal<-intersectsortoutput$sfinal
     finalalignments<-intersectsortoutput$finalalignments
-    #write disjoint alignments to file
-    if (outputdisjointalignments=='True') {
+    #write disjoint (non-overlapping) alignments to file
+    if (outputnonoverlappingalignments=='True') {
       disjointdflist<-mapply(grtodf,qfinal,sfinal,SIMPLIFY=FALSE)
       disjointdf<-do.call(rbind,disjointdflist)
       minusqlens<-addqlens[disjointdf$originalhspindex]
@@ -671,7 +688,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       disjointdf$sstart<-disjointdf$sstart-minusslens
       disjointdf$send<-disjointdf$send-minusslens
       disjointdf<-reformatcombineddf(disjointdf)
-      write.table(disjointdf, file=gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/output/disjointalignments_%2.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
+      write.table(disjointdf, file=gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/output/nonoverlappingalignments_%2.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
     }
     #trim alignments
     if (breakpoint=='True' || outputtrimmedalignments=='True') {
