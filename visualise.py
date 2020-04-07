@@ -57,10 +57,9 @@ output_group.add_argument('-o','--out', help='Output directory (required)', requ
 
 #miscellaneous
 vis_group1 = parser.add_argument_group('Visualisation options: miscellaneous')
-vis_group1.add_argument('--comparisontype', help='Specifies whether comparisons are between a single reference and a set of queries, or if a chain of comparisons are to be visualised (default: chain)', default='chain', choices=['chain','singlereference'], type=str)
+#vis_group1.add_argument('--comparisontype', help='Specifies whether comparisons are between a single reference and a set of queries, or if a chain of comparisons are to be visualised (default: chain)', default='chain', choices=['chain','singlereference'], type=str)
 vis_group1.add_argument('--main', help='Title text (default: no title text)', default='NULL', type=str)
 vis_group1.add_argument('--main_pos', help='Title text position if title text is provided (default: centre)', default='centre', choices=['centre','left','right'], type=str)
-vis_group1.add_argument('--rightmargin', help='The margin to add to the right hand side, expressed as a proportion of the longest sequence length (default: 0.05)', default='0.05', type=positivefloat)
 vis_group1.add_argument('--legend_orientation', help='Orientation of the alignment colour scale legend (default: vertical)', default='vertical', choices=['vertical','horizontal'], type=str)
 vis_group1.add_argument('--legend_textcex', help='Relative size of the legend text (default: 0.5)', default='0.5', type=positivefloat)
 vis_group1.add_argument('--legend_titlecex', help='Relative size of the legend title text (default: 0.6)', default='0.6', type=positivefloat)
@@ -74,6 +73,8 @@ vis_group1.add_argument('--seg_plot_height', help='The height of the seg_plot re
 #vis_group1.add_argument('--seg_plot_height_unit', help='The unit of seg_plot_height. Must be a valid unit (as defined in the grid package). If "null" then height will be calculated as a proportion of the comparison region (default: null)', default='null', type=str)  #set to null for simplicity
 vis_group1.add_argument('--seg_plot_yaxis', help='Can be NULL, FALSE or numeric. In the first two cases, no y-axis is drawn for the seg_plots. If numeric, a y axis is drawn with approximately that number of ticks (default: NULL)', default='NULL', type=segplotyaxis)
 vis_group1.add_argument('--seg_plot_yaxis_cex', help='Relative size of the seg_plot_yaxis text (default: 0.5)', default='0.5', type=positivefloat)
+vis_group1.add_argument('--output_height', help='Specifies the height of the plot in inches; calculated automatically unless specified', type=positivefloat)
+vis_group1.add_argument('--output_width', help='Specifies the width of the plot in inches; calculated automatically unless specified', type=positivefloat)
 
 #sequence-related
 vis_group2 = parser.add_argument_group('Visualisation options: sequence-related')
@@ -84,7 +85,7 @@ vis_group2.add_argument('--dna_seg_labels', help='The names of the sequences; mu
 vis_group2.add_argument('--dna_seg_label_cex', help='The relative size of dna_seg_labels text (default: 0.8)', default='0.8',type=positivefloat)
 vis_group2.add_argument('--dna_seg_label_col', help='The colour of dna_seg_labels text; provide either a single value or a space-separated list of the same length as the number of genomes (default: black)', default=['black'],nargs='+',type=str)
 #vis_group2.add_argument('--dna_seg_line', help='Should the line in the middle of the query segments be drawn; what colour(s) should be used; provide either true/false (case-insensitive) or colour; provide either a single value or a space-separated list of the same length as the number of genomes e.g. false would specify no line; blue would specify all lines as blue (default: false)', default=['false'],nargs='+',type=str)  ###this should always be false - can use sequencetypes to get lines rather than blocks
-vis_group2.add_argument('--minimum_gap_size', help='For chain reference comparison, the space between subsequences, expressed as the proportion of plotting width taken up by gaps (default: 0.05)', default='0.05',type=positivefloat)
+vis_group2.add_argument('--minimum_gap_size', help='The space between subsequences, expressed as the proportion of plotting width taken up by gaps (default: 0.05)', default='0.05',type=positivefloat)
 vis_group2.add_argument('--scale', help='Should a global scale be shown at the bottom of the plot; provide true/false (case-insensitive) (default: false)', default='false',choices=['true','True','TRUE','false','False','FALSE'],type=str)
 vis_group2.add_argument('--dna_seg_scale', help='Should per-genome scales be shown; provide true/false (case-insensitive) (default: true)', default='true',choices=['true','True','TRUE','false','False','FALSE'],type=str)
 vis_group2.add_argument('--dna_seg_scale_cex', help='The relative size of per-genome scales (default: 0.7)', default='0.7',type=positivefloat)
@@ -107,12 +108,15 @@ vis_group3.add_argument('--annotationtxt_inclusion', help='Inclusion criteria fo
 vis_group3.add_argument('--annotationtxt_exclusion_file', help='Exclusion criteria for text annotations, text file (optional)')
 vis_group3.add_argument('--annotationtxt_inclusion_file', help='Inclusion criteria for text annotations, text file (optional)')
 vis_group3.add_argument('--annotationtxt_exclinc_casesensitive', action='store_true', help='If flag is provided, exclusion/inclusion criteria will be case-sensitive when matching annotations (default: case-insensitive)')
-vis_group3.add_argument('--output_height', help='Specifies the height of the plot in inches; calculated automatically unless specified', type=positivefloat)
-vis_group3.add_argument('--output_width', help='Specifies the width of the plot in inches; calculated automatically unless specified', type=positivefloat)
+
+
 
 
 args = parser.parse_args()
 outputpath=os.path.relpath(args.out, cwdir)
+
+args.comparisontype='chain' #no longer trying to accommodate comparisons to single reference
+
 
 #!NB inclusionarg/exclusionsarg/syntaxvector must avoid comma
 
@@ -192,30 +196,15 @@ args.inputdir=str(args.inputdir).rstrip('/')
 runsubprocess(['mkdir -p %s'%outputpath],shell=True)
 
 if args.features==None:
-    runsubprocess(['Rscript','%s/genoplotr.R'%sourcedir,str(args.inputdir),str(','.join(args.syntax)),str(args.sequencelengths),str(args.comparisons),str(args.seg_plots),outputpath,str(args.comparisontype),str(args.main),str(args.main_pos),str(args.rightmargin),str(';'.join(args.sequencefills)),str(';'.join(args.sequenceoutlines)),str(';'.join(args.sequencetypes)),str(','.join(args.dna_seg_labels)),str(args.dna_seg_label_cex),str(','.join(args.dna_seg_label_col)),str(','.join(args.dna_seg_line)),str(args.minimum_gap_size),str(args.scale).lower(),str(args.dna_seg_scale).lower(),str(args.dna_seg_scale_cex),str(args.dna_seg_scale_n_ticks),str(args.output_height),str(args.output_width),str(args.legend_orientation),str(args.legend_textcex),str(args.legend_titlecex),','.join(args.positivecols),','.join(args.negativecols),','.join(args.gffannotationtype),str(args.tree_width),str(args.tree_branch_labels_cex),str(args.tree_scale),str(args.seg_plot_height),str(args.seg_plot_height_unit),str(args.seg_plot_yaxis),str(args.seg_plot_yaxis_cex),sourcedir,'featuresabsent'])
+    runsubprocess(['Rscript','%s/genoplotr.R'%sourcedir,str(args.inputdir),str(','.join(args.syntax)),str(args.sequencelengths),str(args.comparisons),str(args.seg_plots),outputpath,str(args.comparisontype),str(args.main),str(args.main_pos),str(';'.join(args.sequencefills)),str(';'.join(args.sequenceoutlines)),str(';'.join(args.sequencetypes)),str(','.join(args.dna_seg_labels)),str(args.dna_seg_label_cex),str(','.join(args.dna_seg_label_col)),str(','.join(args.dna_seg_line)),str(args.minimum_gap_size),str(args.scale).lower(),str(args.dna_seg_scale).lower(),str(args.dna_seg_scale_cex),str(args.dna_seg_scale_n_ticks),str(args.output_height),str(args.output_width),str(args.legend_orientation),str(args.legend_textcex),str(args.legend_titlecex),','.join(args.positivecols),','.join(args.negativecols),','.join(args.gffannotationtype),str(args.tree_width),str(args.tree_branch_labels_cex),str(args.tree_scale),str(args.seg_plot_height),str(args.seg_plot_height_unit),str(args.seg_plot_yaxis),str(args.seg_plot_yaxis_cex),sourcedir,'featuresabsent'])
 else:
-    runsubprocess(['Rscript','%s/genoplotr.R'%sourcedir,str(args.inputdir),str(','.join(args.syntax)),str(args.sequencelengths),str(args.comparisons),str(args.seg_plots),outputpath,str(args.comparisontype),str(args.main),str(args.main_pos),str(args.rightmargin),str(';'.join(args.sequencefills)),str(';'.join(args.sequenceoutlines)),str(';'.join(args.sequencetypes)),str(','.join(args.dna_seg_labels)),str(args.dna_seg_label_cex),str(','.join(args.dna_seg_label_col)),str(','.join(args.dna_seg_line)),str(args.minimum_gap_size),str(args.scale).lower(),str(args.dna_seg_scale).lower(),str(args.dna_seg_scale_cex),str(args.dna_seg_scale_n_ticks),str(args.output_height),str(args.output_width),str(args.legend_orientation),str(args.legend_textcex),str(args.legend_titlecex),','.join(args.positivecols),','.join(args.negativecols),','.join(args.gffannotationtype),str(args.tree_width),str(args.tree_branch_labels_cex),str(args.tree_scale),str(args.seg_plot_height),str(args.seg_plot_height_unit),str(args.seg_plot_yaxis),str(args.seg_plot_yaxis_cex),sourcedir,'featurespresent',str(args.features).rstrip('/'),str(args.annotationtxt_name),str(args.annotationtxt_type),str(args.annotationtxt_height),str(args.annotationtxt_rot),str(args.annotationtxt_cex),exclusionpresent,exclusionarg,inclusionpresent,inclusionarg,str(args.annotationtxt_exclinc_casesensitive),str(args.annotation_gene_type),str(args.annotation_outline_col),str(args.annotation_fill_col),str(args.annotation_lty),str(args.annotation_lwd)])
+    runsubprocess(['Rscript','%s/genoplotr.R'%sourcedir,str(args.inputdir),str(','.join(args.syntax)),str(args.sequencelengths),str(args.comparisons),str(args.seg_plots),outputpath,str(args.comparisontype),str(args.main),str(args.main_pos),str(';'.join(args.sequencefills)),str(';'.join(args.sequenceoutlines)),str(';'.join(args.sequencetypes)),str(','.join(args.dna_seg_labels)),str(args.dna_seg_label_cex),str(','.join(args.dna_seg_label_col)),str(','.join(args.dna_seg_line)),str(args.minimum_gap_size),str(args.scale).lower(),str(args.dna_seg_scale).lower(),str(args.dna_seg_scale_cex),str(args.dna_seg_scale_n_ticks),str(args.output_height),str(args.output_width),str(args.legend_orientation),str(args.legend_textcex),str(args.legend_titlecex),','.join(args.positivecols),','.join(args.negativecols),','.join(args.gffannotationtype),str(args.tree_width),str(args.tree_branch_labels_cex),str(args.tree_scale),str(args.seg_plot_height),str(args.seg_plot_height_unit),str(args.seg_plot_yaxis),str(args.seg_plot_yaxis_cex),sourcedir,'featurespresent',str(args.features).rstrip('/'),str(args.annotationtxt_name),str(args.annotationtxt_type),str(args.annotationtxt_height),str(args.annotationtxt_rot),str(args.annotationtxt_cex),exclusionpresent,exclusionarg,inclusionpresent,inclusionarg,str(args.annotationtxt_exclinc_casesensitive),str(args.annotation_gene_type),str(args.annotation_outline_col),str(args.annotation_fill_col),str(args.annotation_lty),str(args.annotation_lwd)])
 print('finished plotting visualisation')
 
 
 
-#OLD
 
 
-#sequencecol handling
-#if args.sequencecols==None:
-#    if args.comparisontype=='chain':
-#        args.sequencecols=["white"]
-#    else:
-#        args.sequencecols=["light yellow","light blue"]
-#; default depends on --comparisontype; chain: "white"; singlereference: "light yellow" "light blue"
-#str(','.join(args.sequencecols))
+#OLD CODE
 
-#input_group.add_argument('--tree', help='Tree file, used to plot tree alongside comparisons (optional)')
-#vis_group.add_argument('--annotation_cex', help='Specifies the default cex (scaling) of the annotation symbol (default: 1)', default='1',type=positiveint)
-#vis_group.add_argument('--annotation_cex', help='Specifies the default cex (scaling) of the annotation symbols; calculated automatically based on output dimensions unless specified, or provided on a per-gene basis in the gff file (optional)', type=positivefloat)
-#vis_group.add_argument('--annotation_lwd', help='Specifies the default height of the annotation symbols; calculated automatically based on output dimensions unless specified, or provided on a per-gene basis in the gff file (optional)',type=positivefloat)
-#if args.annotation_lwd==None:
-#    args.annotation_lwd='auto'
-
-#, donotplot; if donotplot, annotation text will not be plotted
+#vis_group1.add_argument('--rightmargin', help='The margin to add to the right hand side, expressed as a proportion of the longest sequence length (default: 0.05)', default='0.05', type=positivefloat)

@@ -1,13 +1,13 @@
 args = commandArgs(trailingOnly=TRUE)
-library('gsubfn')
-library('genoPlotR')
-library('dendextend') #prune function 
-library('ape') #handling trees
-library('tools') #file_ext function  #tools is a base R package
-library('ggplot2')
-library('cowplot')
-library('GenomicRanges')
-library('data.table')
+suppressWarnings(suppressMessages(library('gsubfn')))
+suppressWarnings(suppressMessages(library('genoPlotR')))
+suppressWarnings(suppressMessages(library('dendextend'))) #prune function 
+suppressWarnings(suppressMessages(library('ape'))) #handling trees
+suppressWarnings(suppressMessages(library('tools'))) #file_ext function  #tools is a base R package
+suppressWarnings(suppressMessages(library('GenomicRanges')))
+suppressWarnings(suppressMessages(library('data.table')))
+suppressWarnings(suppressMessages(library('ggplot2')))
+suppressWarnings(suppressMessages(library('cowplot')))
 inputdir=as.character(args[1]) #alignments/tree input dir
 filenamesyntax=as.character(args[2]) #syntax for alignment files and (optionally) for feature annotation files e.g. trimmedalignments_GENOMENAME.tsv,GENOMENAME.gb; GENOMENAME will be replaced
 seqlengths=as.character(args[3]) #seqlength file
@@ -17,54 +17,52 @@ outdir=as.character(args[6]) #output dir
 comparisontype=as.character(args[7]) #'chain' or 'singlereference'
 title=as.character(args[8]) #'my title' or NULL ##                                                 
 titlepos=as.character(args[9]) #centre   
-rightmargin=as.numeric(args[10]) #0.05
-sequencefills=as.character(args[11]) #"light yellow,light cyan"
-sequenceoutlines=as.character(args[12])
-sequencetypes=as.character(args[13])
-dnaseglabels=as.character(args[14])  #genome1,genome2 OR NULL (default) ##
-dnaseglabelcex=as.numeric(args[15]) #1
-dnaseglabelcol=as.character(args[16]) #black or black,black ##
-dnasegline=as.character(args[17]) #false hardcoded
-mingapsize=as.numeric(args[18]) #0.02
-mainscale=as.character(args[19]) #true/false ##
-dnasegscale=as.character(args[20]) #true/false ##
-dnasegscalecex=as.numeric(args[21]) #1
-dnasegscalenticks=as.integer(args[22])
-outputheight=as.character(args[23])
-outputwidth=as.character(args[24])
-legendorientation=as.character(args[25])
-legendtextcex=as.numeric(args[26])
-legendtitlecex=as.numeric(args[27])
-poscolvec=as.character(args[28])
-negcolvec=as.character(args[29])
-gffannotationtypevec=as.character(args[30])
-treewidth=as.numeric(args[31])
-treebranchlabelscex=as.numeric(args[32])
-treescale=as.character(args[33]) #True if flag provided
-segplotheight=as.numeric(args[34])
-segplotheightunit=as.character(args[35]) #null hardcoded
-segplotyaxis=as.character(args[36]) #NULL or numeric
-segplotyaxiscex=as.numeric(args[37])
-sourcedir=as.character(args[38])
-featurespresent=as.character(args[39])
+sequencefills=as.character(args[10]) #"light yellow,light cyan"
+sequenceoutlines=as.character(args[11])
+sequencetypes=as.character(args[12])
+dnaseglabels=as.character(args[13])  #genome1,genome2 OR NULL (default) ##
+dnaseglabelcex=as.numeric(args[14]) #1
+dnaseglabelcol=as.character(args[15]) #black or black,black ##
+dnasegline=as.character(args[16]) #false hardcoded
+mingapsize=as.numeric(args[17]) #0.02
+mainscale=as.character(args[18]) #true/false ##
+dnasegscale=as.character(args[19]) #true/false ##
+dnasegscalecex=as.numeric(args[20]) #1
+dnasegscalenticks=as.integer(args[21])
+outputheight=as.character(args[22])
+outputwidth=as.character(args[23])
+legendorientation=as.character(args[24])
+legendtextcex=as.numeric(args[25])
+legendtitlecex=as.numeric(args[26])
+poscolvec=as.character(args[27])
+negcolvec=as.character(args[28])
+gffannotationtypevec=as.character(args[29])
+treewidth=as.numeric(args[30])
+treebranchlabelscex=as.numeric(args[31])
+treescale=as.character(args[32]) #True if flag provided
+segplotheight=as.numeric(args[33])
+segplotheightunit=as.character(args[34]) #null hardcoded
+segplotyaxis=as.character(args[35]) #NULL or numeric
+segplotyaxiscex=as.numeric(args[36])
+sourcedir=as.character(args[37])
+featurespresent=as.character(args[38])
 if (featurespresent=='featurespresent') { #there is a feature input directory provided
-  featuresdir=as.character(args[40]) #features input dir
-  annotationtxtname=as.character(args[41]) #auto product gene
-  annotationtxttype=as.character(args[42]) #mid or spanning
-  annotationtxtheight=as.character(args[43]) #auto or numeric
-  annotationtxtrot=as.integer(args[44])
-  annotationtxtcex=as.numeric(args[45])
-  exclusionpresent=as.character(args[46]) #exclusionabsent commandline filepath
-  exclusionarg=as.character(args[47])  #placeholder, comma-separated string, path to file
-  inclusionpresent=as.character(args[48])
-  inclusionarg=as.character(args[49])
-  casesensitive=as.character(args[50])
-  annotationgenetype=as.character(args[51]) #default: side_bars
-  annotationoutlinecol=as.character(args[52]) #default: black
-  annotationfillcol=as.character(args[53]) #default: black 
-  annotationlty=as.integer(args[54]) #default: 1
-  annotationlwd=as.numeric(args[55]) #default: 1
-  #annotationcex=as.character(args[19]) #default: auto or numeric
+  featuresdir=as.character(args[39]) #features input dir
+  annotationtxtname=as.character(args[40]) #auto product gene
+  annotationtxttype=as.character(args[41]) #mid or spanning
+  annotationtxtheight=as.character(args[42]) #auto or numeric
+  annotationtxtrot=as.integer(args[43])
+  annotationtxtcex=as.numeric(args[44])
+  exclusionpresent=as.character(args[45]) #exclusionabsent commandline filepath
+  exclusionarg=as.character(args[46])  #placeholder, comma-separated string, path to file
+  inclusionpresent=as.character(args[47])
+  inclusionarg=as.character(args[48])
+  casesensitive=as.character(args[49])
+  annotationgenetype=as.character(args[50]) #default: side_bars
+  annotationoutlinecol=as.character(args[51]) #default: black
+  annotationfillcol=as.character(args[52]) #default: black 
+  annotationlty=as.integer(args[53]) #default: 1
+  annotationlwd=as.numeric(args[54]) #default: 1
 } else {
   annotationtxtheight=0
   annotationgenetype='side_bars'
@@ -456,9 +454,6 @@ rangeshifting<-function(reformattedname, seqlenreport, seqlenreportseqs) { #refo
 
 
 ###colour scale functions ###!!ADDED
-library(ggplot2)
-library(cowplot)
-
 getbreaks<-function(pidvalues, lengthout) {
   lowpid<-floor(min(pidvalues))
   highpid<-ceiling(max(pidvalues))
@@ -1019,13 +1014,6 @@ for (i in 1:nrow(comparisonfile)) {
       comparison$col<-legendcols[[3]]
       comparisons[[z]]<-comparison
     }
-    #add right hand side margin
-    maxxlims<-sapply(xlims, function(x) max(x))
-    maxxlimindices<-which(maxxlims==max(maxxlims))
-    for (indx in maxxlimindices) {
-      lastindex<-length(xlims[[indx]])
-      xlims[[indx]][lastindex]<-ceiling(xlims[[indx]][lastindex]+((xlims[[indx]][lastindex])*rightmargin))
-    }
     #calculate output dimensions, and from this calculate annotation cex
     if (annotationtxtheight=='auto') {
       annotationtxtheight<-max(nchar(do.call(rbind,annotationtextsrotgt0)$text))/6
@@ -1160,15 +1148,7 @@ for (i in 1:nrow(comparisonfile)) {
     
     #use offsets to ensure correct layout
     offsets<-rep(0,length(dna_segs))
-    
-    #add right hand side margin
-    maxxlims<-sapply(xlims2, function(x) max(x))
-    maxxlimindices<-which(maxxlims==max(maxxlims))
-    for (indx in maxxlimindices) {
-      lastindex<-length(xlims2[[indx]])
-      xlims2[[indx]][lastindex]<-ceiling(xlims2[[indx]][lastindex]+((xlims2[[indx]][lastindex])*rightmargin))
-    }
-    
+        
     #calculate output dimensions, and from this calculate annotation cex
     if (annotationtxtheight=='auto') {
       annotationtxtheight<-max(nchar(do.call(rbind,annotationtextsrotgt0)$text))/6 #previously 3.5
