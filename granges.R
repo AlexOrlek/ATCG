@@ -472,6 +472,10 @@ statsfunc<-function(stats, breakpoint,mygenomelenvector,mygenomelen,mymingenomel
     sample2len<-mygenomelenvector[2]
     sample1hsplengthpretrim<-as.numeric(stats$qhsplengthpretrim)
     sample2hsplengthpretrim<-as.numeric(stats$shsplengthpretrim)
+    sample1hspidpositionspretrim<-as.numeric(stats$qhspidpositionspretrim)
+    sample2hspidpositionspretrim<-as.numeric(stats$shspidpositionspretrim)
+    sample1percentid<-as.numeric(sample1hspidpositionspretrim/sample1hsplengthpretrim)
+    sample2percentid<-as.numeric(sample2hspidpositionspretrim/sample2hsplengthpretrim)
     if (bidirectionalblast=='False') {
       sample1covbreadth<-as.numeric(sample1hsplengthpretrim/sample1len)
       sample2covbreadth<-as.numeric(sample2hsplengthpretrim/sample2len)
@@ -481,7 +485,7 @@ statsfunc<-function(stats, breakpoint,mygenomelenvector,mygenomelen,mymingenomel
       sample2covbreadth<-as.numeric(sample2hsplengthpretrim/(2*sample2len))
       bpdist2divisor=2000
     }
-    returnvector<-c(returnvector,sample1covbreadth,sample2covbreadth)
+    returnvector<-c(returnvector,sample1covbreadth,sample2covbreadth,sample1percentid,sample2percentid)
     if (breakpoint=='True') {
       breakpoints<-as.numeric(stats$breakpoints)
       alignments<-as.numeric(stats$alignments)
@@ -509,7 +513,7 @@ mergestats<-function(x,y) {
   merge<-data.frame()
   for (i in seq_along(colnames(x))) {
     mycol<-colnames(x)[i]
-    if (mycol=="hspidpositions" || mycol=="hsplength" || mycol=="qhsplengthpretrim" || mycol=="shsplengthpretrim") {
+    if (mycol=="hspidpositions" || mycol=="hsplength" || mycol=="qhsplengthpretrim" || mycol=="shsplengthpretrim" || mycol=="qhspidpositionspretrim" || mycol=="shspidpositionspretrim") {
       merge[1,i]<-as.integer(x[i])+as.integer(y[i])
     } else {
       #merge[1,i]<-mean(as.integer(x[i]),as.integer(y[i]))
@@ -523,9 +527,9 @@ mergestats<-function(x,y) {
 
 #functions for converting allsampledflist to finaldf
 
-reorderallsampledf<-function(df) { #sort query/subject samples alphabetically and shift pretrim hsplengths accordingly; after reordering, the terms 'query'/'sample' lose meaning
+reorderallsampledf<-function(df) { #sort query/subject samples alphabetically and sort pretrim hsplengths/hpsidpositions accordingly; after reordering, the terms 'query'/'sample' lose meaning
   ordervec<-order(df[c(1,2)])
-  df<-df[c(ordervec,ordervec+4)]
+  df<-df[c(ordervec,ordervec+4,ordervec+6)]
   return(df)
 }
 
@@ -642,11 +646,15 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #add pid, strand, subject name, and alignment length
     qfinal<-lapply(qreducedoutput, function(x) x=addcols(x))
     sfinal<-lapply(sreducedoutput, function(x) x=addcols(x))
-    #get pre-trimmmed hsplength
+    #get pre-trimmmed hsplength and hspidpositions
     qhsplenpretrim<-as.data.frame(do.call(rbind,lapply(qfinal,gethsplength)))
     shsplenpretrim<-as.data.frame(do.call(rbind,lapply(sfinal,gethsplength)))
     colnames(qhsplenpretrim)<-'qhsplenpretrim'
     colnames(shsplenpretrim)<-'shsplenpretrim'
+    qhspidpositionspretrim<-as.data.frame(do.call(rbind,lapply(qfinal,gethspidpositions)))
+    shspidpositionspretrim<-as.data.frame(do.call(rbind,lapply(sfinal,gethspidpositions)))
+    colnames(qhspidpositionspretrim)<-'qhspidpositionspretrim'
+    colnames(shspidpositionspretrim)<-'shspidpositionspretrim'
     #filter disjoint alignments - remove alignments not present in both qfinal and sfinal; then sort by inputhsp
     intersectsortoutput<-transpose(mapply(intersectsortalignments,qfinal,sfinal,SIMPLIFY = FALSE))
     qfinal<-intersectsortoutput$qfinal
@@ -694,7 +702,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #get hsp id stats
     mystats<-lapply(qtrimmed,getstats) #!!!CHANGED
     mydf<-as.data.frame(do.call(rbind, mystats)) #convert list of vectors to dataframe
-    mydf<-cbind(querysample=rownames(mydf),subjectsample=rep(sample,nrow(mydf)),mydf,qhsplenpretrim,shsplenpretrim)
+    mydf<-cbind(querysample=rownames(mydf),subjectsample=rep(sample,nrow(mydf)),mydf,qhsplenpretrim,shsplenpretrim,qhspidpositionspretrim,shspidpositionspretrim)
     #get breakpoint stats
     if (breakpoint=='True') {
       myfinaldf<-breakpointcalc(qtrimmed,strimmed,mydf)
@@ -742,8 +750,8 @@ stopCluster(cl)
 
 
 #create allsampledf and allsampledfboot colname vectors + statscols and statscolsboot vectors
-allsampledfcolnames<-c('querysample','subjectsample','hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim')
-statscols<-c('hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim')
+allsampledfcolnames<-c('querysample','subjectsample','hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','qhspidpositionspretrim','shspidpositionspretrim')
+statscols<-c('hspidpositions','hsplength','qhsplengthpretrim','shsplengthpretrim','qhspidpositionspretrim','shspidpositionspretrim')
 allsampledfbootcolnames<-c('bootstrap','querysample','subjectsample','hspidpositions','hsplength')
 statscolsboot<-c('hspidpositions','hsplength')
 if (breakpoint=='True') {
@@ -774,7 +782,7 @@ sampleseqlen<-aggregate(seqlenreport$length, by=list(seqlenreport$sequence), FUN
 colnames(sampleseqlen)<-c('sample','length')
 
 #get final stats
-allsampledf[c(1,2,5,6)]<-t(apply(allsampledf,1,reorderallsampledf)) #reorder query/subject sample alphabetically; reorder qhsplenpretrim/shsplenpretrim accoringly (N.B. the terms query/subject now lose their meaning)
+allsampledf[c(1,2,5,6,7,8)]<-t(apply(allsampledf,1,reorderallsampledf)) #reorder query/subject sample alphabetically; reorder qhsplenpretrim/shsplenpretrim and qhspidpositionspretrim/shspidpositionspretrim accoringly (N.B. the terms query/subject now lose their meaning)
 splitsampledf<-split(allsampledf, list(allsampledf$querysample,allsampledf$subjectsample),drop=TRUE) #split by pairwise combination
 
 cl<-makeCluster(as.integer(args[2]))
@@ -791,7 +799,7 @@ finaldf<-as.data.frame(do.call(rbind,finaldf))
 #N.B 'Genome1'/'Genome2' are used for column names of distancestats.tsv/distancestats_bootstrapped.tsv files, but in code in this script the term 'sample' instead of 'genome' is used
 
 #create finaldfcolnames vector
-finaldfcolnames<-c('Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth','Coverage_breadth_mingenome','Coverage_breadth_Genome1','Coverage_breadth_Genome2')
+finaldfcolnames<-c('Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth','Coverage_breadth_mingenome','Pretrim_coverage_breadth_Genome1','Pretrim_coverage_breadth_Genome2','Pretrim_percent_identity_Genome1','Pretrim_percent_identity_Genome2')
 if (breakpoint=='True') {
   finaldfcolnames<-c(finaldfcolnames,'Breakpoint_distance_d0','Breakpoint_distance_d1','Breakpoints','Alignments','Alignment_pairs')
 }
