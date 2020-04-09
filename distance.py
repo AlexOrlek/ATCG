@@ -35,12 +35,13 @@ input_group.add_argument('-2','--sequences2', help='Second set of sequence(s), f
 output_group = parser.add_argument_group('Output')
 output_group.add_argument('-o','--out', help='Output directory (required)', required=True)
 output_group.add_argument('-d','--distscore', help='Distance score to use to construct tree; can specify multiple parameters (default: DistanceScore_d8 DistanceScore_d9)', nargs='+', default=['DistanceScore_d8', 'DistanceScore_d9'], choices=['DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9'], metavar='', type=str)
-output_group.add_argument('-m','--treemethod', help='Tree building method; can specify dendrogram and/or phylogeny, or none (i.e. no tree will be plotted); (default: dendrogram)', nargs='+', default=['dendrogram'], choices=['dendrogram','phylogeny','none'], metavar='', type=str)
+output_group.add_argument('-m','--treemethod', help='Tree building method; can specify dendrogram and/or phylogeny, or none (i.e. no tree will be plotted); (default: dendrogram)', nargs='+', default=['none'], choices=['dendrogram','phylogeny','none'], metavar='', type=str)
 output_group.add_argument('--breakpoint', action='store_true', help='If flag is provided, calculate breakpoint statistics (default: do not calculate)')
 output_group.add_argument('--alnlenstats', action='store_true', help='If flag is provided, calculate alignment length distribution statistics (default: do not calculate)')
 output_group.add_argument('--bestblastalignments', action='store_true', help='If flag is provided, write to file best blast alignments for each sample (default: do not output)')
 output_group.add_argument('--nonoverlappingalignments', action='store_true', help='If flag is provided, write to file best alignments with non-overlapping query/subject ranges (only the intersection of query and subject alignment sets is given) (default: do not output)')
 output_group.add_argument('--trimmedalignments', action='store_true', help='If flag is provided, write to file trimmed alignments for each sample (default: do not output)')
+#output_group.add_argument('--statsfromtrimmed', action='store_true', help='If flag is provided, statistics will be calculated from the trimmed alignments as well as from the non-verlapping alignments (default: only calculate stats from non-overlapping alignments)') #DEPRECATED
 #BLAST options                                  
 blast_group = parser.add_argument_group('BLAST options')
 blast_group.add_argument('--evalue', help='BLAST e-value cutoff (default: 1e-8)', default=1e-8, type=float) #1e-8 is used in ggdc web pipeline - see Meier-Kolthoff 2014
@@ -63,7 +64,7 @@ output_group.add_argument('--keep', default=1, choices=[0,1,2], type=int, help='
 
 args = parser.parse_args()
 outputpath=os.path.relpath(args.out, cwdir)
-
+args.statsfromtrimmed='False' #stats are calculated from disjoint alignments not trimmed alignments (deprecated method), although you can still output trimmed alignments with the --trimmedalignments flag
 startruntime=runtime()
 
 #check sequence input flags used correctly (if flags not provided, name of file handle will be <stdin> i.e. empty stdin)
@@ -193,7 +194,7 @@ if args.sequences.name=='<stdin>':
 
 
 if args.blastonly!=True and noblasthits==False:
-    runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.bestblastalignments),str(args.nonoverlappingalignments),str(args.trimmedalignments),str(args.bidirectionalblast)])
+    runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.bestblastalignments),str(args.nonoverlappingalignments),str(args.trimmedalignments),str(args.bidirectionalblast),str(args.statsfromtrimmed)])
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished trimming alignments')
     print('finished trimming alignments')
