@@ -26,6 +26,17 @@ statsfromtrimmed=as.character(args[12]) #always False
 ###define functions (N.B see bottom of script for deprecated functions)
 
 #stats functions
+gethspidpositions<-function(x) {
+  #returns the number of identical nucleotide alignment positions for a given set of alignments ('HSPs'); it is applied after overlaps have been excluded from the alignment set
+  #return(sum(round(width(x)*(x$pid/100))))
+  return(round(sum(width(x)*(x$pid/100))))
+}
+
+gethsplength<-function(x) {
+  #returns the total coverage length of a set of alignments ('HSPs'); it is applied after overlaps have been excluded from the alignment set
+  return(sum(width(x)))
+}
+
 getstatsfromdisjoint<-function(x,y) {
   #returns raw statistics from disjoint alignments (qtrimmed,strimmed)
   widthx<-width(x)
@@ -731,10 +742,10 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       myfinaldfbootlist<-vector("list",boot)
       for (z in seq_len(boot)) {
         #stopifnot(sapply(qtrimmed, function(x) length(x))==sapply(strimmed, function(x) length(x)))
-        indices<-lapply(qtrimmed, function(x) sample(1:length(x), replace=T)) #get indices for resampling qtrimmed/strimmed
-        qtrimmedboot<-lapply(1:length(qtrimmed), FUN=function(x, list1, list2) list1[[x]][list2[[x]]] , list1=qtrimmed, list2=indices) #resample qtrimmed using indices
-        names(qtrimmedboot)<-names(qtrimmed)
-        mystatsboot<-lapply(qtrimmedboot,getstats) #!!!CHANGED
+        indices<-lapply(qfinal, function(x) sample(1:length(x), replace=T)) #get indices for resampling qfinal/sfinal
+        qfinalboot<-map2(qfinal,indices, `[`)
+        sfinalboot<-map2(sfinal,indices, `[`)
+        mystatsboot<-mapply(getstatsfromdisjoint, qfinalboot,sfinalboot,SIMPLIFY = FALSE)
         mydfboot<-as.data.frame(do.call(rbind,mystatsboot))
         mydfboot<-cbind(rownames(mydfboot),rep(sample,nrow(mydfboot)),mydfboot)
         #colnames(mydfboot)<-c('querysample','subjectsample','hspidpositions','hsplength')
@@ -865,16 +876,6 @@ if (boot!=0) {
 ###deprecated fuctions
 
 # #stats functions
-# gethspidpositions<-function(x) {
-#   #returns the number of identical nucleotide alignment positions for a given set of alignments ('HSPs'); it is applied after overlaps have been excluded from the alignment set
-#   #return(sum(round(width(x)*(x$pid/100))))
-#   return(round(sum(width(x)*(x$pid/100))))
-# }
-
-# gethsplength<-function(x) {
-#   #returns the total coverage length of a set of alignments ('HSPs'); it is applied after overlaps have been excluded from the alignment set
-#   return(sum(width(x)))
-# }
 
 # getstatsfromtrimmed<-function(x) {
 #   #returns raw statistics from trimmed alignments (qtrimmed)                 
