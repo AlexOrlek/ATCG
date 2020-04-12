@@ -1,7 +1,7 @@
 import sys
 
 outputpath=sys.argv[1]
-blastdbs=sys.argv[2]
+filepathinfo=sys.argv[2]
 
 includedsamples=[]
 with open('%s/output/distancestats.tsv'%outputpath) as f:
@@ -15,7 +15,7 @@ with open('%s/output/distancestats.tsv'%outputpath) as f:
 includedsamples=set(includedsamples)
 
 originalsamples=[]
-with open('%s'%blastdbs) as f:
+with open('%s'%filepathinfo) as f:
     for line in f:
         data=line.strip().split('\t')
         sample=data[0]

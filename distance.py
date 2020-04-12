@@ -35,7 +35,7 @@ input_group.add_argument('-2','--sequences2', help='Second set of sequence(s), f
 output_group = parser.add_argument_group('Output')
 output_group.add_argument('-o','--out', help='Output directory (required)', required=True)
 output_group.add_argument('-d','--distscore', help='Distance score to use to construct tree; can specify multiple parameters (default: DistanceScore_d8 DistanceScore_d9)', nargs='+', default=['DistanceScore_d8', 'DistanceScore_d9'], choices=['DistanceScore_d0','DistanceScore_d4','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9'], metavar='', type=str)
-output_group.add_argument('-m','--treemethod', help='Tree building method; can specify dendrogram and/or phylogeny, or none (i.e. no tree will be plotted); (default: dendrogram)', nargs='+', default=['none'], choices=['dendrogram','phylogeny','none'], metavar='', type=str)
+output_group.add_argument('-m','--treemethod', help='Tree building method; can specify dendrogram and/or phylogeny, or none (i.e. no tree will be plotted); (default: none)', nargs='+', default=['none'], choices=['dendrogram','phylogeny','none'], metavar='', type=str)
 output_group.add_argument('--breakpoint', action='store_true', help='If flag is provided, calculate breakpoint statistics (default: do not calculate)')
 output_group.add_argument('--alnlenstats', action='store_true', help='If flag is provided, calculate alignment length distribution statistics (default: do not calculate)')
 output_group.add_argument('--bestblastalignments', action='store_true', help='If flag is provided, write to file best blast alignments for each sample (default: do not output)')
@@ -99,23 +99,22 @@ if args.keep==0 and args.blastonly==True:
     parser.error('combining --keep 0 and --blastonly options will result in no final output being produced')
 
 
-          
+
 noblasthits=False
 
 if args.sequences.name!='<stdin>':
     blasttype='allvallpairwise'
     fastadir='%s/splitfastas'%outputpath
-    fastafiles='%s/fastafilepaths.tsv'%outputpath
-    blastdbs='%s/blastdbfilepaths.tsv'%outputpath
+    filepathinfo='%s/filepathinfo.tsv'%outputpath
     subjectsamples='%s/allsubjects.txt'%outputpath
     if os.path.exists(fastadir):
         sys.exit('Error: %s directory already exists, delete directory and try again'%fastadir)
-    splitfastas(args.sequences,fastadir,fastafiles,blastdbs)
-    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastafiles,str(args.threads),sourcedir])
+    splitfastas(args.sequences,fastadir,filepathinfo)
+    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,filepathinfo,str(args.threads),sourcedir])
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
     print('finished creating blast databases')
-    runsubprocess(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir, blastdbs, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
+    runsubprocess(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir, filepathinfo, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished running blast')
     print('finished running blast')
@@ -142,17 +141,16 @@ if args.sequences.name=='<stdin>':
     blasttype='pairwise'
     fastadir1='%s/splitfastas1'%outputpath
     fastadir2='%s/splitfastas2'%outputpath
-    fastafiles1='%s/fastafilepaths1.tsv'%outputpath
-    blastdbs1='%s/blastdbfilepaths1.tsv'%outputpath
-    fastafiles2='%s/fastafilepaths2.tsv'%outputpath
-    blastdbs2='%s/blastdbfilepaths2.tsv'%outputpath
+    filepathinfo1='%s/filepathinfo1.tsv'%outputpath
+    filepathinfo2='%s/filepathinfo2.tsv'%outputpath
+    filepathinfo='%s/filepathinfo.tsv'%outputpath
     subjectsamples='%s/allsubjects.txt'%outputpath
     if os.path.exists(fastadir1):
         sys.exit('Error: %s directory already exists, delete directory and try again'%fastadir)
     if os.path.exists(fastadir2):
         sys.exit('Error: %s directory already exists, delete directory and try again'%fastadir)
-    splitfastas(args.sequences1,fastadir1,fastafiles1,blastdbs1)
-    splitfastas(args.sequences2,fastadir2,fastafiles2,blastdbs2)
+    splitfastas(args.sequences1,fastadir1,filepathinfo1)
+    splitfastas(args.sequences2,fastadir2,filepathinfo2)
     #check there is no overlap between fastas provided in -s1 and -s2
     s1dir=os.listdir('%s/splitfastas1'%outputpath)
     s2dir=os.listdir('%s/splitfastas2'%outputpath)
@@ -161,14 +159,15 @@ if args.sequences.name=='<stdin>':
     overlap=len(set(s1fastas).intersection(set(s2fastas)))
     if overlap>0:
         parser.error('there must be no overlap between fasta identifiers contained within the fasta files provided using the -s1 and -s2 flags')
-    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastafiles1, str(args.threads),sourcedir])
-    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,fastafiles2, str(args.threads),sourcedir])
+    runsubprocess(['cat %s %s > %s'%(filepathinfo1,filepathinfo2,filepathinfo)],shell=True)
+    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,filepathinfo1, str(args.threads),sourcedir])
+    runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,filepathinfo2, str(args.threads),sourcedir])
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
     print('finished creating blast databases')
-    runsubprocess(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir1, blastdbs2, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
+    runsubprocess(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir1, filepathinfo2, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
     if str(args.bidirectionalblast)=='True':
-        runsubprocess(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir2, blastdbs1, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),'pairwiserun2'],preexec_fn='sigpipefix')
+        runsubprocess(['bash','%s/runblast.sh'%sourcedir,outputpath, fastadir2, filepathinfo1, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),'pairwiserun2'],preexec_fn='sigpipefix')
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished running blast')
     print('finished running blast')
@@ -199,7 +198,7 @@ if args.blastonly!=True and noblasthits==False:
     #print(laterruntime-startruntime, 'runtime; finished trimming alignments')
     print('finished trimming alignments')
     #get included/excluded samples
-    runsubprocess(['python','%s/getincludedexcluded.py'%sourcedir,outputpath,blastdbs])
+    runsubprocess(['python','%s/getincludedexcluded.py'%sourcedir,outputpath,filepathinfo])
     if blasttype=='allvallpairwise':
         if 'none' not in args.treemethod:
           if 'dendrogram' in args.treemethod:

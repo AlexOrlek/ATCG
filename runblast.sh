@@ -17,7 +17,7 @@ mkdir -p ${1}/blast
 mkdir -p ${1}/output
 
 splitfastadir=${2}
-databasefiles=${3} #subject sequence blast database; format: sample \t filepath to database
+filepathinfo=${3} #subject sequence blast database; format: sample \t filepath to fasta \t filepath to database
 evalue=${4}
 wordsize=${5}
 task=${6}
@@ -25,7 +25,7 @@ threads=${7}
 bidirectionalblast=${8} #default is False
 blasttype=${9}  #allvallpairwise (-s flag) or pairwise (-1/-2 flags)
 
-sort -k1,1V -o ${databasefiles} ${databasefiles}  #-k command must precede -o command
+sort -k1,1V -o ${filepathinfo} ${filepathinfo}  #-k command must precede -o command
 
 if [ ${blasttype} != 'pairwiserun2' ]; then #prevents writing to file twice in the case of pairwise blasttype
     > ${1}/allsubjects.txt  #used in reformatblastoutput.sh
@@ -33,7 +33,7 @@ fi
 
 if [ ${blasttype} == 'allvallpairwise' ]; then
     if [ ${bidirectionalblast} == 'False' ]; then
-        numsamples=$( cat ${databasefiles} | wc -l )
+        numsamples=$( cat ${filepathinfo} | wc -l )
         counter=0
         while IFS=$'\t' read -r -a line
         do
@@ -42,7 +42,7 @@ if [ ${blasttype} == 'allvallpairwise' ]; then
                 continue
             fi
             sample="${line[0]}"
-            database="${line[1]}"
+            database="${line[2]}"
             echo "${sample}" >> ${1}/allsubjects.txt
             blastoutput="${1}/blast/${sample}_alignments.tsv"
             if [[ $counter -gt 1 ]]; then
@@ -52,26 +52,26 @@ if [ ${blasttype} == 'allvallpairwise' ]; then
                 cat `find ${splitfastadir}/ -maxdepth 1 -mindepth 1 -name "*.fasta" ! -name "${sample}.fasta"` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
                 excludesamples=("${splitfastadir}/${sample}.fasta")
             fi
-        done < ${databasefiles}
+        done < ${filepathinfo}
     else
         while IFS=$'\t' read -r -a line
         do
             sample="${line[0]}"
-            database="${line[1]}"
+            database="${line[2]}"
             echo "${sample}" >> ${1}/allsubjects.txt
             blastoutput="${1}/blast/${sample}_alignments.tsv"
             cat `find ${splitfastadir}/ -maxdepth 1 -mindepth 1 -name "*.fasta" ! -name "${sample}.fasta"` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
-        done < ${databasefiles}
+        done < ${filepathinfo}
     fi
 else   #blasttype==pairwise (or pairwiserun2 in the case of bidirectionalblast second run)
     while IFS=$'\t' read -r -a line
     do
         sample="${line[0]}"
-        database="${line[1]}"
+        database="${line[2]}"
         echo "${sample}" >> ${1}/allsubjects.txt
         blastoutput="${1}/blast/${sample}_alignments.tsv"
         cat `find ${splitfastadir}/ -maxdepth 1 -mindepth 1 -name "*.fasta"` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
-    done < ${databasefiles}
+    done < ${filepathinfo}
 fi
 
 
@@ -102,5 +102,5 @@ fi
 #     database="${line[1]}"
 #     blastoutput="${1}/blast/${sample}_plasmidalignments.tsv"
 #     cat ${query} | seqkit grep -r -p ^${sample} -v | python runblast.py ${database} ${blastoutput} ${threads} ${evalue} ${wordsize}
-# done < ${databasefiles}
+# done < ${filepathinfo}
 
