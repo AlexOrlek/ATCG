@@ -72,7 +72,7 @@ def runsubprocess(args,verbose=False,shell=False,polling=False,printstdout=True,
 
 
 ###wrapper for splitting input fasta by sample
-def splitfastas(infile,fastadir,filepathinfo):
+def splitfastas(infile,fastadir,filepathinfo,seqlengthfile):
     """takes input fastafile from filepath or sys.stdin; splits by sample and writes to outdir; also writes filepathinfo.tsv to record sample, fastafilepath, and blastdbfilepath"""
     from Bio import SeqIO
     import re,os
@@ -94,8 +94,9 @@ def splitfastas(infile,fastadir,filepathinfo):
             recorddict[sample]=[]
         recorddict[sample].append((recordid,recordseq))
     infile.close()
-    #write records to splitfastas directory, split by sample
+    #write records to splitfastas directory, split by sample; write seqlengths to seqlengths.tsv
     f2=open(filepathinfo,'w')
+    f3=open(seqlengthfile,'w')
     for sample in recorddict.keys():
         fastafilepath='%s/%s.fasta'%(fastadir,sample)
         blastdbfilepath=os.path.splitext(fastafilepath)[0]
@@ -103,8 +104,10 @@ def splitfastas(infile,fastadir,filepathinfo):
         f2.write('%s\t%s\t%s\n'%(sample,fastafilepath,blastdbfilepath))
         with open(fastafilepath,'w') as output_handle:
             for recordid,recordseq in recorddict[sample]:
+                f3.write('%s\t%s\n'%(recordid,len(recordseq)))
                 output_handle.write(">%s\n%s\n" % (recordid, recordseq))
     f2.close()
+    f3.close()
 
 
 
