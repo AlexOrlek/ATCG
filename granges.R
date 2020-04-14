@@ -21,7 +21,7 @@ outputbestblastalignments=as.character(args[8])
 outputnonoverlappingalignments=as.character(args[9])
 outputtrimmedalignments=as.character(args[10])
 bidirectionalblast=as.character(args[11])
-statsfromtrimmed=as.character(args[12]) #always False
+statsfromtrimmed=as.character(args[12]) #False by default
 
 ###define functions (N.B see bottom of script for deprecated functions)
 
@@ -46,6 +46,13 @@ getstatsfromdisjoint<-function(x,y) {
   hspidpositions<-round(sum(mywidths*mypids))
   hsplength<-sum(mywidths)
   return(c(hspidpositions,hsplength))
+}
+
+getstatsfromtrimmed<-function(x) {
+  #returns raw statistics from trimmed alignments (for simplicity, using qtrimmed only)                 
+  hspidpositions<-gethspidpositions(x)
+  hsplength<-gethsplength(x)
+  return(c(hspidpositions,hsplength))                                                                     
 }
 
 #range shifting function
@@ -688,22 +695,24 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       disjointdf<-reformatcombineddf(disjointdf)
       write.table(disjointdf, file=gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/output/nonoverlappingalignments_%2.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
     }
-    #get hsp id/len stats from disjoint alignments
-    mystats<-mapply(getstatsfromdisjoint, qfinal,sfinal,SIMPLIFY = FALSE)
-    mydf<-as.data.frame(do.call(rbind, mystats)) #convert list of vectors to dataframe
-    mydf<-cbind(querysample=rownames(mydf),subjectsample=rep(sample,nrow(mydf)),mydf,qhsplenpretrim,shsplenpretrim,qhspidpositionspretrim,shspidpositionspretrim)
-    #get breakpoint stats
-    if (breakpoint=='True') {
-      myfinaldf<-breakpointcalc(qfinal,sfinal,mydf)
-    } else {
-      myfinaldf<-mydf
-    }
-    #get alignment length distribution stats
-    if (alnlenstats=='True') {
-       alnlenstatslist<-lapply(qfinal, getalnlenstats, widthfilter=lengthfilter)
-       alnlenstatsdf<-cbind(rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[1]]),as.data.frame.list),idcol="querysample",use.names=FALSE),rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[2]]),as.data.frame.list),use.names=FALSE))
-       colnames(alnlenstatsdf)<-c('querysample',lxcols,nxcols)
-       myfinaldf<-merge(myfinaldf,alnlenstatsdf,by="querysample")
+    if (statsfromtrimmed=='False') {
+      #get hsp id/len stats from disjoint alignments
+      mystats<-mapply(getstatsfromdisjoint, qfinal,sfinal,SIMPLIFY = FALSE)
+      mydf<-as.data.frame(do.call(rbind, mystats)) #convert list of vectors to dataframe
+      mydf<-cbind(querysample=rownames(mydf),subjectsample=rep(sample,nrow(mydf)),mydf,qhsplenpretrim,shsplenpretrim,qhspidpositionspretrim,shspidpositionspretrim)
+      #get breakpoint stats
+      if (breakpoint=='True') {
+        myfinaldf<-breakpointcalc(qfinal,sfinal,mydf)
+      } else {
+        myfinaldf<-mydf
+      }
+      #get alignment length distribution stats
+      if (alnlenstats=='True') {
+        alnlenstatslist<-lapply(qfinal, getalnlenstats, widthfilter=lengthfilter)
+        alnlenstatsdf<-cbind(rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[1]]),as.data.frame.list),idcol="querysample",use.names=FALSE),rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[2]]),as.data.frame.list),use.names=FALSE))
+        colnames(alnlenstatsdf)<-c('querysample',lxcols,nxcols)
+        myfinaldf<-merge(myfinaldf,alnlenstatsdf,by="querysample")
+      }
     }
     #trim alignments
     if (statsfromtrimmed=='True' || outputtrimmedalignments=='True') {
@@ -732,33 +741,52 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       write.table(trimmeddf, file=gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/output/trimmedalignments_%2.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
     }
     if (statsfromtrimmed=='True') {
-      stop('--statsfromtrimmed method deprecated')
+      #get hsp id stats
+      mystats<-lapply(qtrimmed,getstatsfromtrimmed)
+      mydf<-as.data.frame(do.call(rbind, mystats)) #convert list of vectors to dataframe
+      mydf<-cbind(querysample=rownames(mydf),subjectsample=rep(sample,nrow(mydf)),mydf,qhsplenpretrim,shsplenpretrim,qhspidpositionspretrim,shspidpositionspretrim)
+      #get breakpoint stats
+      if (breakpoint=='True') {
+        myfinaldf<-breakpointcalc(qtrimmed,strimmed,mydf)
+      } else {
+        myfinaldf<-mydf
+      }
+      #get alignment length distribution stats
+      if (alnlenstats=='True') {
+        alnlenstatslist<-lapply(qtrimmed, getalnlenstats, widthfilter=lengthfilter)
+        alnlenstatsdf<-cbind(rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[1]]),as.data.frame.list),idcol="querysample"),rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[2]]),as.data.frame.list)))
+        colnames(alnlenstatsdf)<-c('querysample',lxcols,nxcols)
+        myfinaldf<-merge(myfinaldf,alnlenstatsdf,by="querysample")
+      }
     }
     #IF NO BOOTSTRAPPING, SAVE ALL ALIGNMENT STATS
     if (boot==0) {
       print(myfinaldf)
     } else {
-      #IF BOOTSTRAPPING, SAVE ALL ALIGNMENT STATS + BOOTSTRAPPED STATS
+      #IF BOOTSTRAPPING, SAVE ALL ALIGNMENT STATS + BOOTSTRAPPED STATS; N.B NO LONGER RESAMPLING BREAKPOINT/ALNLEN STATS
       myfinaldfbootlist<-vector("list",boot)
-      for (z in seq_len(boot)) {
-        #stopifnot(sapply(qtrimmed, function(x) length(x))==sapply(strimmed, function(x) length(x)))
-        indices<-lapply(qfinal, function(x) sample(1:length(x), replace=T)) #get indices for resampling qfinal/sfinal
-        qfinalboot<-map2(qfinal,indices, `[`)
-        sfinalboot<-map2(sfinal,indices, `[`)
-        mystatsboot<-mapply(getstatsfromdisjoint, qfinalboot,sfinalboot,SIMPLIFY = FALSE)
-        mydfboot<-as.data.frame(do.call(rbind,mystatsboot))
-        mydfboot<-cbind(rownames(mydfboot),rep(sample,nrow(mydfboot)),mydfboot)
-        #colnames(mydfboot)<-c('querysample','subjectsample','hspidpositions','hsplength')
-        #get breakpoint stats
-        #if (breakpoint=='True') {
-        #  strimmedboot<-lapply(1:length(strimmed), FUN=function(x, list1, list2) list1[[x]][list2[[x]]] , list1=strimmed, list2=indices) #resample strimmed using indices
-        #  names(strimmedboot)<-names(strimmed)
-        #  myfinaldfboot<-breakpointcalc(qtrimmedboot,strimmedboot,mydfboot)
-        #} else {
-        #  myfinaldfboot<-mydfboot
-        #}
-        myfinaldfboot<-mydfboot #NO LONGER RESAMPLING BREAKPOINT STATS
-        myfinaldfbootlist[[z]]<-myfinaldfboot
+      if (statsfromtrimmed=='False') {
+        for (z in seq_len(boot)) {
+          indices<-lapply(qfinal, function(x) sample(1:length(x), replace=T)) #get indices for resampling qfinal/sfinal
+          qfinalboot<-map2(qfinal,indices, `[`)
+          sfinalboot<-map2(sfinal,indices, `[`)
+          mystatsboot<-mapply(getstatsfromdisjoint, qfinalboot,sfinalboot,SIMPLIFY = FALSE)
+          mydfboot<-as.data.frame(do.call(rbind,mystatsboot))
+          mydfboot<-cbind(rownames(mydfboot),rep(sample,nrow(mydfboot)),mydfboot)
+          myfinaldfboot<-mydfboot
+          myfinaldfbootlist[[z]]<-myfinaldfboot
+        }
+      } else {
+        for (z in seq_len(boot)) {
+          indices<-lapply(qtrimmed, function(x) sample(1:length(x), replace=T)) #get indices for resampling qtrimmed/strimmed
+          qtrimmedboot<-map2(qtrimmed,indices, `[`)
+          names(qtrimmedboot)<-names(qtrimmed)
+          mystatsboot<-lapply(qtrimmedboot,getstatsfromtrimmed)
+          mydfboot<-as.data.frame(do.call(rbind,mystatsboot))
+          mydfboot<-cbind(rownames(mydfboot),rep(sample,nrow(mydfboot)),mydfboot)
+          myfinaldfboot<-mydfboot 
+          myfinaldfbootlist[[z]]<-myfinaldfboot
+        }
       }
       print(list(myfinaldf, myfinaldfbootlist))
     }
@@ -873,19 +901,30 @@ if (boot!=0) {
 
 ###OLD CODE
 
+
+###depreacated code
+
+#code for getting bootstrap resampled breakpoint/alnlenstats statistics:
+
+          #colnames(mydfboot)<-c('querysample','subjectsample','hspidpositions','hsplength')
+          #get breakpoint stats
+          #if (breakpoint=='True') {
+          #  strimmedboot<-lapply(1:length(strimmed), FUN=function(x, list1, list2) list1[[x]][list2[[x]]] , list1=strimmed, list2=indices) #resample strimmed using indices
+          #  names(strimmedboot)<-names(strimmed)
+          #  myfinaldfboot<-breakpointcalc(qtrimmedboot,strimmedboot,mydfboot)
+          #} else {
+          #  myfinaldfboot<-mydfboot
+          #}
+
+
 ###deprecated fuctions
-
-# #stats functions
-
-# getstatsfromtrimmed<-function(x) {
-#   #returns raw statistics from trimmed alignments (qtrimmed)                 
-#   hspidpositions<-gethspidpositions(x)
-#   hsplength<-gethsplength(x)
-#   return(c(hspidpositions,hsplength))                                                                     
-# }
 
 # #breakpoint calculation functions
 # filtershortalignments<-function(x,lengthfilter) { #this function is deprecated - now using filtershortwidthalignments instead - using post-trimmed alignment length rather than pre-trimmed alignment length
 #   includedindices<-mcols(x)$alnlen>lengthfilter
 #   return(x[includedindices])
 # }
+
+
+
+

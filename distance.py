@@ -46,7 +46,7 @@ output_group.add_argument('--alnlenstats', action='store_true', help='If flag is
 output_group.add_argument('--bestblastalignments', action='store_true', help='If flag is provided, write to file best blast alignments for each sample (default: do not output)')
 output_group.add_argument('--nonoverlappingalignments', action='store_true', help='If flag is provided, write to file best alignments with non-overlapping query/subject ranges (only the intersection of query and subject alignment sets is given) (default: do not output)')
 output_group.add_argument('--trimmedalignments', action='store_true', help='If flag is provided, write to file trimmed alignments for each sample (default: do not output)')
-#output_group.add_argument('--statsfromtrimmed', action='store_true', help='If flag is provided, statistics will be calculated from the trimmed alignments as well as from the non-verlapping alignments (default: only calculate stats from non-overlapping alignments)') #DEPRECATED
+output_group.add_argument('--statsfromtrimmed', action='store_true', help='If flag is provided, statistics will be calculated from the trimmed alignments rather than from the non-verlapping alignments (default: calculate stats from non-overlapping alignments)') #DEPRECATED - recommended to use the default
 #BLAST options                                  
 blast_group = parser.add_argument_group('BLAST options')
 blast_group.add_argument('--evalue', help='BLAST e-value cutoff (default: 1e-8)', default=1e-8, type=float) #1e-8 is used in ggdc web pipeline - see Meier-Kolthoff 2014
@@ -62,14 +62,13 @@ other_group = parser.add_argument_group('Other')
 other_group.add_argument('-t','--threads', help='Number of threads to use (default: 1)', default=1, type=int)
 other_group.add_argument('-b','--boot', help='Number of bootstraps to run (default: no bootstrapping)', default=0, type=positiveint)
 output_group.add_argument('--blastonly', action='store_true', help='If flag is provided, only output pairwise blast results; do not calculate distance statistics (default: run full pipeline)')
-output_group.add_argument('--keep', default=0, choices=[0,1,2], type=int, help='Level of file retention (default: 1)\n  '
+output_group.add_argument('--keep', default=0, choices=[0,1,2], type=int, help='Level of file retention (default: 0)\n  '
                           ' 0 = do not retain blast database or blast table output,\n'
                           '   1 = do not retain blast database output,\n'
                           '   2 = retain all intermediate output')
 
 args = parser.parse_args()
 outputpath=os.path.relpath(args.out, cwdir)
-args.statsfromtrimmed='False' #stats are calculated from disjoint alignments not trimmed alignments (deprecated method), although you can still output trimmed alignments with the --trimmedalignments flag
 startruntime=runtime()
 
 #check sequence input flags used correctly
@@ -260,9 +259,9 @@ if args.sequences==None:
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
         print('finished creating blast databases')
-        runsubprocess(['bash','%s/runblast_dirinput.sh'%sourcedir,outputpath,sourcedir,filepathinfo2, filepathinfo1,str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
+        runsubprocess(['bash','%s/runblast_dirinput.sh'%sourcedir,outputpath,sourcedir,filepathinfo1, filepathinfo2,str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
         if str(args.bidirectionalblast)=='True':
-            runsubprocess(['bash','%s/runblast_dirinput.sh'%sourcedir,outputpath,filepathinfo1, filepathinfo2,str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),'pairwiserun2'],preexec_fn='sigpipefix')
+            runsubprocess(['bash','%s/runblast_dirinput.sh'%sourcedir,outputpath,sourcedir,filepathinfo2, filepathinfo1,str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),'pairwiserun2'],preexec_fn='sigpipefix')
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished running blast')
         print('finished running blast')

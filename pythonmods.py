@@ -97,7 +97,9 @@ def splitfastas(infile,fastadir,filepathinfo,seqlengthfile):
     #write records to splitfastas directory, split by sample; write seqlengths to seqlengths.tsv
     f2=open(filepathinfo,'w')
     f3=open(seqlengthfile,'w')
+    samples=set()
     for sample in recorddict.keys():
+        samples.add(sample)
         fastafilepath='%s/%s.fasta'%(fastadir,sample)
         blastdbfilepath=os.path.splitext(fastafilepath)[0]
         blastdbfilepath='%s_db'%blastdbfilepath
@@ -108,6 +110,7 @@ def splitfastas(infile,fastadir,filepathinfo,seqlengthfile):
                 output_handle.write(">%s\n%s\n" % (recordid, recordseq))
     f2.close()
     f3.close()
+    assert len(samples)>0,'Error: no records detected from fasta file provided'
 
 
 
