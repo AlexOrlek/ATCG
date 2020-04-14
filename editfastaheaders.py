@@ -37,7 +37,7 @@ def editfasta(filepath):
     infile.close()
     #print fasta to stdout
     for recordid,recordseq in recordlist:
-        print('>{}\n{}'.format(str(recordid),str(recordseq)))
+        print('>{0}\n{1}'.format(str(recordid),str(recordseq)))
 
 if inputtype=='arg':
     editfasta(filepath)
@@ -55,7 +55,7 @@ if inputtype=='stdin_headersasis':
             infile=open(filepath,'r')
         #print fasta to stdout
         for recordid,recordseq in SeqIO.FastaIO.SimpleFastaParser(infile):  #iterate through contigs
-            print('>{}\n{}'.format(str(recordid),str(recordseq)))
+            print('>{0}\n{1}'.format(str(recordid),str(recordseq)))
         infile.close()
 
 

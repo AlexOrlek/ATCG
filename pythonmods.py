@@ -23,7 +23,7 @@ def runsubprocess(args,verbose=False,shell=False,polling=False,printstdout=True,
         processname=(" ".join(a for a in args))
     #
     if verbose==True:
-        print('{} {}'.format(processname, 'processname'))
+        print('{0} {1}'.format(processname, 'processname'))
     try:
         if polling==True:
             p=subprocess.Popen(args, stdout=subprocess.PIPE,shell=shell,preexec_fn=preexec_fn)
@@ -33,29 +33,29 @@ def runsubprocess(args,verbose=False,shell=False,polling=False,printstdout=True,
                     break
                 if stdout: #if stdout not empty...
                     if printstdout==True:
-                        print('{}'.format(stdout.decode().strip()))
+                        print('{0}'.format(stdout.decode().strip()))
         else:
             p=subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=shell,preexec_fn=preexec_fn)
             stdout, stderr= p.communicate()
             if stdout:
                 if printstdout==True:
-                    print('{}'.format(stdout.decode()))
+                    print('{0}'.format(stdout.decode()))
             if stderr:
                 try: #want to output to stderr stream
                     if (sys.version_info > (3, 0)):
-                        print('{}'.format(stderr.decode()),file=sys.stderr) #Python3
+                        print('{0}'.format(stderr.decode()),file=sys.stderr) #Python3
                     else:
                         print>>sys.stderr,stderr  #Python2
                 except: #if above code block fails for some reason, print stderr (to stdout)
-                    print('{}'.format(stderr.decode()))
+                    print('{0}'.format(stderr.decode()))
 
         if p.returncode==0:
             if verbose==True:
-                print('{} {}'.format(processname, 'code has run successfully'))
+                print('{0} {1}'.format(processname, 'code has run successfully'))
         else:
             sys.exit() #triggers except below
     except:
-        print('{} {}'.format(processname, '#this pipeline step produced error'))
+        print('{0} {1}'.format(processname, '#this pipeline step produced error'))
         print('unexpected error; exiting')
         sys.exit()
         
