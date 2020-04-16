@@ -46,26 +46,31 @@ output_group.add_argument('--alnlenstats', action='store_true', help='If flag is
 output_group.add_argument('--bestblastalignments', action='store_true', help='If flag is provided, write to file best blast alignments for each sample (default: do not output)')
 output_group.add_argument('--nonoverlappingalignments', action='store_true', help='If flag is provided, write to file best alignments with non-overlapping query/subject ranges (only the intersection of query and subject alignment sets is given) (default: do not output)')
 output_group.add_argument('--trimmedalignments', action='store_true', help='If flag is provided, write to file trimmed alignments for each sample (default: do not output)')
-output_group.add_argument('--statsfromtrimmed', action='store_true', help='If flag is provided, statistics will be calculated from the trimmed alignments rather than from the non-verlapping alignments (default: calculate stats from non-overlapping alignments)') #DEPRECATED - recommended to use the default
 #BLAST options                                  
 blast_group = parser.add_argument_group('BLAST options')
 blast_group.add_argument('--evalue', help='BLAST e-value cutoff (default: 1e-8)', default=1e-8, type=float) #1e-8 is used in ggdc web pipeline - see Meier-Kolthoff 2014
 blast_group.add_argument('--wordsize', help='BLAST word size (ATCG default for blastn: 38; ATCG default for dc-megablast: 12; ATCG default for megablast: 28)', type=int) #38 is used in ggdc web pipleine?                 
 blast_group.add_argument('--task', help='BLAST task (default: blastn)', default='blastn', choices=['blastn','dc-megablast','megablast'], type=str)
 blast_group.add_argument('--bidirectionalblast', action='store_true', help='If flag is provided, BLAST is conducted in both directions and results are averaged (slower runtime) (default: conduct BLAST in one direction only)')
-#Alignment filtering options                                                   
-alignment_group = parser.add_argument_group('Alignment filtering options')
+#Alignment parsing options                                                   
+alignment_group = parser.add_argument_group('Alignment parsing options')
 alignment_group.add_argument('-l','--lengthfilter', help='Length threshold (in basepairs) used to filter trimmed alignments prior to calculating breakpoint distance and alignment length statistics (default: 100)', default=100, type=positiveint)
 alignment_group.add_argument('-r','--alnrankmethod', help='Parameter used for selecting best alignment (default: bitscore)', default='bitscore', choices=['bitscore','alnlen','pid'], type=str)
+alignment_group.add_argument('--statsfromtrimmed', action='store_true', help='If flag is provided, statistics will be calculated from the trimmed alignments rather than from the non-overlapping alignments (default: calculate stats from non-overlapping alignments)') #DEPRECATED - recommended to use the default
+alignment_group.add_argument('--keepsuboptimalalignmentfragment', action='store_true', help='If flag is provided, where a suboptimal alignment encloses a shorter but higher scoring alignment, the longest flanking fragment will be retained (default: exclude suboptimal alignment, including flanking fragments') #DEPRECATED - recommended to use the default
+
 #Other options
 other_group = parser.add_argument_group('Other')
 other_group.add_argument('-t','--threads', help='Number of threads to use (default: 1)', default=1, type=int)
 other_group.add_argument('-b','--boot', help='Number of bootstraps to run (default: no bootstrapping)', default=0, type=positiveint)
-output_group.add_argument('--blastonly', action='store_true', help='If flag is provided, only output pairwise blast results; do not calculate distance statistics (default: run full pipeline)')
-output_group.add_argument('--keep', default=0, choices=[0,1,2], type=int, help='Level of file retention (default: 0)\n  '
+other_group.add_argument('--blastonly', action='store_true', help='If flag is provided, only output pairwise blast results; do not calculate distance statistics (default: run full pipeline)')
+other_group.add_argument('--keep', default=0, choices=[0,1,2], type=int, help='Level of file retention (default: 0)\n  '
                           ' 0 = do not retain blast database or blast table output,\n'
                           '   1 = do not retain blast database output,\n'
                           '   2 = retain all intermediate output')
+
+
+
 
 args = parser.parse_args()
 outputpath=os.path.relpath(args.out, cwdir)
@@ -283,7 +288,7 @@ if args.sequences==None:
 
 
 if args.blastonly!=True and noblasthits==False:
-    runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.bestblastalignments),str(args.nonoverlappingalignments),str(args.trimmedalignments),str(args.bidirectionalblast),str(args.statsfromtrimmed)])
+    runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.bestblastalignments),str(args.nonoverlappingalignments),str(args.trimmedalignments),str(args.bidirectionalblast),str(args.statsfromtrimmed),str(args.keepsuboptimalalignmentfragment)])
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished parsing alignments')
     print('finished parsing alignments')

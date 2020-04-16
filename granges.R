@@ -22,6 +22,7 @@ outputnonoverlappingalignments=as.character(args[9])
 outputtrimmedalignments=as.character(args[10])
 bidirectionalblast=as.character(args[11])
 statsfromtrimmed=as.character(args[12]) #False by default
+keepbisectedrangesarg=as.character(args[13])
 
 ###define functions (N.B see bottom of script for deprecated functions)
 
@@ -134,18 +135,22 @@ grtodf<-function(qgr,sgr) {  #same but made generic
 
 
 #trimming functions
-reducefunction<-function(x) {
-  #reduces (joins contiguous) disjoint ranges, after splitting by input hsp; if there are discontiguous ranges (due to alignment being split in two - if it's longer on query/subject but is considered suboptimal according to blast table alignment length) selects longest range
+reducefunction<-function(x,keepbisectedranges) {
+  #reduces (joins contiguous) disjoint ranges, after splitting by input hsp; if there are discontiguous ranges for a given hsp (due to alignment being split in two - if it's longer on query/subject but is considered suboptimal e.g. lower bitscore, if using bitscore as best hit selection criterion) 1) selects longest range of hsp ranges if keepbisectedranges=True 2) excludes hsp ranges if keepbisectedranges=False. N.B there should be at least one best alignment retained for every query-sample pair, even with keepbisectedranges=False, so empty granges object bug shouldn't occur
   myinputhsp<-unique(mcols(x)$inputhsp)
   output<-reduce(x)
-  if (length(output)>1) {
+  if (length(output)>1) { #discontiguous (bisected) range
+    if (keepbisectedranges=='False') {
+      return(NULL)
+    }
     output<-output[which.max(width(output)),]
   }
   mcols(output)$inputhsp<-myinputhsp
   return(output)
 }
 
-splitreducecombine<-function(x) {
+
+splitreducecombine<-function(x,keepbisectedranges) {  
   #takes list of ranges for a given paired sample; splits into needs reducing / doesn't need reducing; reduces; combines 
   isduplicate<-duplicated(mcols(x)$inputhsp) | duplicated(mcols(x)$inputhsp, fromLast=TRUE)
   numdup<-sum(isduplicate)
@@ -153,16 +158,24 @@ splitreducecombine<-function(x) {
     if(numdup==length(isduplicate)) {
       duplicates<-x
       splitduplicates<-split(duplicates,mcols(duplicates)$inputhsp)
-      reducedduplicates<-lapply(splitduplicates, function(x) x=reducefunction(x))
+      reducedduplicates<-lapply(splitduplicates, function(x) x=reducefunction(x,keepbisectedranges))
+      includedalignmentindices<-lapply(reducedduplicates,length)>0
+      reducedduplicates<-reducedduplicates[includedalignmentindices] #at least one best alignment should be remain
       combinedreduced<-do.call(getMethod(c, "GenomicRanges"), reducedduplicates)
       final<-combinedreduced
     } else {
       duplicates<-x[isduplicate]
       nonduplicates<-x[!isduplicate]
       splitduplicates<-split(duplicates,mcols(duplicates)$inputhsp)
-      reducedduplicates<-lapply(splitduplicates, function(x) x=reducefunction(x))
-      combinedreduced<-do.call(getMethod(c, "GenomicRanges"), reducedduplicates)
-      final<-append(nonduplicates, combinedreduced)
+      reducedduplicates<-lapply(splitduplicates, function(x) x=reducefunction(x,keepbisectedranges))
+      includedalignmentindices<-lapply(reducedduplicates,length)>0
+      if (all(includedalignmentindices==FALSE)) {
+        final<-nonduplicates
+      } else {
+        reducedduplicates<-reducedduplicates[includedalignmentindices]
+        combinedreduced<-do.call(getMethod(c, "GenomicRanges"), reducedduplicates)
+        final<-append(nonduplicates, combinedreduced)
+      }
     }
   } else {
     final<-x
@@ -649,7 +662,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     mcols(gr2)$inputhsp<-tophsp
     mcols(gr2)$revmap<-NULL
     grsplit<-split(gr2,seqnames(gr2)) #split by seqnames i.e. one list per paired sample                                            
-    qreducedoutput<-lapply(grsplit, function(x) x=splitreducecombine(x))
+    qreducedoutput<-lapply(grsplit, function(x) x=splitreducecombine(x,keepbisectedrangesarg))
     #subject disjoin
     gr2<-disjoin(sgr,with.revmap=TRUE,ignore.strand=TRUE)
     revmap<-gr2$revmap
@@ -657,7 +670,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     mcols(gr2)$inputhsp<-tophsp
     mcols(gr2)$revmap<-NULL
     grsplit<-split(gr2,seqnames(gr2)) #split by seqnames i.e. one list per paired sample
-    sreducedoutput<-lapply(grsplit, function(x) x=splitreducecombine(x))
+    sreducedoutput<-lapply(grsplit, function(x) x=splitreducecombine(x,keepbisectedrangesarg))
     #add pid, strand, subject name, and alignment length
     qfinal<-lapply(qreducedoutput, function(x) x=addcols(x))
     sfinal<-lapply(sreducedoutput, function(x) x=addcols(x))
