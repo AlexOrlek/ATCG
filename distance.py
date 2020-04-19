@@ -243,7 +243,9 @@ if args.sequences==None:
             parser.error('there must be no overlap between fasta identifiers contained within the fasta files provided using the -s1 and -s2 flags')
         runsubprocess(['cat %s %s > %s'%('%s/seqlengths1.tsv'%outputpath,'%s/seqlengths2.tsv'%outputpath,'%s/seqlengths.tsv'%outputpath)],shell=True)
         runsubprocess(['cat %s %s > %s'%(filepathinfo1,filepathinfo2,filepathinfo)],shell=True)
-        runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,filepathinfo, str(args.threads),sourcedir])
+        runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,filepathinfo2, str(args.threads),sourcedir])
+        if str(args.bidirectionalblast)=='True':
+            runsubprocess(['bash','%s/makeblastdbs.sh'%sourcedir,filepathinfo1, str(args.threads),sourcedir])
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
         print('finished creating blast databases')
@@ -260,7 +262,9 @@ if args.sequences==None:
         runsubprocess(['python','%s/getseqlengths.py'%sourcedir,'%s/seqlengths2.tsv'%outputpath,filepathinfo2])
         runsubprocess(['cat %s %s > %s'%('%s/seqlengths1.tsv'%outputpath,'%s/seqlengths2.tsv'%outputpath,'%s/seqlengths.tsv'%outputpath)],shell=True)
         runsubprocess(['cat %s %s > %s'%(filepathinfo1,filepathinfo2,filepathinfo)],shell=True)
-        runsubprocess(['bash','%s/makeblastdbs_dirinput.sh'%sourcedir,filepathinfo, str(args.threads),sourcedir])
+        runsubprocess(['bash','%s/makeblastdbs_dirinput.sh'%sourcedir,filepathinfo2, str(args.threads),sourcedir])
+        if str(args.bidirectionalblast)=='True':
+            runsubprocess(['bash','%s/makeblastdbs_dirinput.sh'%sourcedir,filepathinfo1, str(args.threads),sourcedir])
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
         print('finished creating blast databases')
