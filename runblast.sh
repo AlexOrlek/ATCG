@@ -13,9 +13,7 @@ set -o pipefail
 #argv[8] is blast bi-directional boolean flag (default False)
 #argv[9] is blast type (-s flag or -1/-2 flags)
 
-mkdir -p ${1}/blast
-mkdir -p ${1}/output
-
+outputpath=${1}
 blastdbdir=${2}
 filepathinfo=${3} #format: sample \t filepath to fasta \t filepath to blast database
 evalue=${4}
@@ -25,10 +23,13 @@ threads=${7}
 bidirectionalblast=${8} #default is False
 blasttype=${9}  #allvallpairwise (-s flag) or pairwise (-1/-2 flags)
 
+mkdir -p ${outputpath}/blast
+mkdir -p ${outputpath}/output
+
 sort -k1,1V -o ${filepathinfo} ${filepathinfo}  #-k command must precede -o command
 
 if [ ${blasttype} != 'pairwiserun2' ]; then #prevents writing to file twice in the case of pairwise blasttype
-    > ${1}/allsubjects.txt  #used in reformatblastoutput.sh
+    > ${outputpath}/allsubjects.txt  #used in reformatblastoutput.sh
 fi
 
 if [ ${blasttype} == 'allvallpairwise' ]; then
@@ -43,8 +44,8 @@ if [ ${blasttype} == 'allvallpairwise' ]; then
             fi
             sample="${line[0]}"
             database="${line[2]}"
-            echo "${sample}" >> ${1}/allsubjects.txt
-            blastoutput="${1}/blast/${sample}_alignments.tsv"
+            echo "${sample}" >> ${outputpath}/allsubjects.txt
+            blastoutput="${outputpath}/blast/${sample}_alignments.tsv"
             if [[ $counter -gt 1 ]]; then
                 cat `find ${blastdbdir}/ -maxdepth 1 -mindepth 1 -name "*.fasta" ! -name "${sample}.fasta" | grep -v -F -f <(printf "%s\n" "${excludesamples[@]}")` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
                 excludesamples=(${excludesamples[@]} "${blastdbdir}/${sample}.fasta")
@@ -58,8 +59,8 @@ if [ ${blasttype} == 'allvallpairwise' ]; then
         do
             sample="${line[0]}"
             database="${line[2]}"
-            echo "${sample}" >> ${1}/allsubjects.txt
-            blastoutput="${1}/blast/${sample}_alignments.tsv"
+            echo "${sample}" >> ${outputpath}/allsubjects.txt
+            blastoutput="${outputpath}/blast/${sample}_alignments.tsv"
             cat `find ${blastdbdir}/ -maxdepth 1 -mindepth 1 -name "*.fasta" ! -name "${sample}.fasta"` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
         done < ${filepathinfo}
     fi
@@ -68,18 +69,19 @@ else   #blasttype==pairwise (or pairwiserun2 in the case of bidirectionalblast s
     do
         sample="${line[0]}"
         database="${line[2]}"
-        echo "${sample}" >> ${1}/allsubjects.txt
-        blastoutput="${1}/blast/${sample}_alignments.tsv"
+        echo "${sample}" >> ${outputpath}/allsubjects.txt
+        blastoutput="${outputpath}/blast/${sample}_alignments.tsv"
         cat `find ${blastdbdir}/ -maxdepth 1 -mindepth 1 -name "*.fasta"` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
     done < ${filepathinfo}
 fi
 
 
 if [ ${blasttype} != 'pairwiserun2' ]; then #prevents writing to file twice in the case of pairwise blasttype
-    > ${1}/blastsettings.txt
-    echo "e-value cutoff: ${evalue}" >> ${1}/blastsettings.txt
-    echo "word size: ${wordsize}" >> ${1}/blastsettings.txt
-    echo "bi-directional BLAST: ${bidirectionalblast}" >> ${1}/blastsettings.txt
+    > ${outputpath}/blastsettings.txt
+    echo "BLAST task: ${task}" >> ${outputpath}/blastsettings.txt
+    echo "e-value cutoff: ${evalue}" >> ${outputpath}/blastsettings.txt
+    echo "word size: ${wordsize}" >> ${outputpath}/blastsettings.txt
+    echo "bi-directional BLAST: ${bidirectionalblast}" >> ${outputpath}/blastsettings.txt
 fi
 
 

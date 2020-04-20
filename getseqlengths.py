@@ -17,9 +17,9 @@ with open(filepathinfo) as f:
         #get sample name (=filename without extension)
         if fastafilepath.endswith('.gz'):
             gunzipfilepath=re.sub(r'\.gz$','',fastafilepath)
-            samplename=os.path.basename(os.path.splitext(gunzipfilepath)[-2])
+            sample=os.path.basename(os.path.splitext(gunzipfilepath)[-2])
         else:
-            samplename=os.path.splitext(os.path.basename(fastafilepath))[0]
+            sample=os.path.splitext(os.path.basename(fastafilepath))[0]
         #parse fasta
         recordlist=[] #list of id,seq tuples
         for recordid,recordseq in SeqIO.FastaIO.SimpleFastaParser(infile):
@@ -27,8 +27,8 @@ with open(filepathinfo) as f:
             newfastaheader=re.sub(r'(\S+)(?: .*)?',r'\1',recordid)
             #replace | with _ to ensure unique contig names
             newfastaheader=re.sub(r'\|','_',newfastaheader.strip())
-            #prefix with samplename to create recordid
-            recordid='%s|%s'%(samplename,newfastaheader)
+            #prefix with sample name to create recordid
+            recordid='%s|%s'%(sample,newfastaheader)
             recordlist.append([recordid,recordseq])
         infile.close()
         #print fasta to stdout

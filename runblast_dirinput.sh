@@ -13,9 +13,7 @@ set -o pipefail
 #argv[8] is blast bi-directional boolean flag (default False)
 #argv[9] is blast type (-s flag or -1/-2 flags)
 
-mkdir -p ${1}/blast
-mkdir -p ${1}/output
-
+outputpath=${1}
 sourcedir=${2}
 filepathinfoquery=${3}
 filepathinfosubject=${4} #subject sequence blast database; format: sample \t filepath to fasta \t filepath to database
@@ -26,10 +24,11 @@ threads=${8}
 bidirectionalblast=${9} #default is False
 blasttype=${10}  #allvallpairwise (-s flag) or pairwise (-1/-2 flags)
 
-
+mkdir -p ${outputpath}/blast
+mkdir -p ${outputpath}/output
 
 if [ ${blasttype} != 'pairwiserun2' ]; then #prevents writing to file twice in the case of pairwise blasttype
-    > ${1}/allsubjects.txt  #used in reformatblastoutput.sh
+    > ${outputpath}/allsubjects.txt  #used in reformatblastoutput.sh
     sort -k1,1V -o ${filepathinfoquery} ${filepathinfoquery}  #-k command must precede -o command
     sort -k1,1V -o ${filepathinfosubject} ${filepathinfosubject} 
 fi
@@ -47,8 +46,8 @@ if [ ${blasttype} == 'allvallpairwise' ]; then
             sample="${line[0]}"
             fastafile="${line[1]}"
             database="${line[2]}"
-            echo "${sample}" >> ${1}/allsubjects.txt
-            blastoutput="${1}/blast/${sample}_alignments.tsv"
+            echo "${sample}" >> ${outputpath}/allsubjects.txt
+            blastoutput="${outputpath}/blast/${sample}_alignments.tsv"
             if [[ $counter -gt 1 ]]; then
                 cat ${filepathinfoquery} | cut -f2 | grep -v -F ${fastafile} | grep -v -F -f <(printf "%s\n" "${excludesamples[@]}") | python ${sourcedir}/editfastaheaders.py 'stdin' | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
                 excludesamples=(${excludesamples[@]} ${fastafile})
@@ -63,8 +62,8 @@ if [ ${blasttype} == 'allvallpairwise' ]; then
             sample="${line[0]}"
             fastafile="${line[1]}"
             database="${line[2]}"
-            echo "${sample}" >> ${1}/allsubjects.txt
-            blastoutput="${1}/blast/${sample}_alignments.tsv"
+            echo "${sample}" >> ${outputpath}/allsubjects.txt
+            blastoutput="${outputpath}/blast/${sample}_alignments.tsv"
             cat ${filepathinfoquery} | cut -f2 | grep -v -F ${fastafile} | python ${sourcedir}/editfastaheaders.py 'stdin' | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
         done < ${filepathinfosubject}
     fi
@@ -74,17 +73,18 @@ else   #blasttype==pairwise (or pairwiserun2 in the case of bidirectionalblast s
         sample="${line[0]}"
         fastafile="${line[1]}"
         database="${line[2]}"
-        echo "${sample}" >> ${1}/allsubjects.txt
-        blastoutput="${1}/blast/${sample}_alignments.tsv"
+        echo "${sample}" >> ${outputpath}/allsubjects.txt
+        blastoutput="${outputpath}/blast/${sample}_alignments.tsv"
         cat ${filepathinfoquery} | cut -f2 | python ${sourcedir}/editfastaheaders.py 'stdin' | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
     done < ${filepathinfosubject}
 fi
 
 
 if [ ${blasttype} != 'pairwiserun2' ]; then #prevents writing to file twice in the case of pairwise blasttype
-    > ${1}/blastsettings.txt
-    echo "e-value cutoff: ${evalue}" >> ${1}/blastsettings.txt
-    echo "word size: ${wordsize}" >> ${1}/blastsettings.txt
-    echo "bi-directional BLAST: ${bidirectionalblast}" >> ${1}/blastsettings.txt
+    > ${outputpath}/blastsettings.txt
+    echo "BLAST task: ${task}" >> ${outputpath}/blastsettings.txt
+    echo "e-value cutoff: ${evalue}" >> ${outputpath}/blastsettings.txt
+    echo "word size: ${wordsize}" >> ${outputpath}/blastsettings.txt
+    echo "bi-directional BLAST: ${bidirectionalblast}" >> ${outputpath}/blastsettings.txt
 fi
 

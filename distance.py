@@ -33,9 +33,10 @@ help_group = parser.add_argument_group('Help')
 help_group.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help='Show this help message and exit.')
 #Input options                                                               
 input_group = parser.add_argument_group('Input')
-input_group.add_argument('-s','--sequences', help='Sequences, for all-vs-all pairwise comparison (required if -1 and -2 flags not provided)', required=False,type=fastainput)
-input_group.add_argument('-1','--sequences1', help='First set of sequence(s), for pairwise comparison against second set (required if -s flag not provided)', required=False,type=fastainput)
-input_group.add_argument('-2','--sequences2', help='Second set of sequence(s), for pairwise comparison against first set (required if -s flag not provided)', required=False,type=fastainput)
+input_group.add_argument('-s','--sequences', help='Sequences, for all-vs-all pairwise comparison (required if -1 and -2 flags and -e flag not provided)', required=False,type=fastainput)
+input_group.add_argument('-1','--sequences1', help='First set of sequence(s), for pairwise comparison against second set (required if -s flag and -e flag not provided)', required=False,type=fastainput)
+input_group.add_argument('-2','--sequences2', help='Second set of sequence(s), for pairwise comparison against first set (required if -s flag and -e flag not provided)', required=False,type=fastainput)
+input_group.add_argument('-p','--sequencepairs', help='A .tsv file containing two columns, with filepaths to fasta files. Each row of the file defines a pair of sequences to be compared (required if -1 and -2 flags and -s flag not provided)', required=False,type=str)
 #Output options                                               
 output_group = parser.add_argument_group('Output')
 output_group.add_argument('-o','--out', help='Output directory (required)', required=True)
@@ -77,12 +78,17 @@ outputpath=os.path.relpath(args.out, cwdir)
 startruntime=runtime()
 
 #check sequence input flags used correctly
-if args.sequences==None and args.sequences1==None and args.sequences2==None:
-    parser.error('as input, you must either provide --sequences or both --sequences1 and --sequences2')
-if args.sequences!=None and args.sequences1!=None and args.sequences2!=None:
-    parser.error('as input, you must either provide --sequences or both --sequences1 and --sequences2')
-if (args.sequences1==None and args.sequences2!=None) or (args.sequences1!=None and args.sequences2==None):
-    parser.error('as input, you must either provide --sequences or both --sequences1 and --sequences2')
+if args.sequencepairs==None:
+    if args.sequences==None and args.sequences1==None and args.sequences2==None:
+        parser.error('as input, you must provide --sequences OR both --sequences1 and --sequences2 OR --sequencepairs')
+    if args.sequences!=None and args.sequences1!=None and args.sequences2!=None:
+        parser.error('as input, you must provide --sequences OR both --sequences1 and --sequences2 OR --sequencepairs')
+    if (args.sequences1==None and args.sequences2!=None) or (args.sequences1!=None and args.sequences2==None):
+        parser.error('as input, you must provide --sequences OR both --sequences1 and --sequences2 OR --sequencepairs')
+else:
+    if args.sequences!=None or args.sequences1!=None or args.sequences2!=None:
+        parser.error('as input, you must provide --sequences OR both --sequences1 and --sequences2 OR --sequencepairs')
+
 
 
 #set default word sizes if none provided; check word size is within allowed limits for the blast task
@@ -108,72 +114,81 @@ else:
 if args.keep==0 and args.blastonly==True:
     parser.error('combining --keep 0 and --blastonly options will result in no final output being produced')
 
-#check if fasta input is stdin, file, or directory; if file or stdin, open filehandle
-if args.sequences!=None:
-    #-s flag provided
+#check fasta input
+if args.sequencepairs!=None:
     try:
-        os.stat(args.sequences) #check file path exists
+        os.stat(args.sequencepairs) #check file path exists
     except:
-        sys.exit('Error: -s flag filepath not found or broken symlink')
-    if os.path.isdir(args.sequences):
-        fastafileinput='dir'
-    elif os.path.isfile(args.sequences):
-        fastafileinput='file'
-        if args.sequences.endswith('.gz'):
-            args.sequences=gzip.open(args.sequences,'rt')
-        else:
-            args.sequences=open(args.sequences,'r')
-    else:
-        fastafileinput='stdin'
-        try:
-            args.sequences=open(args.sequences,'r')
-        except:
-            sys.exit('Error: failed to open fasta file provided to -s flag; %s not a valid filepath?'%args.sequences)
+        sys.exit('Error: -p flag filepath not found or broken symlink')
+    if not os.path.isfile(args.sequencepairs):
+        sys.exit('Error: -p flag filepath is not a file')
 else:
-    #-1/-2 flags provided
-    try:
-        os.stat(args.sequences1)
-    except:
-        sys.exit('Error: -1 flag filepath not found or broken symlink')
-    if os.path.isdir(args.sequences1):
-        fastafile1input='dir'
-    elif os.path.isfile(args.sequences1):
-        fastafile1input='file'
-        if args.sequences1.endswith('.gz'):
-            args.sequences1=gzip.open(args.sequences1,'rt')
-        else:
-            args.sequences1=open(args.sequences1,'r')
-    else:
-        fastafile1input='stdin'
+    #check if fasta input is stdin, file, or directory; if file or stdin, open filehandle
+    if args.sequences!=None:
+        #-s flag provided
         try:
-            args.sequences1=open(args.sequences1,'r')
+            os.stat(args.sequences) #check file path exists
         except:
-            sys.exit('Error: failed to open fasta file provided to -1 flag; %s not a valid filepath?'%args.sequences1)
-    #
-    try:
-        os.stat(args.sequences2)
-    except:
-        sys.exit('Error: -2 flag filepath not found or broken symlink')
-    if os.path.isdir(args.sequences2):
-        fastafile2input='dir'
-    elif os.path.isfile(args.sequences2):
-        fastafile2input='file'
-        if args.sequences2.endswith('.gz'):
-            args.sequences2=gzip.open(args.sequences2,'rt')
+            sys.exit('Error: -s flag filepath not found or broken symlink')
+        if os.path.isdir(args.sequences):
+            fastafileinput='dir'
+        elif os.path.isfile(args.sequences):
+            fastafileinput='file'
+            if args.sequences.endswith('.gz'):
+                args.sequences=gzip.open(args.sequences,'rt')
+            else:
+                args.sequences=open(args.sequences,'r')
         else:
-            args.sequences2=open(args.sequences2,'r')
+            fastafileinput='stdin'
+            try:
+                args.sequences=open(args.sequences,'r')
+            except:
+                sys.exit('Error: failed to open fasta file provided to -s flag; %s not a valid filepath?'%args.sequences)
     else:
-        fastafile2input='stdin'
+        #-1/-2 flags provided
         try:
-            args.sequences2=open(args.sequences2,'r')
+            os.stat(args.sequences1)
         except:
-            sys.exit('Error: failed to open fasta file provided to -2 flag; %s not a valid filepath?'%args.sequences2)
-    if (fastafile1input=='dir' and fastafile2input!='dir') or (fastafile2input=='dir' and fastafile1input!='dir'):
-        if fastafile1input!='dir':
-            args.sequences1.close()
-        if fastafile2input!='dir':
-            args.sequences2.close()
-        sys.exit('Error: fasta file input provided to flags -1 and -2 must be either both files or both directories (files can be provided as stdin)')
+            sys.exit('Error: -1 flag filepath not found or broken symlink')
+        if os.path.isdir(args.sequences1):
+            fastafile1input='dir'
+        elif os.path.isfile(args.sequences1):
+            fastafile1input='file'
+            if args.sequences1.endswith('.gz'):
+                args.sequences1=gzip.open(args.sequences1,'rt')
+            else:
+                args.sequences1=open(args.sequences1,'r')
+        else:
+            fastafile1input='stdin'
+            try:
+                args.sequences1=open(args.sequences1,'r')
+            except:
+                sys.exit('Error: failed to open fasta file provided to -1 flag; %s not a valid filepath?'%args.sequences1)
+        #
+        try:
+            os.stat(args.sequences2)
+        except:
+            sys.exit('Error: -2 flag filepath not found or broken symlink')
+        if os.path.isdir(args.sequences2):
+            fastafile2input='dir'
+        elif os.path.isfile(args.sequences2):
+            fastafile2input='file'
+            if args.sequences2.endswith('.gz'):
+                args.sequences2=gzip.open(args.sequences2,'rt')
+            else:
+                args.sequences2=open(args.sequences2,'r')
+        else:
+            fastafile2input='stdin'
+            try:
+                args.sequences2=open(args.sequences2,'r')
+            except:
+                sys.exit('Error: failed to open fasta file provided to -2 flag; %s not a valid filepath?'%args.sequences2)
+        if (fastafile1input=='dir' and fastafile2input!='dir') or (fastafile2input=='dir' and fastafile1input!='dir'):
+            if fastafile1input!='dir':
+                args.sequences1.close()
+            if fastafile2input!='dir':
+                args.sequences2.close()
+            sys.exit('Error: fasta file input provided to flags -1 and -2 must be either both files or both directories (files can be provided as stdin)')
 
 
 
@@ -200,7 +215,7 @@ if args.sequences!=None:
     else:
         runsubprocess(['python','%s/getdirpaths.py'%sourcedir,args.sequences,filepathinfo,blastdbdir,blasttype])
         runsubprocess(['python','%s/getseqlengths.py'%sourcedir,'%s/seqlengths.tsv'%outputpath,filepathinfo])
-        runsubprocess(['bash','%s/makeblastdbs_dirinput.sh'%sourcedir,filepathinfo,str(args.threads),sourcedir])
+        runsubprocess(['bash','%s/makeblastdbs_editfastas.sh'%sourcedir,filepathinfo,str(args.threads),sourcedir])
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
         print('finished creating blast databases')
@@ -222,14 +237,14 @@ if args.sequences!=None:
     if args.keep==0 or args.keep==1:
         runsubprocess(['rm -rf %s/blastdbs'%outputpath],shell=True)
 
-if args.sequences==None:
+if args.sequences==None and args.sequencepairs==None:
     blasttype='pairwise'
     blastdbdir1='%s/blastdbs1'%outputpath
     blastdbdir2='%s/blastdbs2'%outputpath
     filepathinfo1='%s/filepathinfo1.tsv'%outputpath
     filepathinfo2='%s/filepathinfo2.tsv'%outputpath
-    filepathinfo='%s/filepathinfo.tsv'%outputpath
-    subjectsamples='%s/allsubjects.txt'%outputpath
+    filepathinfo='%s/filepathinfo.tsv'%outputpath  #contains all samples
+    subjectsamples='%s/allsubjects.txt'%outputpath  #all subject samples (only the same as filepathinfo samples when bidirectional=True
     if fastafile1input=='file' or fastafile1input=='stdin':
         splitfastas(args.sequences1,blastdbdir1,filepathinfo1,'%s/seqlengths1.tsv'%outputpath)
         splitfastas(args.sequences2,blastdbdir2,filepathinfo2,'%s/seqlengths2.tsv'%outputpath)
@@ -262,9 +277,9 @@ if args.sequences==None:
         runsubprocess(['python','%s/getseqlengths.py'%sourcedir,'%s/seqlengths2.tsv'%outputpath,filepathinfo2])
         runsubprocess(['cat %s %s > %s'%('%s/seqlengths1.tsv'%outputpath,'%s/seqlengths2.tsv'%outputpath,'%s/seqlengths.tsv'%outputpath)],shell=True)
         runsubprocess(['cat %s %s > %s'%(filepathinfo1,filepathinfo2,filepathinfo)],shell=True)
-        runsubprocess(['bash','%s/makeblastdbs_dirinput.sh'%sourcedir,filepathinfo2, str(args.threads),sourcedir])
+        runsubprocess(['bash','%s/makeblastdbs_editfastas.sh'%sourcedir,filepathinfo2, str(args.threads),sourcedir])
         if str(args.bidirectionalblast)=='True':
-            runsubprocess(['bash','%s/makeblastdbs_dirinput.sh'%sourcedir,filepathinfo1, str(args.threads),sourcedir])
+            runsubprocess(['bash','%s/makeblastdbs_editfastas.sh'%sourcedir,filepathinfo1, str(args.threads),sourcedir])
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
         print('finished creating blast databases')
@@ -289,6 +304,49 @@ if args.sequences==None:
     if args.keep==0 or args.keep==1:
         runsubprocess(['rm -rf %s/blastdbs1'%outputpath],shell=True)
         runsubprocess(['rm -rf %s/blastdbs2'%outputpath],shell=True)
+
+
+if args.sequencepairs!=None:
+    blasttype='sequencepairs'
+    blastdbdir1='%s/blastdbs1'%outputpath
+    blastdbdir2='%s/blastdbs2'%outputpath
+    filepathinfo1='%s/filepathinfo1.tsv'%outputpath
+    filepathinfo2='%s/filepathinfo2.tsv'%outputpath
+    filepathinfo='%s/filepathinfo.tsv'%outputpath  #contains all samples
+    subjectsamples='%s/allsubjects.txt'%outputpath  #all subject samples (only the same as filepathinfo samples when bidirectional=True
+    runsubprocess(['mkdir -p %s'%outputpath],shell=True)
+    runsubprocess(['mkdir -p %s'%blastdbdir2],shell=True)
+    if args.bidirectionalblast==True:
+        runsubprocess(['mkdir -p %s'%blastdbdir1],shell=True)
+    runsubprocess(['python','%s/handlesequencepairs.py'%sourcedir,str(args.sequencepairs),outputpath,str(args.bidirectionalblast)])
+    runsubprocess(['bash','%s/makeblastdbs_editfastas.sh'%sourcedir,filepathinfo2, str(args.threads),sourcedir])
+    if str(args.bidirectionalblast)=='True':
+        runsubprocess(['bash','%s/makeblastdbs_editfastas.sh'%sourcedir,filepathinfo1, str(args.threads),sourcedir])
+    laterruntime=runtime()
+    #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
+    print('finished creating blast databases')
+    runsubprocess(['bash','%s/runblast_sequencepairs.sh'%sourcedir,outputpath,sourcedir,filepathinfo2,str(args.sequencepairs),str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
+    if str(args.bidirectionalblast)=='True':
+        runsubprocess(['bash','%s/runblast_sequencepairs.sh'%sourcedir,outputpath,sourcedir,filepathinfo1,str(args.sequencepairs),str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),'sequencepairsrun2'],preexec_fn='sigpipefix')
+    laterruntime=runtime()
+    #print(laterruntime-startruntime, 'runtime; finished running blast')
+    print('finished running blast')
+
+    noblasthits=runsubprocess(['bash','%s/reformatblastoutput.sh'%sourcedir,outputpath, subjectsamples, sourcedir,str(args.bidirectionalblast)],preexec_fn='sigpipefix',printstdout=False)
+    if str(noblasthits)=='no blast hits':
+        print('Warning: no blast alignments produced from genome comparison(s); pipeline terminated')
+        noblasthits=True
+    else:
+        noblasthits=False
+        laterruntime=runtime()
+        #print(laterruntime-startruntime, 'runtime; finished reformatting alignments')
+        print('finished reformatting alignments')
+
+    if args.keep==0 or args.keep==1:
+        runsubprocess(['rm -rf %s/blastdbs2'%outputpath],shell=True)
+        if str(args.bidirectionalblast)=='True':
+            runsubprocess(['rm -rf %s/blastdbs1'%outputpath],shell=True)
+
 
 
 if args.blastonly!=True and noblasthits==False:
@@ -326,10 +384,15 @@ if args.keep==0:
 if args.keep==0 or args.keep==1:
     runsubprocess(['rm %s/includedsubjects.txt'%outputpath],shell=True)
     runsubprocess(['rm %s/allsubjects.txt'%outputpath],shell=True)
-    if args.sequences==None:
-        runsubprocess(['rm %s/filepathinfo.tsv'%outputpath],shell=True) #filepathinfo1.tsv/filepathinfo2.tsv retained though
+    if args.sequences==None and args.sequencepairs==None:  #-1/-2 flag
+        runsubprocess(['rm %s/filepathinfo1.tsv'%outputpath],shell=True) #filepathinfo.tsv retained
+        runsubprocess(['rm %s/filepathinfo2.tsv'%outputpath],shell=True)
         runsubprocess(['rm %s/seqlengths1.tsv'%outputpath],shell=True)  #seqlengths.tsv retained
         runsubprocess(['rm %s/seqlengths2.tsv'%outputpath],shell=True)
+    if args.sequencepairs!=None:
+        runsubprocess(['rm %s/filepathinfo2.tsv'%outputpath],shell=True)
+        if os.path.exists('%s/filepathinfo1.tsv'%outputpath):
+            runsubprocess(['rm %s/filepathinfo1.tsv'%outputpath],shell=True)
 
 
 print('Finished running ATCG!')
