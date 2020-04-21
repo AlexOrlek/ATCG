@@ -51,7 +51,7 @@ ATCG is __not__ appropriate if you want to:
 
 # Requirements
 
-* Linux or MacOS (with the [Bash shell](https://en.wikibooks.org/wiki/Bash_Shell_Scripting#What_is_Bash?), which is the default shell on MacOS and many Linux distributions; tested using Bash versions 3.2, 4.1, 4.3)
+* Linux or MacOS, with the [Bash shell](https://en.wikibooks.org/wiki/Bash_Shell_Scripting#What_is_Bash?), version 4 or later, installed (tested using Bash versions 4.1 and 4.3). Bash is the default shell on MacOS and many Linux distributions.
 * [Python](https://www.python.org/) 2.7 or Python 3 (tested using Python 2.7.11 and Python 3.5.2)
 * [R](https://www.r-project.org/) 3.3.1 or later
 

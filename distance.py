@@ -95,7 +95,7 @@ else:
 if args.wordsize==None:
     if args.task=='blastn':
         args.wordsize=int(38)
-    if args.task=='dc-megablastn':
+    if args.task=='dc-megablast':
         args.wordsize=int(12)
     if args.task=='megablast':
         args.wordsize=int(28)
