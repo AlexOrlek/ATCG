@@ -858,7 +858,7 @@ finaldf<-as.data.frame(do.call(rbind,finaldf))
 #N.B 'Genome1'/'Genome2' are used for column names of distancestats.tsv/distancestats_bootstrapped.tsv files, but in code in this script the term 'sample' instead of 'genome' is used
 
 #create finaldfcolnames vector
-finaldfcolnames<-c('Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth','Coverage_breadth_mingenome','Pretrim_coverage_breadth_Genome1','Pretrim_coverage_breadth_Genome2','Pretrim_percent_identity_Genome1','Pretrim_percent_identity_Genome2')
+finaldfcolnames<-c('Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Average_nucleotide_identity','Coverage_breadth','Coverage_breadth_mingenome','Pretrim_coverage_breadth_Genome1','Pretrim_coverage_breadth_Genome2','Pretrim_percent_identity_Genome1','Pretrim_percent_identity_Genome2')
 if (breakpoint=='True') {
   finaldfcolnames<-c(finaldfcolnames,'Breakpoint_distance_d0','Breakpoint_distance_d1','Breakpoints','Alignments','Alignment_pairs')
 }
@@ -900,7 +900,7 @@ if (boot!=0) {
   finaldfboot<-rbindlist(finaldflist,idcol = "index")
 
   #create finaldfbootcolnames vector
-  finaldfbootcolnames<-c('bootstrap','Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Percent_identity','Coverage_breadth','Coverage_breadth_mingenome')
+  finaldfbootcolnames<-c('bootstrap','Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Average_nucleotide_identity','Coverage_breadth','Coverage_breadth_mingenome')
 
   colnames(finaldfboot)<-finaldfbootcolnames
 

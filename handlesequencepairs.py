@@ -57,21 +57,23 @@ for filepath in filepaths2:
     f3.write('%s\n'%sample)
 f2.close()
 
-if bidirectionalblast=='True':
-    f2=open('%s/filepathinfo1.tsv'%outputpath,'w')
-    for filepath in filepaths1:
-        if filepath.endswith('.gz'):
-            gunzipfilepath=re.sub(r'\.gz$','',filepath)
-            extension=os.path.splitext(gunzipfilepath)[1]
-            sample=os.path.splitext(os.path.basename(gunzipfilepath))[0]
-        else:
-            extension=os.path.splitext(filepath)[1]
-            sample=os.path.splitext(os.path.basename(filepath))[0]
-        assert extension in {'.fa','.fasta','.fna'},'Error: unrecognised file extension: %s fasta files must have extension .fa .fasta or .fna'%extension
-        blastdbpath='%s/blastdbs1/%s_db'%(outputpath,sample)
-        f2.write('%s\t%s\t%s\n'%(sample,filepath,blastdbpath))
+
+f2=open('%s/filepathinfo1.tsv'%outputpath,'w')
+for filepath in filepaths1:
+    if filepath.endswith('.gz'):
+        gunzipfilepath=re.sub(r'\.gz$','',filepath)
+        extension=os.path.splitext(gunzipfilepath)[1]
+        sample=os.path.splitext(os.path.basename(gunzipfilepath))[0]
+    else:
+        extension=os.path.splitext(filepath)[1]
+        sample=os.path.splitext(os.path.basename(filepath))[0]
+    assert extension in {'.fa','.fasta','.fna'},'Error: unrecognised file extension: %s fasta files must have extension .fa .fasta or .fna'%extension
+    blastdbpath='%s/blastdbs1/%s_db'%(outputpath,sample)
+    f2.write('%s\t%s\t%s\n'%(sample,filepath,blastdbpath))
+    if bidirectionalblast=='True':
         f3.write('%s\n'%sample)
-    f2.close()
+f2.close()
+
 f3.close()
 
 #pickle comparison dict
