@@ -15,8 +15,8 @@ with open(pairsfile) as f:
     for line in f:
         data=line.strip().split('\t')
         assert len(data)==2,'Error: --sequencepairs file does not have 2 columns of data'
-        filepath1=data[0]
-        filepath2=data[1]
+        filepath1=data[0].strip('"').strip("'") #strip quotes if present
+        filepath2=data[1].strip('"').strip("'")
         #check both are valid filepaths
         if not os.path.isfile(filepath1):
             sys.exit('Error: %s is not a valid filepath'%filepath1)

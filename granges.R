@@ -23,6 +23,15 @@ outputtrimmedalignments=as.character(args[10])
 bidirectionalblast=as.character(args[11])
 statsfromtrimmed=as.character(args[12]) #False by default
 keepbisectedrangesarg=as.character(args[13])
+alnlenstatsquantiles=as.character(args[14])
+alnlenstatsquantiles<-unique(sort(unlist(strsplit(alnlenstatsquantiles,'|',fixed=TRUE))))
+
+lxcols<-vector()
+nxcols<-vector()
+for (i in 1:length(alnlenstatsquantiles)) {
+  lxcols[i]<-paste('L',alnlenstatsquantiles[i],sep='')
+  nxcols[i]<-paste('N',alnlenstatsquantiles[i],sep='')
+}
 
 ###define functions (N.B see bottom of script for deprecated functions)
 
@@ -447,7 +456,7 @@ combinebootfunc<-function(x) {
 
 #alignment length distribution function
 
-getalnlenstats<-function(x,widthfilter) {
+getalnlenstats<-function(x,widthfilter,quantiles) {
   alnlens<-rev(sort(width(x)))
   alnlenbool<-alnlens>widthfilter
   if(all(alnlenbool==FALSE)) {
@@ -457,12 +466,11 @@ getalnlenstats<-function(x,widthfilter) {
   }
   alnlens<-alnlens[alnlenbool] #calculations will be based on length filtered alignments
   totalalnlen<-sum(alnlens)
-  quartiles<-c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9)
-  numquart<-length(quartiles)
-  nxvector<-integer(numquart)
-  lxvector<-integer(numquart)
-  for (i in seq_len(numquart)) {
-    lx<-which(cumsum(alnlens)>(totalalnlen*quartiles[i]))[1]
+  numquant<-length(quantiles)
+  nxvector<-integer(numquant)
+  lxvector<-integer(numquant)
+  for (i in seq_len(numquant)) {
+    lx<-which(cumsum(alnlens)>(totalalnlen*quantiles[i]))[1]
     nx<-alnlens[lx]
     lxvector[i]<-lx
     nxvector[i]<-nx
@@ -609,9 +617,6 @@ samples<-as.character(samples[,1])
 #samples<-samples[1:6]
 allsampledflist<-list()
 
-lxcols<-c('l10','l20','l30','l40','l50','l60','l70','l80','l90')
-nxcols<-c('n10','n20','n30','n40','n50','n60','n70','n80','n90')
-
 
 allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRanges','purrr','data.table')) %dopar% {
     #read alignmnents file for given sample
@@ -721,7 +726,8 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       }
       #get alignment length distribution stats
       if (alnlenstats=='True') {
-        alnlenstatslist<-lapply(qfinal, getalnlenstats, widthfilter=lengthfilter)
+        myquantiles=as.numeric(alnlenstatsquantiles)/100
+        alnlenstatslist<-lapply(qfinal, getalnlenstats, widthfilter=lengthfilter,quantiles=myquantiles)
         alnlenstatsdf<-cbind(rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[1]]),as.data.frame.list),idcol="querysample",use.names=FALSE),rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[2]]),as.data.frame.list),use.names=FALSE))
         colnames(alnlenstatsdf)<-c('querysample',lxcols,nxcols)
         myfinaldf<-merge(myfinaldf,alnlenstatsdf,by="querysample")
@@ -766,7 +772,8 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       }
       #get alignment length distribution stats
       if (alnlenstats=='True') {
-        alnlenstatslist<-lapply(qtrimmed, getalnlenstats, widthfilter=lengthfilter)
+        myquantiles=as.numeric(alnlenstatsquantiles)/100
+        alnlenstatslist<-lapply(qtrimmed, getalnlenstats, widthfilter=lengthfilter,quantiles=myquantiles)
         alnlenstatsdf<-cbind(rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[1]]),as.data.frame.list),idcol="querysample"),rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[2]]),as.data.frame.list)))
         colnames(alnlenstatsdf)<-c('querysample',lxcols,nxcols)
         myfinaldf<-merge(myfinaldf,alnlenstatsdf,by="querysample")
@@ -855,7 +862,7 @@ stopCluster(cl)
 
 finaldf<-as.data.frame(do.call(rbind,finaldf))
 
-#N.B 'Genome1'/'Genome2' are used for column names of distancestats.tsv/distancestats_bootstrapped.tsv files, but in code in this script the term 'sample' instead of 'genome' is used
+#N.B 'Genome1'/'Genome2' are used for column names of comparisonstats.tsv/comparisonstats_bootstrapped.tsv files, but in code in this script the term 'sample' instead of 'genome' is used
 
 #create finaldfcolnames vector
 finaldfcolnames<-c('Genome1','Genome2','Genome1_length','Genome2_length','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Average_nucleotide_identity','Coverage_breadth','Coverage_breadth_mingenome','Pretrim_coverage_breadth_Genome1','Pretrim_coverage_breadth_Genome2','Pretrim_percent_identity_Genome1','Pretrim_percent_identity_Genome2')
@@ -871,7 +878,7 @@ colnames(finaldf)<-finaldfcolnames
 
 #order by genome names and write to file
 finaldf<-finaldf[with(finaldf,order(finaldf$Genome1,finaldf$Genome2)),]
-write.table(finaldf, file=gsubfn('%1',list('%1'=args[1]),'%1/output/distancestats.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
+write.table(finaldf, file=gsubfn('%1',list('%1'=args[1]),'%1/output/comparisonstats.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
 
 
 ###if there is bootstrapping, need to produce additional stats table - split by bootstrap, apply same code as above to get stats for each boostrap, then combine
@@ -905,7 +912,7 @@ if (boot!=0) {
   colnames(finaldfboot)<-finaldfbootcolnames
 
   finaldfboot<-finaldfboot[with(finaldfboot,order(as.numeric(finaldfboot$bootstrap),finaldfboot$Genome1,finaldfboot$Genome2)),]
-  write.table(finaldfboot, file=gsubfn('%1',list('%1'=args[1]),'%1/output/distancestats_bootstrapped.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
+  write.table(finaldfboot, file=gsubfn('%1',list('%1'=args[1]),'%1/output/comparisonstats_bootstrapped.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
 
 }
 

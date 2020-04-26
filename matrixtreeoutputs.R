@@ -21,7 +21,6 @@ combinedargs<-unique(sort(c(distargs,matrixargs)))
 
 
 getmatrix<-function(myreport,arg,bootstraprun=FALSE) {
-  NAinmatrix<-FALSE
   samples1<-as.character(sort(unique(myreport$Genome1)))
   samples<-sort(unique(c(as.vector(myreport$Genome1),as.vector(myreport$Genome2))))
   numsamples<-length(samples)
@@ -43,8 +42,7 @@ getmatrix<-function(myreport,arg,bootstraprun=FALSE) {
         }
         value<-myreportlist[[sample]][which(myreportlist[[sample]][,1]==samples[j]),2]
         if (length(value)==0) {
-          value<-NA
-          NAinmatrix<-TRUE #if a (distance) score is missing (i.e. no blast hits for comparison), don't plot tree 
+          value<-NA #if a (distance) score is missing (i.e. no blast hits for comparison) indicate with "NA"
         }
         myreportmatrix[j,i]<-value #this assigns values to the lower left triangle of the matrix
         myreportmatrix[i,j]<-value #this assigns values to the upper right triangle of the matrix
@@ -56,7 +54,6 @@ getmatrix<-function(myreport,arg,bootstraprun=FALSE) {
           next
         }
         value<-NA
-        NAinmatrix<-TRUE
         myreportmatrix[j,i]<-value #this assigns values to the lower left triangle of the matrix
         myreportmatrix[i,j]<-value #this assigns values to the upper right triangle of the matrix
       }
@@ -71,8 +68,8 @@ getmatrix<-function(myreport,arg,bootstraprun=FALSE) {
     diag(myreportmatrix)<-1
   }
   if (bootstraprun==FALSE) {
-    return(list(myreportmatrix,NAinmatrix,numsamples))
-  } else { ###this is for bootstrapped trees - no need to check NAinmatrix or get numsamples, just return matrix as dist object
+    return(list(myreportmatrix,numsamples))
+  } else { #this is for bootstrapped trees - no need to return numsample, just return matrix as dist object
     d<-as.dist(myreportmatrix)
     return(d)
   }
@@ -89,13 +86,13 @@ getphy<-function(d) {
   myphylo$edge.length[myphylo$edge.length<0]<-0
   return(myphylo)
 }
-#N.B for trees: if no bootstrapping is specified, plot tree using distancestats.tsv data, otherwise use bootstrapped distance scores in order to plot distancestats.tsv tree + bootstrap confidence values
+#N.B for trees: if no bootstrapping is specified, plot tree using comparisonstats.tsv data, otherwise use bootstrapped distance scores in order to plot comparisonstats.tsv tree + bootstrap confidence values
 
 
-#read distancestats
-myreport<-read.table(gsubfn('%1', list('%1'=outputpath),'%1/output/distancestats.tsv'), header = TRUE, sep='\t')
+#read comparisonstats
+myreport<-read.table(gsubfn('%1', list('%1'=outputpath),'%1/output/comparisonstats.tsv'), header = TRUE, sep='\t')
 #myreport<-myreport[order(myreport$Genome1,myreport$Genome2),] #already ordered in granges.R
-#N.B the distancestats.tsv report produced by granges.R is already ordered as follows: Genome1/Genome2 pairs are sorted alphabetically; rows are sorted according to the Genome1 and Genome 2 columns.
+#N.B the comparisonstats.tsv report produced by granges.R is already ordered as follows: Genome1/Genome2 pairs are sorted alphabetically; rows are sorted according to the Genome1 and Genome 2 columns.
 
 
 
@@ -103,18 +100,12 @@ for (arg in combinedargs) {
   #get ANI/distance matrix; output as matrix if arg is specified in matrix args; output as tree if arg is specified in distargs (and no NAs present in matrix i.e. no missing comparison data)
   matrixout<-getmatrix(myreport,arg)
   matrixobj<-matrixout[[1]]
-  NAinmatrix<-matrixout[[2]]
-  numsamples<-matrixout[[3]]
-  if (NAinmatrix==TRUE) {
-    dendrogram<-FALSE
-    phylogeny<-FALSE
-  }
+  numsamples<-matrixout[[2]]
   if (arg %in% matrixargs) {
     writefilepath<-gsubfn('%1|%2', list('%1'=outputpath,'%2'=arg), '%1/output/matrix_%2.tsv')
     matrixdf<-as.data.frame(matrixobj)
     write.table(matrixdf,writefilepath,sep='\t',col.names = NA,row.names = TRUE,quote=FALSE)
   }
-
   if (dendrogram=='True' || phylogeny=='True') {
     if (arg %in% distargs) {
       distarg<-arg
@@ -161,7 +152,7 @@ for (arg in combinedargs) {
         
       } else {
         #get bootstrapped phylogenies
-        myreportboot<-read.table(gsubfn('%1', list('%1'=outputpath),'%1/output/distancestats_bootstrapped.tsv'), header = TRUE, sep='\t')
+        myreportboot<-read.table(gsubfn('%1', list('%1'=outputpath),'%1/output/comparisonstats_bootstrapped.tsv'), header = TRUE, sep='\t')
         myreportbootsplit<-split(myreportboot, myreportboot$bootstrap)
         myreportbootsplit<-mclapply(myreportbootsplit, function(x) x<-x[order(x$Genome1,x$Genome2),], mc.cores=threads)
         
@@ -222,11 +213,6 @@ for (arg in combinedargs) {
 }
 
 
-if (dendrogram==FALSE && phylogeny==FALSE) {
-  print('notree')
-}
-
-
 
 
 #OLD CODE - making 2d network
@@ -234,7 +220,7 @@ if (dendrogram==FALSE && phylogeny==FALSE) {
 # for (distarg in distargs) {
 #   #get original phylogeny
 #   if (network=='True') {
-#     phyout<-getphy(myreport,distarg,getmatrix=TRUE)
+#     phyout<-getphy(myreport,distarg,getmatrix=TRUE,getnumsamples=TRUE) #old version of function
 #     originalphy<-phyout[[1]]
 #     originalphy$edge.length[originalphy$edge.length<0]<-0
 #     mymatrix=phyout[[2]]
@@ -276,7 +262,7 @@ if (dendrogram==FALSE && phylogeny==FALSE) {
 #     }
 #   } else {
 #     #get bootstrapped phylogenies
-#     myreportboot<-read.table(gsubfn('%1', list('%1'=outputpath),'%1/output/distancestats_bootstrapped.tsv'), header = TRUE, sep='\t')
+#     myreportboot<-read.table(gsubfn('%1', list('%1'=outputpath),'%1/output/comparisonstats_bootstrapped.tsv'), header = TRUE, sep='\t')
 #     myreportbootsplit<-split(myreportboot, myreportboot$bootstrap)
 #     myreportbootsplit<-mclapply(myreportbootsplit, function(x) x<-x[order(x$Sample1,x$Sample2),], mc.cores=threads)
   

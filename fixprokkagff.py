@@ -15,7 +15,7 @@ if inputtype=='file':
 seqnames=[]
 with open(seqnamesfile) as f:
     for line in f:
-        seqname=line.strip().split('\t')[0]
+        seqname=line.strip().split('\t')[0].strip('"').strip("'") 
         seqnames.append(seqname)
 
 seqnames=sorted(list(set(seqnames)))

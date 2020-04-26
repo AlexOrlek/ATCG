@@ -15,7 +15,7 @@ blasttype=sys.argv[2]  #sequencepairs, pairwise, allvallpairwise
 #get included samples and included comparisons
 includedsamples=[]
 includedcomparisons=set()
-with open('%s/output/distancestats.tsv'%outputpath) as f:  #N.B genome1/genome2 in distancestats.tsv are sorted in alphabetical order
+with open('%s/output/comparisonstats.tsv'%outputpath) as f:  #N.B genome1/genome2 in comparisonstats.tsv are sorted in alphabetical order
     for indx,line in enumerate(f):
         if indx==0:
             continue
@@ -52,7 +52,7 @@ f2.close()
 
 #for blasttype==sequencepairs, compare includedcomparisons with comparisons in sequencepairs file
 f2=open('%s/excludedcomparisons.tsv'%outputpath,'w')
-
+excludedcomparisonsamples=set()
 if blasttype=='sequencepairs':
     originalcomparisons=set()
     #get samples1 and samples2
@@ -75,6 +75,8 @@ if blasttype=='sequencepairs':
     for comparison in excludedcomparisons:
         sample1=comparison[0]
         sample2=comparison[1]
+        excludedcomparisonsamples.add(sample1)
+        excludedcomparisonsamples.add(sample2)
         f2.write('%s\t%s\n'%(sample1,sample2))
 
 
@@ -94,6 +96,8 @@ if blasttype=='allvallpairwise':
     for comparison in excludedcomparisons:
         sample1=comparison[0]
         sample2=comparison[1]
+        excludedcomparisonsamples.add(sample1)
+        excludedcomparisonsamples.add(sample2)
         f2.write('%s\t%s\n'%(sample1,sample2))
 
 if blasttype=='pairwise':
@@ -119,6 +123,13 @@ if blasttype=='pairwise':
     for comparison in excludedcomparisons:
         sample1=comparison[0]
         sample2=comparison[1]
+        excludedcomparisonsamples.add(sample1)
+        excludedcomparisonsamples.add(sample2)
         f2.write('%s\t%s\n'%(sample1,sample2)) 
 
 f2.close()
+
+
+#flag if there are excluded comparisons involving included samples
+if len(excludedcomparisonsamples.intersection(includedsamples))>0:
+    print('missingcomparison')

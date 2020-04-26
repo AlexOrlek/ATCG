@@ -205,19 +205,19 @@ File/Directory         | Description
 ---------------------- | -------------------------------------------------------------------------------------------------
 splitfastas/           | directory containing FASTA files (and corresponding BLAST databases), derived from the input multi-FASTA, split by genome
 blast/		       | directory containing tsv files of blast alignments for each genome
-included.txt           | names of genomes with detected blast alignments, that will therefore appear in the distancestats.tsv file
+included.txt           | names of genomes with detected blast alignments, that will therefore appear in the comparisonstats.tsv file
 excluded.txt	       | names of any genomes with no detected blast alignments (this file may well be blank)
 fastafilepaths.tsv     | genome names and corresponding FASTA file paths
 blastdbfilepaths.tsv   | genome names and corresponding BLAST database file paths
 seqlengths.tsv         | genome names and their lengths in bp
 output/		       | directory containing output files described below
-distancestats.tsv      | columns of distance statistics for each unique pairwise combination of genomes
-dend_[score].pdf       | tree generated using a specified distance score column from the distancestats.tsv file; plotted as a pdf
+comparisonstats.tsv      | columns of distance statistics for each unique pairwise combination of genomes
+dend_[score].pdf       | tree generated using a specified distance score column from the comparisonstats.tsv file; plotted as a pdf
 dend_[score].rds       | as above, but stored as an [rds file](https://stat.ethz.ch/R-manual/R-devel/library/base/html/readRDS.html) which can be read, and the tree replotted 
-distobject_[score].rds | a "dist" object distance matrix derived from distancestats.tsv, stored as an rds file
+distobject_[score].rds | a "dist" object distance matrix derived from comparisonstats.tsv, stored as an rds file
 
 * If bootstrapping is specified, a pdf showing the original tree with bootstrap confidence values (dend\_[score]\_bootstrapped.pdf) is produced instead of tree_[score].pdf. Also, the following additional files will be generated in the output directory:<br>
-    * A file containing distance statistics for each bootstrap replicate (distancestats_bootstrapped.tsv)<br>
+    * A file containing distance statistics for each bootstrap replicate (comparisonstats_bootstrapped.tsv)<br>
     * A list of replicate trees, that were used to calculate confidence values for the original tree, stored as an rds file (dend\_[score]\_bootstrapped.rds)
 * If 'phylogeny' is specified as the tree building method, then files with the phylo_ prefix will be produced, where currently the dend_ prefix is shown
 

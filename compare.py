@@ -40,14 +40,15 @@ input_group.add_argument('-p','--sequencepairs', help='A .tsv file containing tw
 #Output options                                               
 output_group = parser.add_argument_group('Output')
 output_group.add_argument('-o','--out', help='Output directory (required)', required=True)
-output_group.add_argument('-m','--matrix', help='Applies to all-vs-all comparison only. Average nucleotide identity/distance score matrices to output; can specify multiple parameters. Options: Average_nucleotide_identity; DistanceScore_d0 through to DistanceScore_d9; Breakpoint_distance_d0, Breakpoint_distance_d1 (default: none i.e no matrices will be produced)', nargs='+', default=['none'], choices=['none','Average_nucleotide_identity','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Breakpoint_distance_d0', 'Breakpoint_distance_d1'], metavar='', type=str)
-output_group.add_argument('--treedistscore', help='Applies to all-vs-all comparison only. Distance score to use to construct tree; can specify multiple parameters (default: DistanceScore_d8 DistanceScore_d9)', nargs='+', default=['DistanceScore_d8', 'DistanceScore_d9'], choices=['DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9'], metavar='', type=str)
-output_group.add_argument('--treemethod', help='Applies to all-vs-all comparison only. Tree building method; can specify dendrogram and/or phylogeny, or none (i.e. no tree will be plotted); (default: none)', nargs='+', default=['none'], choices=['dendrogram','phylogeny','none'], metavar='', type=str)
+output_group.add_argument('-m','--matrix', help='Applies to all-vs-all comparison only. Average nucleotide identity/distance score matrices to output; can specify multiple parameters. Options: Average_nucleotide_identity; DistanceScore_d0 through to DistanceScore_d9; Breakpoint_distance_d0, Breakpoint_distance_d1', nargs='+', choices=['Average_nucleotide_identity','DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9','Breakpoint_distance_d0', 'Breakpoint_distance_d1'], metavar='', required=False, type=str)
+output_group.add_argument('--treedistscore', help='Applies to all-vs-all comparison only. Distance score to use to construct tree; can specify multiple parameters', nargs='+', choices=['DistanceScore_d0','DistanceScore_d1','DistanceScore_d2','DistanceScore_d3','DistanceScore_d4','DistanceScore_d5','DistanceScore_d6','DistanceScore_d7','DistanceScore_d8','DistanceScore_d9'], metavar='', required=False, type=str)
+output_group.add_argument('--treemethod', help='Applies to all-vs-all comparison only. Tree building method; can specify dendrogram and/or phylogeny', nargs='+', choices=['dendrogram','phylogeny'], metavar='', required=False, type=str)
 output_group.add_argument('--breakpoint', action='store_true', help='If flag is provided, calculate breakpoint statistics (default: do not calculate)')
 output_group.add_argument('--alnlenstats', action='store_true', help='If flag is provided, calculate alignment length distribution statistics (default: do not calculate)')
-output_group.add_argument('--bestblastalignments', action='store_true', help='If flag is provided, write to file best blast alignments for each sample (default: do not output)')
+output_group.add_argument('--alnlenstatsquantiles', help='Defines the quantiles at which N and L alignment length statistics will be calculated; multiple quantiles can be specified; values must be multiples of 5, between 5 and 95 (default: 50)', nargs='+', default=['50'], choices=['5','10','15','20','25','30','35','40','45','50','55','60','65','70','75','80','85','90','95'], metavar='', type=str)
+output_group.add_argument('--bestblastalignments', action='store_true', help='If flag is provided, write to file best blast alignments for each genome (default: do not output)')
 output_group.add_argument('--nonoverlappingalignments', action='store_true', help='If flag is provided, write to file best alignments with non-overlapping query/subject ranges (only the intersection of query and subject alignment sets is given) (default: do not output)')
-output_group.add_argument('--trimmedalignments', action='store_true', help='If flag is provided, write to file trimmed alignments for each sample (default: do not output)')
+output_group.add_argument('--trimmedalignments', action='store_true', help='If flag is provided, write to file trimmed alignments for each genome (default: do not output)')
 #BLAST options                                  
 blast_group = parser.add_argument_group('BLAST options')
 blast_group.add_argument('--evalue', help='BLAST e-value cutoff (default: 1e-8)', default=1e-8, type=float) #1e-8 is used in ggdc web pipeline - see Meier-Kolthoff 2014
@@ -72,11 +73,10 @@ other_group.add_argument('--keep', default=0, choices=[0,1,2], type=int, help='L
                           '   2 = retain all intermediate output')
 
 
-
-
 args = parser.parse_args()
 outputpath=os.path.relpath(args.out, cwdir)
 startruntime=runtime()
+
 
 #check sequence input flags used correctly
 if args.sequencepairs==None:
@@ -92,8 +92,13 @@ else:
 
 
 #check output flags used correctly
-if args.sequences==None and (str(args.matrix)!='none' or str(args.treemethod)!='none'):
+if args.sequences==None and (args.matrix!=None or args.treemethod!=None):
     parser.error('a matrix or tree can only be produced if all-vs-all comparisons are run i.e. the -s flag is used')
+
+if args.treedistscore==None and args.treemethod!=None:
+    parser.error('if tree(s) are specified, one or more tree distance scores must be provided to the --treedistscore flag')
+if args.treedistscore!=None and args.treemethod==None:
+    parser.error('if tree distance score(s) are specified, tree method(s) (dendrogram and/or phylogeny) must be provided to the --treemethod flag')
 
 
 #set default word sizes if none provided; check word size is within allowed limits for the blast task
@@ -355,35 +360,39 @@ if args.sequencepairs!=None:
 
 
 if args.blastonly!=True and noblasthits==False:
-    runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.bestblastalignments),str(args.nonoverlappingalignments),str(args.trimmedalignments),str(args.bidirectionalblast),str(args.statsfromtrimmed),str(args.keepsuboptimalalignmentfragment)])
+    runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.bestblastalignments),str(args.nonoverlappingalignments),str(args.trimmedalignments),str(args.bidirectionalblast),str(args.statsfromtrimmed),str(args.keepsuboptimalalignmentfragment),'|'.join(args.alnlenstatsquantiles)])
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished parsing alignments')
     print('finished parsing alignments')
     #get included/excluded samples and excluded sample pairs
-    runsubprocess(['python','%s/getincludedexcluded.py'%sourcedir,outputpath,blasttype])
+    checkmissingcomparisons=runsubprocess(['python','%s/getincludedexcluded.py'%sourcedir,outputpath,blasttype],printstdout=False)
     if blasttype=='allvallpairwise':
         dendrogram='False'
         phylogeny='False'
-        if 'none' not in args.treemethod:
+        if args.treemethod!=None:
             if 'dendrogram' in args.treemethod:
                 dendrogram='True'
             if 'phylogeny' in args.treemethod:
                 phylogeny='True'
-        if 'none' not in args.treemethod or 'none' not in args.matrix:
+        if args.treemethod!=None or args.matrix!=None:
             linecount=int(runsubprocess(['wc -l < %s/included.txt'%outputpath],shell=True,printstdout=False))
             if linecount < 3:
-                print('Warning: there are only %i samples: a matrix or tree cannot be constructed'%linecount)
+                print('Warning: there are only %i genomes with BLAST alignments: a matrix or tree cannot be constructed (at least 3 genomes required)'%linecount)
+            elif args.matrix==None and args.treemethod!=None and str(checkmissingcomparisons)=='missingcomparison':
+                print('Warning: cannot produce tree(s) since among genomes with BLAST alignments not all comparisons yielded alignments')
             else:
-                treeout=runsubprocess(['Rscript','%s/tree.R'%sourcedir,outputpath,str(args.threads),str(args.boot),dendrogram,phylogeny,'|'.join(args.treedistscore),'|'.join(args.matrix)],printstdout=False)
+                if args.treemethod!=None and str(checkmissingcomparisons)=='missingcomparison':
+                    print('Warning: cannot produce tree(s) since among genomes with BLAST alignments not all comparisons yielded alignments')
+                    dendrogram='False'
+                    phylogeny='False'
+                    args.treemethod=None
+                runsubprocess(['Rscript','%s/matrixtreeoutputs.R'%sourcedir,outputpath,str(args.threads),str(args.boot),dendrogram,phylogeny,'|'.join(args.treedistscore),'|'.join(args.matrix)])
                 laterruntime=runtime()
                 #print(laterruntime-startruntime, 'runtime; finished plotting tree(s) using distance score(s): %s'%args.treedistscore)
-                if 'none' not in args.matrix:
+                if args.matrix!=None:
                     print('finished creating matrix/matrices using score(s): %s'%args.matrix)
-                if 'none' not in args.treemethod:
-                    if str(treeout)=='notree':
-                        print('Warning: not possible to plot tree(s) since distance matrix contains missing ("NA") values')
-                    else:
-                        print('finished plotting tree(s) using distance score(s): %s'%args.treedistscore)
+                if args.treemethod!=None:
+                    print('finished plotting tree(s) using distance score(s): %s'%args.treedistscore)
 
 if args.keep==0:
     runsubprocess(['rm -rf %s/blast'%outputpath],shell=True)
