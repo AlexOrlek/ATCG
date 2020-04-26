@@ -55,6 +55,7 @@ blast_group.add_argument('--evalue', help='BLAST e-value cutoff (default: 1e-8)'
 blast_group.add_argument('--wordsize', help='BLAST word size (ATCG default for blastn: 38; ATCG default for dc-megablast: 12; ATCG default for megablast: 28)', type=int) #38 is used in ggdc web pipleine?                 
 blast_group.add_argument('--task', help='BLAST task (default: blastn)', default='blastn', choices=['blastn','dc-megablast','megablast'], type=str)
 blast_group.add_argument('--bidirectionalblast', action='store_true', help='If flag is provided, BLAST is conducted in both directions and results are averaged (slower runtime) (default: conduct BLAST in one direction only)')
+blast_group.add_argument('--cullinglimit', help='BLAST culling limit (default: no culling limit)', default=0, type=positiveint)
 #Alignment parsing options                                                   
 alignment_group = parser.add_argument_group('Alignment parsing options')
 alignment_group.add_argument('-l','--lengthfilter', help='Length threshold (in basepairs) used to filter trimmed alignments prior to calculating breakpoint distance and alignment length statistics (default: 100)', default=100, type=positiveint)
@@ -218,7 +219,7 @@ if args.sequences!=None:
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
         print('finished creating blast databases')
-        runsubprocess(['bash','%s/runblast.sh'%sourcedir,outputpath, blastdbdir, filepathinfo, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
+        runsubprocess(['bash','%s/runblast.sh'%sourcedir,outputpath, blastdbdir, filepathinfo, str(args.evalue), str(args.wordsize), str(args.task),str(args.cullinglimit),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished running blast')
         print('finished running blast')
@@ -229,7 +230,7 @@ if args.sequences!=None:
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
         print('finished creating blast databases')
-        runsubprocess(['bash','%s/runblast_dirinput.sh'%sourcedir,outputpath,sourcedir, filepathinfo, filepathinfo,str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
+        runsubprocess(['bash','%s/runblast_dirinput.sh'%sourcedir,outputpath,sourcedir, filepathinfo, filepathinfo,str(args.evalue), str(args.wordsize), str(args.task),str(args.cullinglimit),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished running blast')
         print('finished running blast')
@@ -274,9 +275,9 @@ if args.sequences==None and args.sequencepairs==None:
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
         print('finished creating blast databases')
-        runsubprocess(['bash','%s/runblast.sh'%sourcedir,outputpath, blastdbdir1, filepathinfo2, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
+        runsubprocess(['bash','%s/runblast.sh'%sourcedir,outputpath, blastdbdir1, filepathinfo2, str(args.evalue), str(args.wordsize), str(args.task),str(args.cullinglimit),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
         if str(args.bidirectionalblast)=='True':
-            runsubprocess(['bash','%s/runblast.sh'%sourcedir,outputpath, blastdbdir2, filepathinfo1, str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),'pairwiserun2'],preexec_fn='sigpipefix')
+            runsubprocess(['bash','%s/runblast.sh'%sourcedir,outputpath, blastdbdir2, filepathinfo1, str(args.evalue), str(args.wordsize), str(args.task),str(args.cullinglimit),str(args.threads),str(args.bidirectionalblast),'pairwiserun2'],preexec_fn='sigpipefix')
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished running blast')
         print('finished running blast')
@@ -295,7 +296,7 @@ if args.sequences==None and args.sequencepairs==None:
         print('finished creating blast databases')
         runsubprocess(['bash','%s/runblast_dirinput.sh'%sourcedir,outputpath,sourcedir,filepathinfo1, filepathinfo2,str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
         if str(args.bidirectionalblast)=='True':
-            runsubprocess(['bash','%s/runblast_dirinput.sh'%sourcedir,outputpath,sourcedir,filepathinfo2, filepathinfo1,str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),'pairwiserun2'],preexec_fn='sigpipefix')
+            runsubprocess(['bash','%s/runblast_dirinput.sh'%sourcedir,outputpath,sourcedir,filepathinfo2, filepathinfo1,str(args.evalue), str(args.wordsize), str(args.task),str(args.cullinglimit),str(args.threads),str(args.bidirectionalblast),'pairwiserun2'],preexec_fn='sigpipefix')
         laterruntime=runtime()
         #print(laterruntime-startruntime, 'runtime; finished running blast')
         print('finished running blast')
@@ -337,7 +338,7 @@ if args.sequencepairs!=None:
     print('finished creating blast databases')
     runsubprocess(['bash','%s/runblast_sequencepairs.sh'%sourcedir,outputpath,sourcedir,filepathinfo2,str(args.sequencepairs),str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
     if str(args.bidirectionalblast)=='True':
-        runsubprocess(['bash','%s/runblast_sequencepairs.sh'%sourcedir,outputpath,sourcedir,filepathinfo1,str(args.sequencepairs),str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),'sequencepairsrun2'],preexec_fn='sigpipefix')
+        runsubprocess(['bash','%s/runblast_sequencepairs.sh'%sourcedir,outputpath,sourcedir,filepathinfo1,str(args.sequencepairs),str(args.evalue), str(args.wordsize), str(args.task),str(args.cullinglimit),str(args.threads),str(args.bidirectionalblast),'sequencepairsrun2'],preexec_fn='sigpipefix')
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished running blast')
     print('finished running blast')

@@ -5,9 +5,10 @@ comparisonsfile=${4}
 evalue=${5}
 wordsize=${6}
 task=${7}
-threads=${8}
-bidirectionalblast=${9} #default is False
-blasttype=${10} #sequencepairs or sequencepairsrun2 (second run of bidirectional blast)
+cullinglimit=${8}
+threads=${9}
+bidirectionalblast=${10} #default is False
+blasttype=${11} #sequencepairs or sequencepairsrun2 (second run of bidirectional blast)
 
 mkdir -p "${outputpath}/blast"
 mkdir -p "${outputpath}/output"
@@ -46,7 +47,7 @@ do
     blastoutput="${outputpath}/blast/${sample}_alignments.tsv"
     #echo "${comparisonsdict[${filepath}]}" | tr ' ' '\n'
     #echo 'database:' ${database}
-    echo "${comparisonsdict[${filepath}]}" | tr ' ' '\n' | python ${sourcedir}/editfastaheaders.py 'stdin' | blastn -db ${database} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5' >> ${blastoutput}
+    echo "${comparisonsdict[${filepath}]}" | tr ' ' '\n' | python ${sourcedir}/editfastaheaders.py 'stdin' | blastn -db ${database} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit ${cullinglimit} >> ${blastoutput}
 done < ${filepathinfo}
 
 

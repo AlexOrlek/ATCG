@@ -19,9 +19,10 @@ filepathinfo=${3} #format: sample \t filepath to fasta \t filepath to blast data
 evalue=${4}
 wordsize=${5}
 task=${6}
-threads=${7}
-bidirectionalblast=${8} #default is False
-blasttype=${9}  #allvallpairwise (-s flag) or pairwise (-1/-2 flags)
+cullinglimit=${7}
+threads=${8}
+bidirectionalblast=${9} #default is False
+blasttype=${10}  #allvallpairwise (-s flag) or pairwise (-1/-2 flags)
 
 mkdir -p ${outputpath}/blast
 mkdir -p ${outputpath}/output
@@ -47,10 +48,10 @@ if [ ${blasttype} == 'allvallpairwise' ]; then
             echo "${sample}" >> ${outputpath}/allsubjects.txt
             blastoutput="${outputpath}/blast/${sample}_alignments.tsv"
             if [[ $counter -gt 1 ]]; then
-                cat `find ${blastdbdir}/ -maxdepth 1 -mindepth 1 -name "*.fasta" ! -name "${sample}.fasta" | grep -v -F -f <(printf "%s\n" "${excludesamples[@]}")` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
+                cat `find ${blastdbdir}/ -maxdepth 1 -mindepth 1 -name "*.fasta" ! -name "${sample}.fasta" | grep -v -F -f <(printf "%s\n" "${excludesamples[@]}")` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit ${cullinglimit}
                 excludesamples=(${excludesamples[@]} "${blastdbdir}/${sample}.fasta")
             else
-                cat `find ${blastdbdir}/ -maxdepth 1 -mindepth 1 -name "*.fasta" ! -name "${sample}.fasta"` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
+                cat `find ${blastdbdir}/ -maxdepth 1 -mindepth 1 -name "*.fasta" ! -name "${sample}.fasta"` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit ${cullinglimit}
                 excludesamples=("${blastdbdir}/${sample}.fasta")
             fi
         done < ${filepathinfo}
@@ -61,7 +62,7 @@ if [ ${blasttype} == 'allvallpairwise' ]; then
             database="${line[2]}"
             echo "${sample}" >> ${outputpath}/allsubjects.txt
             blastoutput="${outputpath}/blast/${sample}_alignments.tsv"
-            cat `find ${blastdbdir}/ -maxdepth 1 -mindepth 1 -name "*.fasta" ! -name "${sample}.fasta"` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
+            cat `find ${blastdbdir}/ -maxdepth 1 -mindepth 1 -name "*.fasta" ! -name "${sample}.fasta"` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit ${cullinglimit}
         done < ${filepathinfo}
     fi
 else   #blasttype==pairwise (or pairwiserun2 in the case of bidirectionalblast second run)
@@ -71,7 +72,7 @@ else   #blasttype==pairwise (or pairwiserun2 in the case of bidirectionalblast s
         database="${line[2]}"
         echo "${sample}" >> ${outputpath}/allsubjects.txt
         blastoutput="${outputpath}/blast/${sample}_alignments.tsv"
-        cat `find ${blastdbdir}/ -maxdepth 1 -mindepth 1 -name "*.fasta"` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
+        cat `find ${blastdbdir}/ -maxdepth 1 -mindepth 1 -name "*.fasta"` | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit ${cullinglimit}
     done < ${filepathinfo}
 fi
 
@@ -87,15 +88,15 @@ fi
 
 #OLD CODE
 
-    #cat ${query} | seqkit grep -r -p ^${sample} -v  | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt ${outfmt} -task 'blastn' -num_threads ${threads} -max_target_seqs '500' -word_size ${wordsize} -culling_limit '5'
-    #cat `find ${blastdbdir}/ -maxdepth 1 -mindepth 1 -name "*.fasta"` | seqkit grep -r -p ^${sample} -v  | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
+    #cat ${query} | seqkit grep -r -p ^${sample} -v  | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt ${outfmt} -task 'blastn' -num_threads ${threads} -max_target_seqs '500' -word_size ${wordsize} -culling_limit ${cullinglimit}
+    #cat `find ${blastdbdir}/ -maxdepth 1 -mindepth 1 -name "*.fasta"` | seqkit grep -r -p ^${sample} -v  | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit ${cullinglimit}
 
 
 #outfmt='6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen'
 #sample='H112800346_9309cef4-089e-4b7f-938f-d6555e74e174'
 #database='/home/alex/Documents/testing/ATCGpipeline/mankpc/samplelevel/subsetoutput/splitfastas/H112800346_9309cef4-089e-4b7f-938f-d6555e74e174_db'
 #blastoutput="${1}/blast/${sample}_plasmidalignments.tsv"
-#cat ${query} | seqkit grep -r -p ^${sample} -v  | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task 'blastn' -num_threads ${threads} -max_target_seqs '500' -word_size ${wordsize} -culling_limit '5'
+#cat ${query} | seqkit grep -r -p ^${sample} -v  | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task 'blastn' -num_threads ${threads} -max_target_seqs '500' -word_size ${wordsize} -culling_limit ${cullinglimit}
 
 
 # while IFS=$'\t' read -r -a line

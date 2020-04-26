@@ -20,9 +20,10 @@ filepathinfosubject=${4} #subject sequence blast database; format: sample \t fil
 evalue=${5}
 wordsize=${6}
 task=${7}
-threads=${8}
-bidirectionalblast=${9} #default is False
-blasttype=${10}  #allvallpairwise (-s flag) or pairwise (-1/-2 flags)
+cullinglimit=${8}
+threads=${9}
+bidirectionalblast=${10} #default is False
+blasttype=${11}  #allvallpairwise (-s flag) or pairwise (-1/-2 flags)
 
 mkdir -p ${outputpath}/blast
 mkdir -p ${outputpath}/output
@@ -49,10 +50,10 @@ if [ ${blasttype} == 'allvallpairwise' ]; then
             echo "${sample}" >> ${outputpath}/allsubjects.txt
             blastoutput="${outputpath}/blast/${sample}_alignments.tsv"
             if [[ $counter -gt 1 ]]; then
-                cat ${filepathinfoquery} | cut -f2 | grep -v -F ${fastafile} | grep -v -F -f <(printf "%s\n" "${excludesamples[@]}") | python ${sourcedir}/editfastaheaders.py 'stdin' | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
+                cat ${filepathinfoquery} | cut -f2 | grep -v -F ${fastafile} | grep -v -F -f <(printf "%s\n" "${excludesamples[@]}") | python ${sourcedir}/editfastaheaders.py 'stdin' | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit ${cullinglimit}
                 excludesamples=(${excludesamples[@]} ${fastafile})
             else
-                cat ${filepathinfoquery} | cut -f2 | grep -v -F ${fastafile} | python ${sourcedir}/editfastaheaders.py 'stdin' | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
+                cat ${filepathinfoquery} | cut -f2 | grep -v -F ${fastafile} | python ${sourcedir}/editfastaheaders.py 'stdin' | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit ${cullinglimit}
                 excludesamples=(${fastafile})
             fi
         done < ${filepathinfosubject}
@@ -64,7 +65,7 @@ if [ ${blasttype} == 'allvallpairwise' ]; then
             database="${line[2]}"
             echo "${sample}" >> ${outputpath}/allsubjects.txt
             blastoutput="${outputpath}/blast/${sample}_alignments.tsv"
-            cat ${filepathinfoquery} | cut -f2 | grep -v -F ${fastafile} | python ${sourcedir}/editfastaheaders.py 'stdin' | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
+            cat ${filepathinfoquery} | cut -f2 | grep -v -F ${fastafile} | python ${sourcedir}/editfastaheaders.py 'stdin' | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit ${cullinglimit}
         done < ${filepathinfosubject}
     fi
 else   #blasttype==pairwise (or pairwiserun2 in the case of bidirectionalblast second run)
@@ -75,7 +76,7 @@ else   #blasttype==pairwise (or pairwiserun2 in the case of bidirectionalblast s
         database="${line[2]}"
         echo "${sample}" >> ${outputpath}/allsubjects.txt
         blastoutput="${outputpath}/blast/${sample}_alignments.tsv"
-        cat ${filepathinfoquery} | cut -f2 | python ${sourcedir}/editfastaheaders.py 'stdin' | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit '5'
+        cat ${filepathinfoquery} | cut -f2 | python ${sourcedir}/editfastaheaders.py 'stdin' | blastn -db ${database} -out ${blastoutput} -evalue ${evalue} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qcovhsp qlen slen' -task ${task} -num_threads ${threads} -word_size ${wordsize} -culling_limit ${cullinglimit}
     done < ${filepathinfosubject}
 fi
 
