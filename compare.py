@@ -51,7 +51,7 @@ output_group.add_argument('--nonoverlappingalignments', action='store_true', hel
 output_group.add_argument('--trimmedalignments', action='store_true', help='If flag is provided, write to file trimmed alignments for each genome (default: do not output)')
 #BLAST options                                  
 blast_group = parser.add_argument_group('BLAST options')
-blast_group.add_argument('--evalue', help='BLAST e-value cutoff (default: 1e-8)', default=1e-8, type=float) #1e-8 is used in ggdc web pipeline - see Meier-Kolthoff 2014
+blast_group.add_argument('--evalue', help='BLAST e-value cutoff (default: 1e-15)', default=1e-15, type=float) #1e-8 is used in ggdc web pipeline - see Meier-Kolthoff 2014
 blast_group.add_argument('--wordsize', help='BLAST word size (ATCG default for blastn: 38; ATCG default for dc-megablast: 12; ATCG default for megablast: 28)', type=int) #38 is used in ggdc web pipleine?                 
 blast_group.add_argument('--task', help='BLAST task (default: blastn)', default='blastn', choices=['blastn','dc-megablast','megablast'], type=str)
 blast_group.add_argument('--bidirectionalblast', action='store_true', help='If flag is provided, BLAST is conducted in both directions and results are averaged (slower runtime) (default: conduct BLAST in one direction only)')
