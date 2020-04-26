@@ -3,15 +3,16 @@ set -e
 set -u
 set -o pipefail
 
-#argv[1] is filepath to pipeline output folder for a given dataset
-#argv[2] is blastdb directory
-#argv[3] is filepathinfo.tsv file with filepaths to subject sequence databases
-#argv[4] is evalue #1e-8 default
-#argv[5] is wordsize #38 default
-#argv[6] is blast task
-#argv[7] is threads
-#argv[8] is blast bi-directional boolean flag (default False)
-#argv[9] is blast type (-s flag or -1/-2 flags)
+#arg[1] is filepath to pipeline output folder for a given dataset
+#arg[2] is blastdb directory
+#arg[3] is filepathinfo.tsv file with filepaths to subject sequence databases
+#arg[4] is evalue #1e-8 default
+#arg[5] is wordsize #38 default
+#arg[6] is blast task
+#arg[7] is culling limit
+#arg[8] is threads
+#arg[9] is blast bi-directional boolean flag (default False)
+#arg[10] is blast type (-s flag or -1/-2 flags)
 
 outputpath=${1}
 blastdbdir=${2}

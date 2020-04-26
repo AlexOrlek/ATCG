@@ -336,7 +336,7 @@ if args.sequencepairs!=None:
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished creating blast databases')
     print('finished creating blast databases')
-    runsubprocess(['bash','%s/runblast_sequencepairs.sh'%sourcedir,outputpath,sourcedir,filepathinfo2,str(args.sequencepairs),str(args.evalue), str(args.wordsize), str(args.task),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
+    runsubprocess(['bash','%s/runblast_sequencepairs.sh'%sourcedir,outputpath,sourcedir,filepathinfo2,str(args.sequencepairs),str(args.evalue), str(args.wordsize), str(args.task),str(args.cullinglimit),str(args.threads),str(args.bidirectionalblast),blasttype],preexec_fn='sigpipefix')
     if str(args.bidirectionalblast)=='True':
         runsubprocess(['bash','%s/runblast_sequencepairs.sh'%sourcedir,outputpath,sourcedir,filepathinfo1,str(args.sequencepairs),str(args.evalue), str(args.wordsize), str(args.task),str(args.cullinglimit),str(args.threads),str(args.bidirectionalblast),'sequencepairsrun2'],preexec_fn='sigpipefix')
     laterruntime=runtime()
