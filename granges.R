@@ -199,7 +199,7 @@ addcols<-function(x) {
   mcols(x)$pid<-pid[myinputhsps]
   mcols(x)$bitscore<-bitscore[myinputhsps]
   mcols(x)$mystrand<-mystrand[myinputhsps]
-  mcols(x)$snames<-snames[myinputhsps] #!!!ADDED
+  mcols(x)$snames<-snames[myinputhsps]
   mcols(x)$alnlen<-alnlen[myinputhsps] #added so that short alignments can be filtered prior to breakpoint calculation
   mcols(x)$qcontignames<-qcontignames[myinputhsps]
   mcols(x)$scontignames<-scontignames[myinputhsps]
@@ -606,27 +606,24 @@ colnames(seqlenreport)<-c('sequence','length')
 seqlenreport<-seqlenreport[order(seqlenreport$sequence),]
 
 #read samples file
+samples<-read.table(gsubfn('%1',list('%1'=args[1]),'%1/includedsubjects.txt'),sep='\t',header=FALSE)
+samples<-as.character(samples[,1])
+#samples<-samples[1:6]
+
+
 suppressWarnings(suppressMessages(library('foreach',quietly=TRUE)))
 suppressWarnings(suppressMessages(library('doParallel',quietly=TRUE)))
 
 cl<-makeCluster(as.integer(args[2]))
 registerDoParallel(cl)
 
-samples<-read.table(gsubfn('%1',list('%1'=args[1]),'%1/includedsubjects.txt'),sep='\t',header=FALSE)
-samples<-as.character(samples[,1])
-#samples<-samples[1:6]
 allsampledflist<-list()
-
-
 allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRanges','purrr','data.table')) %dopar% {
     #read alignmnents file for given sample
     sample<-samples[i]
-    #report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c(1,2,3,4,7,8,9,10,12,17),sep='\t') #same subject, different queries
-    report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c('qname','sname','pid','alnlen','qstart','qend','sstart','send','bitscore','strand'),colClasses = list('character'=c('qname','sname','strand'), 'numeric'=c('pid','bitscore'),'integer'=c('alnlen','qstart','qend','sstart','send')),header=TRUE,sep='\t')
+    report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','strand'),colClasses = list('character'=c('qname','sname','strand'), 'numeric'=c('pid','evalue','bitscore'),'integer'=c('alnlen','mismatches','gapopens','qstart','qend','sstart','send')),header=TRUE,sep='\t')
     originalreport<-report
     originalreport$originalhspindex<-rownames(originalreport)
-    #colnames(report)<-c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','qcov','qcovhsp','qlength','slength','strand')
-    #colnames(report)<-c('qname','sname','pid','alnlen','qstart','qend','sstart','send','bitscore','strand')
     #get information for shifting query and subject ranges where there are multiple contigs)
     seqlenreportseqs<-sapply(strsplit(as.vector(seqlenreport$sequence),'|',fixed=T),pastefunction)
     reformattedqname<-as.factor(sapply(strsplit(as.vector(report$qname),"|",fixed=T),pastefunction))
@@ -636,12 +633,12 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #remove any contig information; save contig info to variables first
     qcontignames<-sapply(strsplit(as.vector(report$qname),"|",fixed=T),function(x) x=x[2])
     scontignames<-sapply(strsplit(as.vector(report$sname),"|",fixed=T),function(x) x=x[2])
-    report$qname<-sapply(strsplit(as.vector(report$qname),"|",fixed=T),function(x) x=x[1]) #!!!ADDED
+    report$qname<-sapply(strsplit(as.vector(report$qname),"|",fixed=T),function(x) x=x[1])
     report$sname<-sapply(strsplit(as.vector(report$sname),"|",fixed=T),function(x) x=x[1])   
     ###disjoin method trimming
     pid<-report$pid
     bitscore<-report$bitscore
-    snames<-report$sname #!!!ADDDED
+    snames<-report$sname
     alnlen<-report$alnlen
     mystrand<-report$strand  #strand info is lost after disjoin - need to retain strand info for toppid
     qgr<-GRanges(seqnames = report$qname, ranges = IRanges(start=(report$qstart), end = (report$qend)), strand=(report$strand))
@@ -663,7 +660,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #query disjoin
     gr2<-disjoin(qgr,with.revmap=TRUE,ignore.strand=TRUE)
     revmap<-gr2$revmap
-    tophsp<-unlist(lapply(revmap, function(x) x[which.max(report[,get(alnrankmethod)][x])])) ##!changed alnlen[x] to alnrankmethod for flexibility; !changed qalnlen[x] to alnlen[x] - improves agreement between query/subject trimming in terms of which alignments are retained, avoiding excessive alignment filtering when finalhsps are selected as an intersection of query/subject hsps.
+    tophsp<-unlist(lapply(revmap, function(x) x[which.max(report[,get(alnrankmethod)][x])]))
     mcols(gr2)$inputhsp<-tophsp
     mcols(gr2)$revmap<-NULL
     grsplit<-split(gr2,seqnames(gr2)) #split by seqnames i.e. one list per paired sample                                            
@@ -683,6 +680,13 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     if (outputbestblastalignments=='True') {
       bestblasthitslist<-mapply(getbestblasthits,qfinal,sfinal,SIMPLIFY = FALSE)
       bestblasthitsdf<-do.call(rbind,bestblasthitslist)
+      #adhere to blast outfmt 6 (-ve strand indicated implicitly by flipping sstart/send)
+      blastsstart<-ifelse(bestblasthitsdf$strand=='+',bestblasthitsdf$sstart,bestblasthitsdf$send)
+      blastsend<-ifelse(bestblasthitsdf$strand=='+',bestblasthitsdf$send,bestblasthitsdf$sstart)
+      bestblasthitsdf$sstart<-blastsstart
+      bestblasthitsdf$send<-blastsend
+      bestblasthitsdf$strand<-NULL
+      #
       bestblasthitsdf<-bestblasthitsdf[with(bestblasthitsdf,order(bestblasthitsdf$qname,bestblasthitsdf$sname,-bestblasthitsdf$bitscore)),]
       write.table(bestblasthitsdf, file=gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/output/bestblastalignments_%2.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
     }
@@ -735,7 +739,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     }
     #trim alignments
     if (statsfromtrimmed=='True' || outputtrimmedalignments=='True') {
-      trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,finalalignments,SIMPLIFY = FALSE)) #!ADDED
+      trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,finalalignments,SIMPLIFY = FALSE))
       qtrimmed<-trimmedalignments$qfinal
       strimmed<-trimmedalignments$sfinal
       includedalignmentindices<-lapply(qtrimmed,length)>0 & lapply(strimmed,length)>0 #safeguards against bug due to empty list element (probably unecessary)

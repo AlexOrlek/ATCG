@@ -998,13 +998,14 @@ for (i in 1:nrow(comparisonfile)) {
       addlens<-rangeshifting(reformattednames,seqlengthsreport,seqlengthsreport$names)
       report$sstart<-report$sstart+addlens
       report$send<-report$send+addlens
-      #
-      mystrand<-as.vector(report$strand)
-      mystrand[mystrand=='+']<-1
-      mystrand[mystrand=='-']<--1
-      mystrand<-as.numeric(mystrand)
-      compdf<-report[,c("sstart","send","qstart","qend","pid")]
-      compdf<-data.frame(compdf,as.data.frame(mystrand))
+      #convert from blast to genoplotr format: create strand (1/-1 for +ve/-ve) and flip sstart/send
+      strand<-ifelse(report$sstart<=report$send,1,-1)
+      sstart<-ifelse(report$sstart<=report$send,report$sstart,report$send)
+      send<-ifelse(report$sstart<=report$send,report$send,report$sstart)
+      report$strand<-strand
+      report$sstart<-sstart
+      report$send<-send
+      compdf<-report[,c("sstart","send","qstart","qend","pid","strand")]
       colnames(compdf)<-c('start1', 'end1', 'start2', 'end2','pid','strand')
       comparison<-comparison(compdf)
       #comparison$col<-apply_color_scheme(x=rep(0.5,length(comparison$strand)),direction=comparison$strand,"red_blue")
@@ -1118,12 +1119,16 @@ for (i in 1:nrow(comparisonfile)) {
       qreport$sstart<-qreport$sstart+addlens
       qreport$send<-qreport$send+addlens
       #
-      mystrand<-as.vector(qreport$strand)
-      mystrand[mystrand=='+']<-1
-      mystrand[mystrand=='-']<--1
-      mystrand<-as.numeric(mystrand)
-      compdf<-qreport[,c("sstart","send","qstart","qend","pid")]
-      compdf<-data.frame(compdf,as.data.frame(mystrand))
+
+
+      #convert from blast to genoplotr format: create strand (1/-1 for +ve/-ve) and flip sstart/send
+      strand<-ifelse(qreport$sstart<=qreport$send,1,-1)
+      sstart<-ifelse(qreport$sstart<=qreport$send,qreport$sstart,qreport$send)
+      send<-ifelse(qreport$sstart<=qreport$send,qreport$send,qreport$sstart)
+      qreport$strand<-strand
+      qreport$sstart<-sstart
+      qreport$send<-send
+      compdf<-qreport[,c("sstart","send","qstart","qend","pid","strand")]
       colnames(compdf)<-c('start1', 'end1', 'start2', 'end2','pid','strand')
       comparison<-comparison(compdf)
       #comparison$col<-apply_color_scheme(x=rep(0.5,length(comparison$strand)),direction=comparison$strand,"red_blue")
