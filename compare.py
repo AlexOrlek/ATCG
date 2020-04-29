@@ -27,15 +27,20 @@ def fastainput(x):
     else:
         return sys.stdin
 
+show_all_help=False
+if '--help_all' in sys.argv:
+    show_all_help=True
+
 parser = argparse.ArgumentParser(description="ATCG: Alignment Based Tool for Comparative Genomics",add_help=False,formatter_class=RawTextHelpFormatter)
 #Help options
 help_group = parser.add_argument_group('Help')
-help_group.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help='Show this help message and exit.')
+help_group.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help='Show a help message explaining commonly used software options.')
+help_group.add_argument('--help_all', action='help', default=argparse.SUPPRESS, help='Show a help message explaining all software options.')
 #Input options                                                               
 input_group = parser.add_argument_group('Input')
-input_group.add_argument('-s','--sequences', help='Sequences, for all-vs-all pairwise comparison (required if -1 and -2 flags and -e flag not provided)', required=False,type=fastainput)
-input_group.add_argument('-1','--sequences1', help='First set of sequence(s), for pairwise comparison against second set (required if -s flag and -e flag not provided)', required=False,type=fastainput)
-input_group.add_argument('-2','--sequences2', help='Second set of sequence(s), for pairwise comparison against first set (required if -s flag and -e flag not provided)', required=False,type=fastainput)
+input_group.add_argument('-s','--sequences', help='Sequences, for all-vs-all pairwise comparison (required if -1 and -2 flags and -p flag not provided)', required=False,type=fastainput)
+input_group.add_argument('-1','--sequences1', help='First set of sequence(s), for pairwise comparison against second set (required if -s flag and -p flag not provided)', required=False,type=fastainput)
+input_group.add_argument('-2','--sequences2', help='Second set of sequence(s), for pairwise comparison against first set (required if -s flag and -p flag not provided)', required=False,type=fastainput)
 input_group.add_argument('-p','--sequencepairs', help='A .tsv file containing two columns, with filepaths to fasta files. Each row of the file defines a pair of sequences to be compared (required if -1 and -2 flags and -s flag not provided)', required=False,type=str)
 #Output options                                               
 output_group = parser.add_argument_group('Output')
@@ -45,28 +50,28 @@ output_group.add_argument('--treedistscore', help='Applies to all-vs-all compari
 output_group.add_argument('--treemethod', help='Applies to all-vs-all comparison only. Tree building method; can specify dendrogram and/or phylogeny', nargs='+', choices=['dendrogram','phylogeny'], metavar='', required=False, type=str)
 output_group.add_argument('--breakpoint', action='store_true', help='If flag is provided, calculate breakpoint statistics (default: do not calculate)')
 output_group.add_argument('--alnlenstats', action='store_true', help='If flag is provided, calculate alignment length distribution statistics (default: do not calculate)')
-output_group.add_argument('--alnlenstatsquantiles', help='Defines the quantiles at which N and L alignment length statistics will be calculated; multiple quantiles can be specified; values must be multiples of 5, between 5 and 95 (default: 50)', nargs='+', default=['50'], choices=['5','10','15','20','25','30','35','40','45','50','55','60','65','70','75','80','85','90','95'], metavar='', type=str)
+output_group.add_argument('--alnlenstatsquantiles', help='Defines the quantiles at which N and L alignment length statistics will be calculated; multiple quantiles can be specified; values must be multiples of 5, between 5 and 95 (default: 50)' if show_all_help else argparse.SUPPRESS, nargs='+', default=['50'], choices=['5','10','15','20','25','30','35','40','45','50','55','60','65','70','75','80','85','90','95'], metavar='', type=str)
 output_group.add_argument('--bestblastalignments', action='store_true', help='If flag is provided, write to file best blast alignments for each genome (default: do not output)')
-output_group.add_argument('--nonoverlappingalignments', action='store_true', help='If flag is provided, write to file best alignments with non-overlapping query/subject ranges (only the intersection of query and subject alignment sets is given) (default: do not output)')
-output_group.add_argument('--trimmedalignments', action='store_true', help='If flag is provided, write to file trimmed alignments for each genome (default: do not output)')
+output_group.add_argument('--nonoverlappingalignments', action='store_true', help='If flag is provided, write to file best alignments with non-overlapping query/subject ranges (only the intersection of query and subject alignment sets is given) (default: do not output)' if show_all_help else argparse.SUPPRESS)
+output_group.add_argument('--trimmedalignments', action='store_true', help='If flag is provided, write to file trimmed alignments for each genome (default: do not output)' if show_all_help else argparse.SUPPRESS)
 #BLAST options                                  
 blast_group = parser.add_argument_group('BLAST options')
 blast_group.add_argument('--evalue', help='BLAST e-value cutoff (default: 1e-15)', default=1e-15, type=float) #1e-8 is used in ggdc web pipeline - see Meier-Kolthoff 2014
 blast_group.add_argument('--wordsize', help='BLAST word size (ATCG default for blastn: 38; ATCG default for dc-megablast: 12; ATCG default for megablast: 28)', type=int) #38 is used in ggdc web pipleine?                 
 blast_group.add_argument('--task', help='BLAST task (default: blastn)', default='blastn', choices=['blastn','dc-megablast','megablast'], type=str)
 blast_group.add_argument('--bidirectionalblast', action='store_true', help='If flag is provided, BLAST is conducted in both directions and results are averaged (slower runtime) (default: conduct BLAST in one direction only)')
-blast_group.add_argument('--cullinglimit', help='BLAST culling limit (default: no culling limit)', default=0, type=positiveint)
+blast_group.add_argument('--cullinglimit', help='BLAST culling limit (default: no culling limit)' if show_all_help else argparse.SUPPRESS, default=0, type=positiveint)
 #Alignment parsing options                                                   
 alignment_group = parser.add_argument_group('Alignment parsing options')
 alignment_group.add_argument('-l','--lengthfilter', help='Length threshold (in basepairs) used to filter trimmed alignments prior to calculating breakpoint distance and alignment length statistics (default: 100)', default=100, type=positiveint)
-alignment_group.add_argument('-r','--alnrankmethod', help='Parameter used for selecting best alignment (default: bitscore)', default='bitscore', choices=['bitscore','alnlen','pid'], type=str)
-alignment_group.add_argument('--statsfromtrimmed', action='store_true', help='If flag is provided, statistics will be calculated from the trimmed alignments rather than from the non-overlapping alignments (default: calculate stats from non-overlapping alignments)') #DEPRECATED - recommended to use the default
-alignment_group.add_argument('--keepsuboptimalalignmentfragment', action='store_true', help='If flag is provided, where a suboptimal alignment encloses a shorter but higher scoring alignment, the longest flanking fragment will be retained (default: exclude suboptimal alignment, including flanking fragments') #DEPRECATED - recommended to use the default
+alignment_group.add_argument('-r','--alnrankmethod', help='Parameter used for selecting best alignment (default: bitscore)' if show_all_help else argparse.SUPPRESS, default='bitscore', choices=['bitscore','alnlen','pid'], type=str)
+alignment_group.add_argument('--statsfromtrimmed', action='store_true', help='If flag is provided, statistics will be calculated from the trimmed alignments rather than from the non-overlapping alignments (default: calculate stats from non-overlapping alignments)' if show_all_help else argparse.SUPPRESS) #DEPRECATED - recommended to use the default
+alignment_group.add_argument('--keepsuboptimalalignmentfragment', action='store_true', help='If flag is provided, where a suboptimal alignment encloses a shorter but higher scoring alignment, the longest flanking fragment will be retained (default: exclude suboptimal alignment, including flanking fragments' if show_all_help else argparse.SUPPRESS) #DEPRECATED - recommended to use the default
 
 #Other options
 other_group = parser.add_argument_group('Other')
 other_group.add_argument('-t','--threads', help='Number of threads to use (default: 1)', default=1, type=int)
-other_group.add_argument('-b','--boot', help='Number of bootstraps to run (default: no bootstrapping)', default=0, type=positiveint)
+other_group.add_argument('-b','--boot', help='Number of bootstraps to run (default: no bootstrapping)' if show_all_help else argparse.SUPPRESS, default=0, type=positiveint)
 other_group.add_argument('--blastonly', action='store_true', help='If flag is provided, only output pairwise blast results; do not calculate distance statistics (default: run full pipeline)')
 other_group.add_argument('--keep', default=0, choices=[0,1,2], type=int, help='Level of file retention (default: 0)\n  '
                           ' 0 = do not retain blast database or blast table output,\n'
