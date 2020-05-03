@@ -523,8 +523,8 @@ makecoltransparent<-function(colvec,alphatransparency) {
   return(transparentcolvec)
 }
 
-poscolvec<-makecoltransparent(poscolvec,alphatransparency = 130)
-negcolvec<-makecoltransparent(negcolvec,alphatransparency = 130)
+poscolvec<-makecoltransparent(poscolvec,alphatransparency = 190)  #alpha values can range from 0-255 (opaque); currently using: 130 alpha
+negcolvec<-makecoltransparent(negcolvec,alphatransparency = 190)
 
 
 
@@ -999,9 +999,10 @@ for (i in 1:nrow(comparisonfile)) {
       report$sstart<-report$sstart+addlens
       report$send<-report$send+addlens
       #convert from blast to genoplotr format: create strand (1/-1 for +ve/-ve) and flip sstart/send
-      strand<-ifelse(report$sstart<=report$send,1,-1)
-      sstart<-ifelse(report$sstart<=report$send,report$sstart,report$send)
-      send<-ifelse(report$sstart<=report$send,report$send,report$sstart)
+      strandispositive<-report$sstart<=report$send
+      strand<-ifelse(strandispositive,1,-1)
+      sstart<-ifelse(strandispositive,report$sstart,report$send)
+      send<-ifelse(strandispositive,report$send,report$sstart)
       report$strand<-strand
       report$sstart<-sstart
       report$send<-send
@@ -1118,13 +1119,11 @@ for (i in 1:nrow(comparisonfile)) {
       addlens<-rangeshifting(reformattednames,seqlengthsreport,seqlengthsreport$names)
       qreport$sstart<-qreport$sstart+addlens
       qreport$send<-qreport$send+addlens
-      #
-
-
       #convert from blast to genoplotr format: create strand (1/-1 for +ve/-ve) and flip sstart/send
-      strand<-ifelse(qreport$sstart<=qreport$send,1,-1)
-      sstart<-ifelse(qreport$sstart<=qreport$send,qreport$sstart,qreport$send)
-      send<-ifelse(qreport$sstart<=qreport$send,qreport$send,qreport$sstart)
+      strandispositive<-qreport$sstart<=qreport$send
+      strand<-ifelse(strandispositive,1,-1)
+      sstart<-ifelse(strandispositive,qreport$sstart,qreport$send)
+      send<-ifelse(strandispositive,qreport$send,qreport$sstart)
       qreport$strand<-strand
       qreport$sstart<-sstart
       qreport$send<-send

@@ -681,8 +681,9 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       bestblasthitslist<-mapply(getbestblasthits,qfinal,sfinal,SIMPLIFY = FALSE)
       bestblasthitsdf<-do.call(rbind,bestblasthitslist)
       #adhere to blast outfmt 6 (-ve strand indicated implicitly by flipping sstart/send)
-      blastsstart<-ifelse(bestblasthitsdf$strand=='+',bestblasthitsdf$sstart,bestblasthitsdf$send)
-      blastsend<-ifelse(bestblasthitsdf$strand=='+',bestblasthitsdf$send,bestblasthitsdf$sstart)
+      strandispositive<-bestblasthitsdf$strand=='+'
+      blastsstart<-ifelse(strandispositive,bestblasthitsdf$sstart,bestblasthitsdf$send)
+      blastsend<-ifelse(strandispositive,bestblasthitsdf$send,bestblasthitsdf$sstart)
       bestblasthitsdf$sstart<-blastsstart
       bestblasthitsdf$send<-blastsend
       bestblasthitsdf$strand<-NULL

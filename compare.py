@@ -53,7 +53,7 @@ output_group.add_argument('--alnlenstats', action='store_true', help='If flag is
 output_group.add_argument('--alnlenstatsquantiles', help='Defines the quantiles at which N and L alignment length statistics will be calculated; multiple quantiles can be specified; values must be multiples of 5, between 5 and 95 (default: 50)' if show_all_help else argparse.SUPPRESS, nargs='+', default=['50'], choices=['5','10','15','20','25','30','35','40','45','50','55','60','65','70','75','80','85','90','95'], metavar='', type=str)
 output_group.add_argument('--bestblastalignments', action='store_true', help='If flag is provided, write to file best blast alignments for each genome (default: do not output)')
 output_group.add_argument('--nonoverlappingalignments', action='store_true', help='If flag is provided, write to file best alignments with non-overlapping query/subject ranges (only the intersection of query and subject alignment sets is given) (default: do not output)' if show_all_help else argparse.SUPPRESS)
-output_group.add_argument('--trimmedalignments', action='store_true', help='If flag is provided, write to file trimmed alignments for each genome (default: do not output)' if show_all_help else argparse.SUPPRESS)
+output_group.add_argument('--reciprocallytrimmedalignments', action='store_true', help='If flag is provided, write to file reciprocally-trimmed alignments for each genome (default: do not output); DEPRECATED' if show_all_help else argparse.SUPPRESS) #DEPRECATED - recommended to use the default
 #BLAST options                                  
 blast_group = parser.add_argument_group('BLAST options')
 blast_group.add_argument('--evalue', help='BLAST e-value cutoff (default: 1e-15)', default=1e-15, type=float) #1e-8 is used in ggdc web pipeline - see Meier-Kolthoff 2014
@@ -63,10 +63,10 @@ blast_group.add_argument('--bidirectionalblast', action='store_true', help='If f
 blast_group.add_argument('--cullinglimit', help='BLAST culling limit (default: no culling limit)' if show_all_help else argparse.SUPPRESS, default=0, type=positiveint)
 #Alignment parsing options                                                   
 alignment_group = parser.add_argument_group('Alignment parsing options')
-alignment_group.add_argument('-l','--lengthfilter', help='Length threshold (in basepairs) used to filter trimmed alignments prior to calculating breakpoint distance and alignment length statistics (default: 100)', default=100, type=positiveint)
+alignment_group.add_argument('-l','--lengthfilter', help='Length threshold (in basepairs) used to filter alignments prior to calculating breakpoint distance and alignment length statistics (default: 100)', default=100, type=positiveint)
 alignment_group.add_argument('-r','--alnrankmethod', help='Parameter used for selecting best alignment (default: bitscore)' if show_all_help else argparse.SUPPRESS, default='bitscore', choices=['bitscore','alnlen','pid'], type=str)
-alignment_group.add_argument('--statsfromtrimmed', action='store_true', help='If flag is provided, statistics will be calculated from the trimmed alignments rather than from the non-overlapping alignments (default: calculate stats from non-overlapping alignments)' if show_all_help else argparse.SUPPRESS) #DEPRECATED - recommended to use the default
-alignment_group.add_argument('--keepsuboptimalalignmentfragment', action='store_true', help='If flag is provided, where a suboptimal alignment encloses a shorter but higher scoring alignment, the longest flanking fragment will be retained (default: exclude suboptimal alignment, including flanking fragments' if show_all_help else argparse.SUPPRESS) #DEPRECATED - recommended to use the default
+alignment_group.add_argument('--statsfromreciprocallytrimmed', action='store_true', help='If flag is provided, statistics will be calculated from the reciprocally-trimmed alignments rather than from the non-overlapping alignments (default: calculate stats from non-overlapping alignments); DEPRECATED' if show_all_help else argparse.SUPPRESS) #DEPRECATED - recommended to use the default
+alignment_group.add_argument('--keepsuboptimalalignmentfragment', action='store_true', help='If flag is provided, where a suboptimal alignment encloses a shorter but higher scoring alignment, the longest flanking fragment will be retained (default: exclude suboptimal alignment, including flanking fragments); DEPRECATED' if show_all_help else argparse.SUPPRESS) #DEPRECATED - recommended to use the default
 
 #Other options
 other_group = parser.add_argument_group('Other')
@@ -366,7 +366,7 @@ if args.sequencepairs!=None:
 
 
 if args.blastonly!=True and noblasthits==False:
-    runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.bestblastalignments),str(args.nonoverlappingalignments),str(args.trimmedalignments),str(args.bidirectionalblast),str(args.statsfromtrimmed),str(args.keepsuboptimalalignmentfragment),'|'.join(args.alnlenstatsquantiles)])
+    runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.bestblastalignments),str(args.nonoverlappingalignments),str(args.reciprocallytrimmedalignments),str(args.bidirectionalblast),str(args.statsfromreciprocallytrimmed),str(args.keepsuboptimalalignmentfragment),'|'.join(args.alnlenstatsquantiles)])
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished parsing alignments')
     print('finished parsing alignments')
