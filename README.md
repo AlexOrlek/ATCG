@@ -28,7 +28,7 @@ ATCG (Alignment-based Tool for Comparative Genomics) is a command-line tool for 
 
 ATCG can be used to 1) calculate ANI and distance metrics using the `compare.py` executable; and 2) visualise pairwise genomic comparisons using the `visualise.py` executable. The ATCG `compare.py` pipeline serves a similar purpose to other tools for calculating genome similarities/distances such as [OrthoANI](https://www.ezbiocloud.net/tools/orthoani), [pyani](https://github.com/widdowquinn/pyani), the dnadiff tool from the [MUMmer](https://github.com/mummer4/mummer/blob/master/MANUAL.md) package, and [GGDC](https://www.dsmz.de/services/online-tools/genome-to-genome-distance-calculator-ggdc). The ATCG `visualise.py` pipeline is similar to tools such as [Artemis Comparison Tool](https://www.sanger.ac.uk/science/tools/artemis-comparison-tool-act) (ACT). Reasons to use ATCG rather than other available tools are detailed in the FAQ sections ([compare.py FAQ](#16-FAQ) and [visualise.py FAQ](#27-FAQ)).
 
-As input for `compare.py`, ATCG can take nucleotide sequence assemblies in (multi-)[FASTA](https://en.wikipedia.org/wiki/FASTA_format) format (compressed [gzip](https://en.wikipedia.org/wiki/Gzip) FASTAs as well as FASTA input from the [stdin stream](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)) can be handled too). For details see section [1.1 Input](#11-input). As input for `visualise.py`, ATCG requires alignment file(s) containing pairwise alignments (e.g. as output when running `compare.py` with the `--bestblasthits` flag) and a file providing genome sequence lengths (also output by `compare.py`). A file specifying the order in which a set of pairwise comparisons should be visualised must also be provided. Optional files include those providing gene annotation data. For details, see section [2.1 Input](#21-input).
+As input for `compare.py`, ATCG can take nucleotide sequence assemblies in (multi-)[FASTA](https://en.wikipedia.org/wiki/FASTA_format) format (compressed [gzip](https://en.wikipedia.org/wiki/Gzip) FASTAs as well as FASTA input from the [stdin stream](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)) can be handled too). For details see section [1.1 Input](#11-input). As input for `visualise.py`, ATCG requires alignment file(s) containing pairwise alignments (e.g. the alignment file produced when running `compare.py` with the `--bestblasthits` flag) and a file providing genome sequence lengths (also produced by `compare.py`). A file specifying the order in which a set of pairwise comparisons should be visualised must also be provided. Optional files include those providing gene annotation data. For details, see section [2.1 Input](#21-input).
 
 ATCG is appropriate if you want to:
 * Compare (genome) sequences in terms of ANI, distance metrics, alignment coverage breadth, and structural similarity.
@@ -121,13 +121,13 @@ You should find the executable scripts (`compare.py` `getfeatureinput.py` `visua
 
 ## 1.1 Input
 
-Nucleotide sequence assemblies are provided in [FASTA](https://en.wikipedia.org/wiki/FASTA_format) format. There are 3 different input options, which determine how comparisons between input genomes are conducted. The input option also determines how input should be provided (e.g. as files or filepaths). Figure 1 below summarises how the 3 input options (`-s` flag, `-1` and `-2` flags, `-p` flag) determine comparisons, and each option is described in more detail below. 
+Nucleotide sequence assemblies must be provided in [FASTA](https://en.wikipedia.org/wiki/FASTA_format) format. There are 3 different input options, which determine how comparisons between input genomes are conducted. The input option also determines how input should be provided (e.g. as files or filepaths). Figure 1 below summarises how the 3 input options (`-s` flag, `-1` and `-2` flags, `-p` flag) determine comparisons, and each option is described in more detail below. 
 
 <br>
 <p align="center">Figure 1. Summary of input options</p>
 <p align="center"><img src="misc/inputoptions.PNG" alt="inputoptions" width="600"></p>
 
-*The simplest way to run all-vs-all comparisons is with the `-s` flag, but the Figure shows how all 3 input flags could be used to conduct all-vs-all comparions between genomes A, B, and C (in the cases of the `-1/2` flags, 2 separate runs are required). Comparisons are indicated using green ticks or lines. Note that by default, comparisons will be uni-directional from query to subject i.e. in the case of the `-s` flag example: B -> A, C -> A, C -> B. However if the `--bidirectionalblast` flag is provided, then comparisons will be run in both directios i.e. in the case of the `-s` flag example, the top right corner of the comparison matrix will be filled with ticks*
+*The simplest way to run all-vs-all comparisons is with the `-s` flag, but the Figure shows how all 3 input flags could be used to conduct all-vs-all comparions between genomes A, B, and C (in the case of the `-1/2` flags, 2 separate runs are required). Comparisons are indicated using green ticks or lines. Note that by default, comparisons will be uni-directional from query to subject i.e. in the case of the `-s` flag example: B -> A, C -> A, C -> B. However if the `--bidirectionalblast` flag is provided, then comparisons will be run in both directios i.e. in the case of the `-s` flag example, the top right corner of the comparison matrix will be filled with ticks*
 
 
 
@@ -189,7 +189,7 @@ A brief outline of the steps of ATCG `compare.py` is given below:
     * At this stage, percent identity and coverage breadth statistics are calculated from the non-overlapping ranges on query and subject genomes. If outputting `--bestblastalignments` then ranges are shifted back to original values and best hit BLAST alignments are produced; best hit BLAST alignments are the set of original BLAST alignments that are represented in the non-overlapping ranges of query and/or subject genome.
     * Alignments that are not represented in both query and subject genome are excluded, leaving a common set of non-overlapping alignments. If `--breakpoint` or `--alnlenstats` flags are provided, breakpoint and alignment length statistics are calculated at this stage. Breakpoint statistics are based on alignment adjacency breakpoints. The alignment length statistics provide information on the distribution of BLAST alignment lengths (i.e. they reflect alignment contiguity) and are analogous to the widely used [assembly contiguity statistics](https://www.molecularecologist.com/2017/03/whats-n50/) e.g. N50/L50. By default a length filter of 100bp is applied to alignment ranges prior to calculating breakpoint distance and alignment length statistics. The rationale for the flag is as follows: short remnants of suboptimal alignments (the flanks that did not overlap the best alignment) may remain. Excluding these alignments whilst retaining longer (e.g. at least gene-sized) alignments should reduce bias when calculating breakpoint distance and alignment length statistics.
     * For each alignment, the shortest range from query/subject sequence is identified, and from the union of these ranges ANI and distance scores are calculated. 
-4. If all-vs-all BLAST was run, then in addition to recording statistics in the comparisonstats.tsv file, ANI or distance scores can be output in matrix format. In addition, trees can be generated from distance scores; a hierarchical clustering dendrogram can be built using the [hclust] function (https://www.rdocumentation.org/packages/fastcluster/versions/1.1.25/topics/hclust) with the complete linkage method. Alternatively, a phylogeny can be built using the balanced minimum evolution method ([Desper and Gascuel 2002](https://www.ncbi.nlm.nih.gov/pubmed/12487758)).
+4. If all-vs-all BLAST was run, then in addition to recording statistics in the comparisonstats.tsv file, ANI or distance scores can be output in matrix format. In addition, trees can be generated from distance scores; a hierarchical clustering dendrogram can be built using the [hclust](https://www.rdocumentation.org/packages/fastcluster/versions/1.1.25/topics/hclust) function with the complete linkage method. Alternatively, a phylogeny can be built using the balanced minimum evolution method ([Desper and Gascuel 2002](https://www.ncbi.nlm.nih.gov/pubmed/12487758)).
 
 
 A description of the statistics produced by ATCG, and formulae for their calculation are given [here](misc/statistics_calculation.pdf).
@@ -198,7 +198,7 @@ At each step above, multi-threading (using the `-t` flag) can reduce runtimes: B
 
 See the [Example](#ATCG-example) below for a visual depiction of how the alignment parsing steps described above work. 
 
-The rationale for calculating ANI and distance statistics from the shortest ranges of the non-overlapping alignment set is explained in the [compare.py FAQ](#16-compare.py-FAQ). 
+The rationale for the alignment parsing steps described above is explained in the [compare.py FAQ](#16-compare.py-FAQ).
 
 
 
@@ -280,15 +280,16 @@ __Deprecated methods (not recommended)__: `--keepsuboptimalalignmentfragment`, `
 
 The below table shows the most important outputs from running the pipeline with `--keep 0` (default), and using the `-s` input flag. Similar outputs are produced using `-1/-2` and `-p` input flags.
 
-File/Directory         | Description                                                                                       
----------------------- | -------------------------------------------------------------------------------------------------
-filepathinfo.tsv       | genome names and associated file paths
-seqlengths.tsv         | sequence names in `genome|contig` format and their lengths in bp
-blastsettings.txt      | record of BLAST settings
-included.txt           | names of genomes with detected blast alignments, that will therefore appear in the comparisonstats.tsv file
-excluded.txt	         | names of any genomes with no detected blast alignments (this file may well be blank)
-output/		             | directory containing output files described below
-comparisonstats.tsv    | ANI and distance statistics for each unique pairwise combination of genomes
+File/Directory          | Description                                                                                       
+----------------------- | -------------------------------------------------------------------------------------------------
+filepathinfo.tsv        | genome names and associated file paths
+seqlengths.tsv          | sequence names (in genome|contig format) and their lengths in bp
+blastsettings.txt       | record of BLAST settings
+included.txt            | names of genomes with detected blast alignments, that will therefore appear in the comparisonstats.tsv file
+excluded.txt	          | names of any genomes with no detected blast alignments (this file may be blank)
+excludedcomparisons.tsv | pairwise comparions yielding no BLAST output are recorded here (this file may be blank)
+output/		              | directory containing output files described below
+comparisonstats.tsv     | ANI and distance statistics for each unique pairwise combination of genomes
 
 If all-vs-all comparison (`-s`) flag is run and matrix output is specified, matrix files will be labelled in the format `matrix_score.tsv`, where score is the parameter provided to the `-m` flag. If tree output is specified, files will be labelled in the format `dend_score.pdf` for a hclust dendrogram and `phylo_score.pdf` for a phylogeny built using the minimum evolution method. As well as .pdf files, [.rds](https://stat.ethz.ch/R-manual/R-devel/library/base/html/readRDS.html) files storing the tree objects are saved; the .rds files can be read to regenerate the tree file for further analysis/re-plotting.
 
@@ -544,6 +545,7 @@ Finally, visualise the alignments. Note that the attributes field of the gff3 co
 `visualise.py -i output_compare/output -s bestblastalignments_GENOMENAME.tsv GENOMENAME.gff -l output_compare/seqlengths.tsv -c comparison.tsv -o output_visualisation -f annotations/ --annotationtxt_name annotationtext`
 
 <br>
+<p align="center">Figure 2. Comparative genomic visualisation of plasmids from a hospital outbreak of carbapenemase-producing Enterobacterales</p>
 <p align="center"><img src="resistance-plasmid-example/images/plasmids.PNG" alt="plasmid_comparison" width="600"></p>
 <br>
 
