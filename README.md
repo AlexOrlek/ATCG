@@ -6,27 +6,27 @@ ATCG (Alignment-based Tool for Comparative Genomics) is a command-line tool for 
 * [Introduction](#introduction)
 * [Requirements](#requirements)
 * [Installation](#installation)
-* [1. ATCG compare.py](#ATCG-compare.py)
+* [1. ATCG compare.py](#1-atcg-comparepy)
     * [1.1 Input](#11-input)
     * [1.2 Quick start](#12-quick-start)
     * [1.3 Background and methods](#13-background-and-methods)
     * [1.4 Options and usage](#14-options-and-usage)
     * [1.5 Output files](#15-output-files)
-    * [1.6 compare.py FAQ](#16-compare.py-faq)
-* [2. ATCG visualise.py](#ATCG-visualise.py)
+    * [1.6 compare.py FAQ](#16-comparepy-faq)
+* [2. ATCG visualise.py](#2-atcg-visualisepy)
     * [2.1 Input](#21-input)
     * [2.2 Quick start](#22-quick-start)
     * [2.3 Background and methods](#23-background-and-methods)
     * [2.4 Options and usage](#24-options-and-usage)
     * [2.5 Output files](#25-output-files)
-    * [2.6 visualise.py FAQ](#27-visualise.py-faq)
-* [3. ATCG example](#ATCG-example)
+    * [2.6 visualise.py FAQ](#27-visualisepy-faq)
+* [3. ATCG example](#3-atcg-example)
 * [License](#license)
 
 
 # Introduction
 
-ATCG can be used to 1) calculate ANI and distance metrics using the `compare.py` executable; and 2) visualise pairwise genomic comparisons using the `visualise.py` executable. The ATCG `compare.py` pipeline serves a similar purpose to other tools for calculating genome similarities/distances such as [OrthoANI](https://www.ezbiocloud.net/tools/orthoani), [pyani](https://github.com/widdowquinn/pyani), the dnadiff tool from the [MUMmer](https://github.com/mummer4/mummer/blob/master/MANUAL.md) package, and [GGDC](https://www.dsmz.de/services/online-tools/genome-to-genome-distance-calculator-ggdc). The ATCG `visualise.py` pipeline is similar to tools such as [Artemis Comparison Tool](https://www.sanger.ac.uk/science/tools/artemis-comparison-tool-act) (ACT). Reasons to use ATCG rather than other available tools are detailed in the FAQ sections ([compare.py FAQ](#16-FAQ) and [visualise.py FAQ](#27-FAQ)).
+ATCG can be used to 1) calculate ANI and distance metrics using the `compare.py` executable; and 2) visualise pairwise genomic comparisons using the `visualise.py` executable. The ATCG `compare.py` pipeline serves a similar purpose to other tools for calculating genome similarities/distances such as [OrthoANI](https://www.ezbiocloud.net/tools/orthoani), [pyani](https://github.com/widdowquinn/pyani), the dnadiff tool from the [MUMmer](https://github.com/mummer4/mummer/blob/master/MANUAL.md) package, and [GGDC](https://www.dsmz.de/services/online-tools/genome-to-genome-distance-calculator-ggdc). The ATCG `visualise.py` pipeline is similar to tools such as [Artemis Comparison Tool](https://www.sanger.ac.uk/science/tools/artemis-comparison-tool-act) (ACT). Reasons to use ATCG rather than other available tools are detailed in the FAQ sections ([compare.py FAQ](#16-comparepy-faq) and [visualise.py FAQ](#27-visualisepy-faq)).
 
 As input for `compare.py`, ATCG can take nucleotide sequence assemblies in (multi-)[FASTA](https://en.wikipedia.org/wiki/FASTA_format) format (compressed [gzip](https://en.wikipedia.org/wiki/Gzip) FASTAs as well as FASTA input from the [stdin stream](https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)) can be handled too). For details see section [1.1 Input](#11-input). As input for `visualise.py`, ATCG requires alignment file(s) containing pairwise alignments (e.g. the alignment file produced when running `compare.py` with the `--bestblasthits` flag) and a file providing genome sequence lengths (also produced by `compare.py`). A file specifying the order in which a set of pairwise comparisons should be visualised must also be provided. Optional files include those providing gene annotation data. For details, see section [2.1 Input](#21-input).
 
@@ -117,7 +117,7 @@ cd ATCG
 ```
 You should find the executable scripts (`compare.py` `getfeatureinput.py` `visualise.py`) within the repository directory. If you add the path of this directory to your [$PATH variable](https://www.computerhope.com/issues/ch001647.htm), then ATCG can be run by calling the executable scripts e.g. `compare.py [`*`arguments...`*`]` from any directory location. Note also that ATCG expects the tools listed in [Requirements](#Requirements) to be available in your $PATH variable.
 
-# ATCG compare.py
+# 1. ATCG compare.py
 
 ## 1.1 Input
 
@@ -196,9 +196,9 @@ A description of the statistics produced by ATCG, and formulae for their calcula
 
 At each step above, multi-threading (using the `-t` flag) can reduce runtimes: BLAST databases can be created in parallel; BLAST can be run with multiple threads; alignments can be parsed in parallel.
 
-See the [Example](#ATCG-example) below for a visual depiction of how the alignment parsing steps described above work. 
+See the [Example](#3-atcg-example) below for a visual depiction of how the alignment parsing steps described above work. 
 
-The rationale for the alignment parsing steps described above is explained in the [compare.py FAQ](#16-compare.py-FAQ).
+The rationale for the alignment parsing steps described above is explained in the [compare.py FAQ](#16-comparepy-faq).
 
 
 
@@ -315,9 +315,9 @@ ATCG has been developed with prokaryotic genomes in mind. ATCG could be applied 
 
 
     
-# ATCG visualise.py
+# 2. ATCG visualise.py
 
-For details on how `--bestblastalignments` output can be used as input for well established visualisation software such as Artemis Comparison Tool, see [visualise.py FAQ](#27-FAQ). This section explains how the ATCG `visualise.py` executable can be used to create comparative genomic plots using `--bestblastalignments` output.
+For details on how `--bestblastalignments` output can be used as input for well established visualisation software such as Artemis Comparison Tool, see [visualise.py FAQ](#27-visualisepy-faq). This section explains how the ATCG `visualise.py` executable can be used to create comparative genomic plots using `--bestblastalignments` output.
 
 ## 2.1 Input
 
@@ -329,7 +329,7 @@ A __sequence length file__ is provided with the `-l` flag and specifies sequence
 
 Optionally, the input directory can contain a __tree file__ which can be in [nexus or newick format](https://www.zoology.ubc.ca/~schluter/R/phylogenetic/), or a [phylo object](http://www.phytools.org/eqg/Exercise_3.2/) saved as an .rds file. The tree must contain all genomes that will be included in the comparison, and the order of the comparisons (specified in the 'comparison file' - see below) must be compatible with the order of the tree branches. If the tree contains additional genomes, these will be pruned automatically.
 
-Optionally, a feature input directory can be provided, containing __feature files__ which provide annotation data (e.g. gene annotations) in [gff3 format](https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md). As described below, the `getfeatureinput.py` script helps to convert annotation files into the correct format for ATCG. Column 9 of a gff3 file defines annotation attributes and associated values (defined in a list of tag-value pairs). Custom ATCG attribute tags can be used, which correspond to `visualisation.py` flags (see [Options and usage]((#24-options-and-usage))), and can be used to override the values provided to these flags. ATCG recognises the following custom attribute tag names: any text specified by the `annotationtxt_name` flag (e.g. gene, product); gene_type; text_type; text_rotation; outline; fill; lty; lwd. These define, respectively: the tag name storing annotation text; annotation symbol type; annotation text type (`mid` or `spanning`); annotation text rotation; and the annotation symbol outline colour, fill colour, line type, and line width. These attribute tag names can be used as a way to customise the visualisation at the level of the individual annotation. Note that the gene and product annotation tags are used by Genbank and prokka so should already be present (if gene and product name are known).
+Optionally, a feature input directory can be provided, containing __feature files__ which provide annotation data (e.g. gene annotations) in [gff3 format](https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md). As described below, the `getfeatureinput.py` script helps to convert annotation files into the correct format for ATCG. Column 9 of a gff3 file defines annotation attributes and associated values (defined in a list of tag-value pairs). Custom ATCG attribute tags can be used, which correspond to `visualisation.py` flags (see [Options and usage]((#24-options-and-usage)), and can be used to override the values provided to these flags. ATCG recognises the following custom attribute tag names: any text specified by the `annotationtxt_name` flag (e.g. gene, product); gene_type; text_type; text_rotation; outline; fill; lty; lwd. These define, respectively: the tag name storing annotation text; annotation symbol type; annotation text type (`mid` or `spanning`); annotation text rotation; and the annotation symbol outline colour, fill colour, line type, and line width. These attribute tag names can be used as a way to customise the visualisation at the level of the individual annotation. Note that the gene and product annotation tags are used by Genbank and prokka so should already be present (if gene and product name are known).
 
 A __comparison file__ must be provided to specify which comparisons to visualise and an output name. The file can also be used to specify which annotations to visualise; which annotation text to visualise; and whether or not a tree should be plotted alongside the comparison plot. Each row in the comparison file specifies one set of comparisons and an associated plot (multiple rows can be provided). The columns are interpreted in the following order: subject/query genome comparisons; output name; subject/query annotations; subject/query annotation text; tree name. A blank cell or "-" indicates that a particular genome or plot element should be ommitted from the comparison. As an example, take the following row:
 
@@ -526,7 +526,7 @@ Yes, like genoPlotR, ATCG recognises introns/exons (commonly found in eukaryotic
 
 
 
-# 3 ATCG example
+# 3. ATCG example
 
 Here, I demonstrate how - using a small number of commands - ATCG can generate a plot similar to the one shown in a study by [Decraene _et al_. 2018](https://aac.asm.org/content/62/12/e01689-18.long) (see Fig.4A). In the study, the authors applied comparative genomic analysis to plasmids isolated from an antibiotic resistant hospital outbreak. They found that a successful plasmid called pKPC-CAD1 (carrying a blaKPC resistance gene) is highly similar to another plasmid from the outbreak called pCAD3. However, the resistance gene region of pKPC-CAD1 showed similarity to that of another plasmid, called pKPC-CAD2. So, they hypothesized that a pCAD3-like plasmid recombined with a pKPC-CAD2-like plasmid to produce pKPC-CAD1.<br>
 
