@@ -523,7 +523,7 @@ makecoltransparent<-function(colvec,alphatransparency) {
   return(transparentcolvec)
 }
 
-poscolvec<-makecoltransparent(poscolvec,alphatransparency = 190)  #alpha values can range from 0-255 (opaque); currently using: 130 alpha
+poscolvec<-makecoltransparent(poscolvec,alphatransparency = 190)  #alpha values can range from 0-255 (opaque)
 negcolvec<-makecoltransparent(negcolvec,alphatransparency = 190)
 
 

@@ -170,7 +170,14 @@ splitreducecombine<-function(x,keepbisectedranges) {
       reducedduplicates<-lapply(splitduplicates, function(x) x=reducefunction(x,keepbisectedranges))
       includedalignmentindices<-lapply(reducedduplicates,length)>0
       reducedduplicates<-reducedduplicates[includedalignmentindices] #at least one best alignment should be remain
-      combinedreduced<-do.call(getMethod(c, "GenomicRanges"), reducedduplicates)
+      #combinedreduced<-do.call(getMethod(c, "GenomicRanges"), reducedduplicates) #doesn't work in all versions of granges
+      for (i in 1:length(reducedduplicates)) {
+        if (i==1) {
+          combinedreduced<-reducedduplicates[[1]]
+        } else {
+          combinedreduced<-append(combinedreduced,reducedduplicates[[i]])
+        }
+      }
       final<-combinedreduced
     } else {
       duplicates<-x[isduplicate]
@@ -182,7 +189,13 @@ splitreducecombine<-function(x,keepbisectedranges) {
         final<-nonduplicates
       } else {
         reducedduplicates<-reducedduplicates[includedalignmentindices]
-        combinedreduced<-do.call(getMethod(c, "GenomicRanges"), reducedduplicates)
+        for (i in 1:length(reducedduplicates)) {
+          if (i==1) {
+            combinedreduced<-reducedduplicates[[1]]
+          } else {
+            combinedreduced<-append(combinedreduced,reducedduplicates[[i]])
+          }
+        }
         final<-append(nonduplicates, combinedreduced)
       }
     }
