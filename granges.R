@@ -414,16 +414,14 @@ BPfunc<-function(x,y) {  #apply to granges objects
   return(c("bpcount"=bpcount,"alncount"=alncount,"pairscount"=pairscount))
 }
 
-breakpointcalc<-function(qtrimmed,strimmed,mydf) {
+breakpointcalc<-function(qtrimmed,strimmed) {
   #first filter short alignments (based on post-trimming alignment length)
   includedindices<-mapply(filtershortwidthalignments,qtrimmed,strimmed,widthfilter=lengthfilter,SIMPLIFY=FALSE)
   qtrimmed<-map2(qtrimmed,includedindices, `[`) #filter list of alignments using list of included indices
   strimmed<-map2(strimmed,includedindices, `[`)
   includedindices<-lapply(qtrimmed,length)>0 #use included indices to remove list elements with no alignments after mapping includedindices list
-  if (all(includedindices==FALSE)) { #if no alignments remain across all queries after applying length filter, fill dataframe with NAs
-    mydfbp<-cbind(querysample=rownames(mydf),subjectsample=rep(sample,nrow(mydf)),breakpoints=rep(NA,nrow(mydf)),alignments=rep(NA,nrow(mydf)),pairs=rep(NA,nrow(mydf)))
-    myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"),all=TRUE) #all=TRUE is redundant here
-    return(myfinaldf)
+  if (all(includedindices==FALSE)) { #if no alignments remain across all queries after applying length filter, return NULL
+    return(NULL)
   }
   qtrimmed<-qtrimmed[includedindices]
   strimmed<-strimmed[includedindices]
@@ -434,12 +432,9 @@ breakpointcalc<-function(qtrimmed,strimmed,mydf) {
   bpout<-mapply(BPfunc,qtrimmedsorted,strimmedsorted,SIMPLIFY=TRUE)
   mydfbp<-as.data.frame(t(bpout))
   colnames(mydfbp)<-c('breakpoints','alignments','pairs')
-  mydfbp<-cbind(querysample=rownames(mydfbp),subjectsample=rep(sample,nrow(mydfbp)),mydfbp)
-  #merge dataframes; replace missing breakpoint data with NA where necessary (if all alignments have been filtered due to filtered) - use all=TRUE argument to achieve NA missing cell replacement
-  myfinaldf<-merge(mydf,mydfbp,by=c("querysample","subjectsample"),all=TRUE) #all=TRUE means keep all and fill with NAs
-  return(myfinaldf)
+  mydfbp<-cbind(querysample=rownames(mydfbp),mydfbp)
+  return(mydfbp)
 }
-
 
 filtershortwidthalignments<-function(qtrimmed,strimmed,widthfilter) {
   qwidth<-width(qtrimmed)
@@ -447,7 +442,6 @@ filtershortwidthalignments<-function(qtrimmed,strimmed,widthfilter) {
   includedindices<-qwidth > widthfilter & swidth > widthfilter
   return(includedindices)
 }
-
 
 bpdistcalc<-function(bps,pairs) {
   if (pairs==0) {
@@ -733,29 +727,40 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       disjointdf<-reformatcombineddf(disjointdf)
       write.table(disjointdf, file=gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/output/nonoverlappingalignments_%2.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
     }
+    #calculate breakpoint and alnlenstats (need to merge later with mydf containing hsplen/hspidpositions stats)
+    if (breakpoint=='True') {
+      mydfbp<-breakpointcalc(qfinal,sfinal)
+    }
+    if (alnlenstats=='True') {
+      myquantiles=as.numeric(alnlenstatsquantiles)/100
+      alnlenstatslist<-lapply(qfinal, getalnlenstats, widthfilter=lengthfilter,quantiles=myquantiles)
+      alnlenstatsdf<-cbind(rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[1]]),as.data.frame.list),idcol="querysample",use.names=FALSE),rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[2]]),as.data.frame.list),use.names=FALSE))
+      colnames(alnlenstatsdf)<-c('querysample',lxcols,nxcols)
+    }
     if (statsfromtrimmed=='False') {
       #get hsp id/len stats from disjoint alignments
       mystats<-mapply(getstatsfromdisjoint, qfinal,sfinal,SIMPLIFY = FALSE)
       mydf<-as.data.frame(do.call(rbind, mystats)) #convert list of vectors to dataframe
       mydf<-cbind(querysample=rownames(mydf),subjectsample=rep(sample,nrow(mydf)),mydf,qhsplenpretrim,shsplenpretrim,qhspidpositionspretrim,shspidpositionspretrim)
-      #get breakpoint stats
+      #append breakpoint stats
       if (breakpoint=='True') {
-        myfinaldf<-breakpointcalc(qfinal,sfinal,mydf)
+        if (is.null(mydfbp)) { #mydfbp NULL occurs if all alignments across all queries have been filtered due to widthfilter
+          mydfbp<-cbind(querysample=rownames(mydf),breakpoints=rep(NA,nrow(mydf)),alignments=rep(NA,nrow(mydf)),pairs=rep(NA,nrow(mydf)))
+          myfinaldf<-merge(mydf,mydfbp,by="querysample")
+        } else {
+          myfinaldf<-merge(mydf,mydfbp,by="querysample",all=TRUE) #all=TRUE means keep all and fill with NAs (missing ("NA") breakpoint data occurs if all alignments have been filtered due to widthfilter)
+        }
       } else {
         myfinaldf<-mydf
       }
-      #get alignment length distribution stats
+      #append alignment length distribution stats
       if (alnlenstats=='True') {
-        myquantiles=as.numeric(alnlenstatsquantiles)/100
-        alnlenstatslist<-lapply(qfinal, getalnlenstats, widthfilter=lengthfilter,quantiles=myquantiles)
-        alnlenstatsdf<-cbind(rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[1]]),as.data.frame.list),idcol="querysample",use.names=FALSE),rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[2]]),as.data.frame.list),use.names=FALSE))
-        colnames(alnlenstatsdf)<-c('querysample',lxcols,nxcols)
         myfinaldf<-merge(myfinaldf,alnlenstatsdf,by="querysample")
       }
     }
     #trim alignments
     if (statsfromtrimmed=='True' || outputtrimmedalignments=='True') {
-      if (outputtrimmedalignments=='True' || (statsfromtrimmed=='True' && breakpoint=='True')) {
+      if (outputtrimmedalignments=='True') {
         trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,finalalignments,SIMPLIFY = FALSE))
         qtrimmed<-trimmedalignments$qfinal
         strimmed<-trimmedalignments$sfinal
@@ -778,22 +783,23 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
       write.table(trimmeddf, file=gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/output/trimmedalignments_%2.tsv'), sep='\t', quote=F, col.names=TRUE, row.names=FALSE)
     }
     if (statsfromtrimmed=='True') {
-      #get hsp id stats
+      #get hsplen / hspid stats
       mystats<-lapply(qtrimmed,getstatsfromtrimmed)
       mydf<-as.data.frame(do.call(rbind, mystats)) #convert list of vectors to dataframe
       mydf<-cbind(querysample=rownames(mydf),subjectsample=rep(sample,nrow(mydf)),mydf,qhsplenpretrim,shsplenpretrim,qhspidpositionspretrim,shspidpositionspretrim)
-      #get breakpoint stats
+      #append breakpoint stats
       if (breakpoint=='True') {
-        myfinaldf<-breakpointcalc(qtrimmed,strimmed,mydf)
+        if (is.null(mydfbp)) { #mydfbp NULL occurs if all alignments across all queries have been filtered due to widthfilter
+          mydfbp<-cbind(querysample=rownames(mydf),breakpoints=rep(NA,nrow(mydf)),alignments=rep(NA,nrow(mydf)),pairs=rep(NA,nrow(mydf)))
+          myfinaldf<-merge(mydf,mydfbp,by="querysample")
+        } else {
+          myfinaldf<-merge(mydf,mydfbp,by="querysample",all=TRUE) #all=TRUE means keep all and fill with NAs (missing ("NA") breakpoint data occurs if all alignments have been filtered due to widthfilter)
+        }
       } else {
         myfinaldf<-mydf
       }
-      #get alignment length distribution stats
+      #append alignment length distribution stats
       if (alnlenstats=='True') {
-        myquantiles=as.numeric(alnlenstatsquantiles)/100
-        alnlenstatslist<-lapply(qtrimmed, getalnlenstats, widthfilter=lengthfilter,quantiles=myquantiles)
-        alnlenstatsdf<-cbind(rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[1]]),as.data.frame.list),idcol="querysample"),rbindlist(lapply(lapply(alnlenstatslist, function(l) l[[2]]),as.data.frame.list)))
-        colnames(alnlenstatsdf)<-c('querysample',lxcols,nxcols)
         myfinaldf<-merge(myfinaldf,alnlenstatsdf,by="querysample")
       }
     }
