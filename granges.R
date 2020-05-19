@@ -500,6 +500,12 @@ statsfunc<-function(stats, breakpoint,mygenomelenvector,mygenomelen,mymingenomel
     hsplength<-hsplength/2
     hspidpositions<-hspidpositions/2
   }
+  if (hsplength>mymingenomelen) {
+    hsplength<-mymingenomelen
+  }
+  if (hspidpositions>mymingenomelen) {
+    hspidpositions<-mymingenomelen
+  }
   covbreadth<-as.numeric(hsplength/mygenomelen)
   covbreadthmin<-as.numeric(hsplength/mymingenomelen)
   d0<-as.numeric(1-covbreadth)
