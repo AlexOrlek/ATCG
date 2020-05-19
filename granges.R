@@ -496,6 +496,10 @@ getalnlenstats<-function(x,widthfilter,quantiles) {
 statsfunc<-function(stats, breakpoint,mygenomelenvector,mygenomelen,mymingenomelen,bootstrap,bidirectionalblast,alnlenstats='False') {
   hsplength<-as.numeric(stats$hsplength)
   hspidpositions<-as.numeric(stats$hspidpositions)
+  if (bidirectionalblast=='True') {
+    hsplength<-hsplength/2
+    hspidpositions<-hspidpositions/2
+  }
   covbreadth<-as.numeric(hsplength/mygenomelen)
   covbreadthmin<-as.numeric(hsplength/mymingenomelen)
   d0<-as.numeric(1-covbreadth)
@@ -521,17 +525,17 @@ statsfunc<-function(stats, breakpoint,mygenomelenvector,mygenomelen,mymingenomel
     sample2hsplengthpretrim<-as.numeric(stats$shsplengthpretrim)
     sample1hspidpositionspretrim<-as.numeric(stats$qhspidpositionspretrim)
     sample2hspidpositionspretrim<-as.numeric(stats$shspidpositionspretrim)
+    if (bidirectionalblast=='True') {
+      sample1hsplengthpretrim<-sample1hsplengthpretrim/2
+      sample2hsplengthpretrim<-sample2hsplengthpretrim/2
+      sample1hspidpositionspretrim<-sample1hspidpositionspretrim/2
+      sample2hspidpositionspretrim<-sample2hspidpositionspretrim/2
+    }
     sample1percentid<-as.numeric(sample1hspidpositionspretrim/sample1hsplengthpretrim)
     sample2percentid<-as.numeric(sample2hspidpositionspretrim/sample2hsplengthpretrim)
-    if (bidirectionalblast=='False') {
-      sample1covbreadth<-as.numeric(sample1hsplengthpretrim/sample1len)
-      sample2covbreadth<-as.numeric(sample2hsplengthpretrim/sample2len)
-      bpdist2divisor=1000
-    } else {
-      sample1covbreadth<-as.numeric(sample1hsplengthpretrim/(2*sample1len))
-      sample2covbreadth<-as.numeric(sample2hsplengthpretrim/(2*sample2len))
-      bpdist2divisor=2000
-    }
+    sample1covbreadth<-as.numeric(sample1hsplengthpretrim/sample1len)
+    sample2covbreadth<-as.numeric(sample2hsplengthpretrim/sample2len)
+    bpdist2divisor<-1000
     returnvector<-c(returnvector,sample1covbreadth,sample2covbreadth,sample1percentid,sample2percentid)
     if (breakpoint=='True') {
       breakpoints<-as.numeric(stats$breakpoints)
@@ -563,7 +567,6 @@ mergestats<-function(x,y) {
     if (mycol=="hspidpositions" || mycol=="hsplength" || mycol=="qhsplengthpretrim" || mycol=="shsplengthpretrim" || mycol=="qhspidpositionspretrim" || mycol=="shspidpositionspretrim") {
       merge[1,i]<-as.integer(x[i])+as.integer(y[i])
     } else {
-      #merge[1,i]<-mean(as.integer(x[i]),as.integer(y[i]))
       merge[1,i]<-sum(as.integer(x[i]),as.integer(y[i]))/2
     }
   }
@@ -587,23 +590,14 @@ getseqlens<-function(sample1,sample2) {
 }
 
 applystatscalc<-function(mystats,mystatscols,bootstrap='False') {
-  #wrapper function for statsfunc(); apply to a list of dataframes, split by genome names; each dataframe ('mystats') will have 1 or 2 rows (usually 2 rows when there is data for both blast directions)
+  #wrapper function for statsfunc(); apply to a list of dataframes, split by genome names; each dataframe ('mystats') will have 1 or 2 rows (2 rows when there is data for both blast directions)
   sample1<-mystats$querysample[1];sample2<-mystats$subjectsample[1]
   mygenomelenvector<-getseqlens(sample1,sample2) #mygenomelenvector is the sample1,sample2 length vector
-  mygenomelen<-sum(mygenomelenvector);mymingenomelen<-min(mygenomelenvector)*2
+  mygenomelen<-sum(mygenomelenvector)/2;mymingenomelen<-min(mygenomelenvector)
   if(nrow(mystats)==1) {
     stats<-mystats[,mystatscols]
-    if (bidirectionalblast=='False') {
-      mygenomelen<-mygenomelen/2;mymingenomelen<-mymingenomelen/2
-    }
   } else {
     stats<-mergestats(mystats[1,mystatscols],mystats[2,mystatscols])
-  }
-  if (stats$hsplength>mymingenomelen) {
-    stats$hsplength<-mymingenomelen
-  }
-  if (stats$hspidpositions>mymingenomelen) {
-    stats$hspidpositions<-mymingenomelen
   }
   statsout<-statsfunc(stats,breakpoint,mygenomelenvector,mygenomelen,mymingenomelen,bootstrap,bidirectionalblast,alnlenstats)
   return(c(sample1,sample2,mygenomelenvector,statsout))
