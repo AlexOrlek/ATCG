@@ -48,7 +48,7 @@ gethsplength<-function(x) {
 }
 
 getstatsfromdisjoint<-function(x,y) {
-  #returns raw statistics from disjoint alignments (qtrimmed,strimmed)
+  #returns raw statistics from disjoint alignments
   widthx<-width(x)
   widthy<-width(y)
   mywidths<-ifelse(widthx<=widthy,widthx,widthy) #for each hsp, get width of shortest range from qtrimmed/strimmed
@@ -753,15 +753,13 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     }
     #trim alignments
     if (statsfromtrimmed=='True' || outputtrimmedalignments=='True') {
-      trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,finalalignments,SIMPLIFY = FALSE))
-      qtrimmed<-trimmedalignments$qfinal
-      strimmed<-trimmedalignments$sfinal
-      includedalignmentindices<-lapply(qtrimmed,length)>0 & lapply(strimmed,length)>0 #safeguards against bug due to empty list element (probably unecessary)
-      qtrimmed<-qtrimmed[includedalignmentindices]
-      strimmed<-strimmed[includedalignmentindices]
-    } else {
-      qtrimmed<-mapply(trimalignments,qfinal,sfinal,finalalignments,qtrimonly=TRUE,SIMPLIFY=FALSE)
-      qtrimmed<-qtrimmed[lapply(qtrimmed,length)>0]
+      if (outputtrimmedalignments=='True' || (statsfromtrimmed=='True' && breakpoint=='True')) {
+        trimmedalignments<-transpose(mapply(trimalignments,qfinal,sfinal,finalalignments,SIMPLIFY = FALSE))
+        qtrimmed<-trimmedalignments$qfinal
+        strimmed<-trimmedalignments$sfinal
+      } else {
+        qtrimmed<-mapply(trimalignments,qfinal,sfinal,finalalignments,qtrimonly=TRUE,SIMPLIFY=FALSE)
+      }
     }
     #write trimmed alignments to file
     if (outputtrimmedalignments=='True') {
@@ -816,7 +814,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
         }
       } else {
         for (z in seq_len(boot)) {
-          indices<-lapply(qtrimmed, function(x) sample(1:length(x), replace=T)) #get indices for resampling qtrimmed/strimmed
+          indices<-lapply(qtrimmed, function(x) sample(1:length(x), replace=T)) #get indices for resampling qtrimmed
           qtrimmedboot<-map2(qtrimmed,indices, `[`)
           names(qtrimmedboot)<-names(qtrimmed)
           mystatsboot<-lapply(qtrimmedboot,getstatsfromtrimmed)
