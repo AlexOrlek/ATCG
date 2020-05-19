@@ -500,12 +500,17 @@ statsfunc<-function(stats, breakpoint,mygenomelenvector,mygenomelen,mymingenomel
     hsplength<-hsplength/2
     hspidpositions<-hspidpositions/2
   }
+  #bound hsplen/hspidpos estimates (rounding error or gaps in alignment could cause spurious estimates)
+  if (hspidpositions>hsplength) {
+    hspidpositions<-hsplength
+  }
   if (hsplength>mymingenomelen) {
     hsplength<-mymingenomelen
   }
   if (hspidpositions>mymingenomelen) {
     hspidpositions<-mymingenomelen
   }
+  #
   covbreadth<-as.numeric(hsplength/mygenomelen)
   covbreadthmin<-as.numeric(hsplength/mymingenomelen)
   d0<-as.numeric(1-covbreadth)
@@ -537,6 +542,14 @@ statsfunc<-function(stats, breakpoint,mygenomelenvector,mygenomelen,mymingenomel
       sample1hspidpositionspretrim<-sample1hspidpositionspretrim/2
       sample2hspidpositionspretrim<-sample2hspidpositionspretrim/2
     }
+    #bound hspidpos estimate
+    if (sample1hspidpositionspretrim>sample1hsplengthpretrim) {
+      sample1hspidpositionspretrim<-sample1hsplengthpretrim
+    }
+    if (sample2hspidpositionspretrim>sample2hsplengthpretrim) {
+      sample2hspidpositionspretrim<-sample2hsplengthpretrim
+    }
+    #
     sample1percentid<-as.numeric(sample1hspidpositionspretrim/sample1hsplengthpretrim)
     sample2percentid<-as.numeric(sample2hspidpositionspretrim/sample2hsplengthpretrim)
     sample1covbreadth<-as.numeric(sample1hsplengthpretrim/sample1len)
