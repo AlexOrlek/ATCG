@@ -705,7 +705,7 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     sfinal<-lapply(sreducedoutput, function(x) x=addcols(x))
     #write best blast alignments to file
     if (outputbestblastalignments=='True') {
-      indicestoinclude<-as.numeric(mapply(getbestblasthits,qfinal,sfinal,besthitoverhang,SIMPLIFY = TRUE))
+      indicestoinclude<-as.numeric(unlist(mapply(getbestblasthits,qfinal,sfinal,besthitoverhang,SIMPLIFY = FALSE)))
       bestblasthitsdf<-originalreport[indicestoinclude,]
       #adhere to blast outfmt 6 (-ve strand indicated implicitly by flipping sstart/send)
       strandispositive<-bestblasthitsdf$strand=='+'
