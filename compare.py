@@ -14,6 +14,12 @@ def positiveint(x):
          raise argparse.ArgumentTypeError("%s is an invalid positive int value" %x)
     return x
 
+def besthitoverhangfloat(x):
+    x<-float(x)
+    if x < 0 or x >= 1:
+        raise argparse.ArgumentTypeError("%s is an invalid best hit overhang value" %x)
+    return(x)
+
 def runtime():
     try:
         runtime=time.perf_counter()
@@ -52,6 +58,7 @@ output_group.add_argument('--breakpoint', action='store_true', help='If flag is 
 output_group.add_argument('--alnlenstats', action='store_true', help='If flag is provided, calculate alignment length distribution statistics (default: do not calculate)')
 output_group.add_argument('--alnlenstatsquantiles', help='Defines the quantiles at which N and L alignment length statistics will be calculated; multiple quantiles can be specified; values must be multiples of 5, between 5 and 95 (default: 50)' if show_all_help else argparse.SUPPRESS, nargs='+', default=['50'], choices=['5','10','15','20','25','30','35','40','45','50','55','60','65','70','75','80','85','90','95'], metavar='', type=str)
 output_group.add_argument('--bestblastalignments', action='store_true', help='If flag is provided, write to file best blast alignments for each genome (default: do not output)')
+output_group.add_argument('--besthitoverhang', help='If outputting --bestblastalignments, this is the proportion of a longer alignment which must be covered by a nested alignment, for the nested alignment to be retained; values must be >=0 and <1; if value=0, nested alignments will not be excluded (default: 0.5)', default=0.5,type=besthitoverhangfloat)
 output_group.add_argument('--nonoverlappingalignments', action='store_true', help='If flag is provided, write to file best alignments with non-overlapping query/subject ranges (only the intersection of query and subject alignment sets is given) (default: do not output)' if show_all_help else argparse.SUPPRESS)
 output_group.add_argument('--reciprocallytrimmedalignments', action='store_true', help='If flag is provided, write to file reciprocally-trimmed alignments for each genome (default: do not output); DEPRECATED' if show_all_help else argparse.SUPPRESS) #DEPRECATED - recommended to use the default
 #BLAST options                                  
@@ -366,7 +373,7 @@ if args.sequencepairs!=None:
 
 
 if args.blastonly!=True and noblasthits==False:
-    runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.bestblastalignments),str(args.nonoverlappingalignments),str(args.reciprocallytrimmedalignments),str(args.bidirectionalblast),str(args.statsfromreciprocallytrimmed),str(args.keepsuboptimalalignmentfragment),'|'.join(args.alnlenstatsquantiles)])
+    runsubprocess(['Rscript','%s/granges.R'%sourcedir,outputpath, str(args.threads), str(args.breakpoint),str(args.alnlenstats),str(args.boot),str(args.alnrankmethod),str(args.lengthfilter),str(args.bestblastalignments),str(args.besthitoverhang),str(args.nonoverlappingalignments),str(args.reciprocallytrimmedalignments),str(args.bidirectionalblast),str(args.statsfromreciprocallytrimmed),str(args.keepsuboptimalalignmentfragment),'|'.join(args.alnlenstatsquantiles)])
     laterruntime=runtime()
     #print(laterruntime-startruntime, 'runtime; finished parsing alignments')
     print('finished parsing alignments')

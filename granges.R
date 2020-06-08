@@ -18,12 +18,13 @@ boot=as.integer(args[5])
 alnrankmethod=as.character(args[6])
 lengthfilter=as.integer(args[7])
 outputbestblastalignments=as.character(args[8])
-outputnonoverlappingalignments=as.character(args[9])
-outputtrimmedalignments=as.character(args[10])
-bidirectionalblast=as.character(args[11])
-statsfromtrimmed=as.character(args[12]) #False by default
-keepbisectedrangesarg=as.character(args[13])
-alnlenstatsquantiles=as.character(args[14])
+besthitoverhang=as.numeric(args[9])
+outputnonoverlappingalignments=as.character(args[10])
+outputtrimmedalignments=as.character(args[11])
+bidirectionalblast=as.character(args[12])
+statsfromtrimmed=as.character(args[13]) #False by default
+keepbisectedrangesarg=as.character(args[14])
+alnlenstatsquantiles=as.character(args[15])
 alnlenstatsquantiles<-unique(sort(unlist(strsplit(alnlenstatsquantiles,'|',fixed=TRUE))))
 
 lxcols<-vector()
@@ -109,12 +110,29 @@ rangeshifting<-function(reformattedname, seqlenreport, seqlenreportseqs) { #refo
   return(alladdlens)
 }
 
-#function which filters original blast report to include only best alignments (retained in qfinal and/or sfinal after selecting best hsps from disjoins)
-getbestblasthits<-function(qfinal,sfinal) {
+#function which filters original blast report to include only best alignments (retained in qfinal and/or sfinal after selecting best hsps from disjoins + covers proportion=x of any enveloping alignments, where x is besthitoverhang)
+getbestblasthits<-function(qfinal,sfinal,besthitoverhang) {
   besthitindices<-unique(qfinal$inputhsp,sfinal$inputhsp)
-  besthitreport<-originalreport[besthitindices,]
-  return(besthitreport)
+  besthitreport<-report[besthitindices,]
+  if (besthitoverhang>0) {
+    qry<-IRanges(start=besthitreport$qstart,end=besthitreport$qend)
+    sbj<-IRanges(start=besthitreport$sstart,end=besthitreport$send)
+    qrynesting<-findOverlaps(qry,qry,type="within")
+    qrynestingqryhits<-queryHits(qrynesting)
+    qrynestingsbjhits<-subjectHits(qrynesting)
+    qrynestingout<-qrynestingqryhits[qrynestingqryhits!=qrynestingsbjhits & width(qry[qrynestingqryhits]) < besthitoverhang*(width(sbj[qrynestingsbjhits]))]
+    sbjnesting<-findOverlaps(sbj,sbj,type="within")
+    sbjnestingqryhits<-queryHits(sbjnesting)
+    sbjnestingsbjhits<-subjectHits(sbjnesting)
+    sbjnestingout<-sbjnestingqryhits[sbjnestingqryhits!=sbjnestingsbjhits & width(sbj[sbjnestingqryhits]) < besthitoverhang*(width(sbj[sbjnestingsbjhits]))]
+    indicestoexclude<-unique(c(qrynestingout,sbjnestingout)) #alignments to exclude from besthitreport
+    if (length(indicestoexclude)>0) {
+      besthitreport<-besthitreport[-indicestoexclude,]
+    }
+  }
+  return(besthitreport$originalhspindex)
 }
+
 
 #function which filters disjoint alignments to include only those present in both qfinal and sfinal; then sorts alignments by inputhsp
 intersectsortalignments<-function(qfinal,sfinal) {
@@ -631,8 +649,8 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     #read alignmnents file for given sample
     sample<-samples[i]
     report<-fread(gsubfn('%1|%2',list('%1'=args[1],'%2'=sample),'%1/blast/%2/alignments.tsv'),select=c('qname','sname','pid','alnlen','mismatches','gapopens','qstart','qend','sstart','send','evalue','bitscore','strand'),colClasses = list('character'=c('qname','sname','strand'), 'numeric'=c('pid','evalue','bitscore'),'integer'=c('alnlen','mismatches','gapopens','qstart','qend','sstart','send')),header=TRUE,sep='\t')
+    report$originalhspindex<-rownames(report)
     originalreport<-report
-    originalreport$originalhspindex<-rownames(originalreport)
     #get information for shifting query and subject ranges where there are multiple contigs)
     seqlenreportseqs<-sapply(strsplit(as.vector(seqlenreport$sequence),'|',fixed=T),pastefunction)
     reformattedqname<-as.factor(sapply(strsplit(as.vector(report$qname),"|",fixed=T),pastefunction))
@@ -687,8 +705,8 @@ allsampledflist<-foreach(i=1:length(samples), .packages = c('gsubfn','GenomicRan
     sfinal<-lapply(sreducedoutput, function(x) x=addcols(x))
     #write best blast alignments to file
     if (outputbestblastalignments=='True') {
-      bestblasthitslist<-mapply(getbestblasthits,qfinal,sfinal,SIMPLIFY = FALSE)
-      bestblasthitsdf<-do.call(rbind,bestblasthitslist)
+      indicestoinclude<-as.numeric(mapply(getbestblasthits,qfinal,sfinal,besthitoverhang,SIMPLIFY = TRUE))
+      bestblasthitsdf<-originalreport[indicestoinclude,]
       #adhere to blast outfmt 6 (-ve strand indicated implicitly by flipping sstart/send)
       strandispositive<-bestblasthitsdf$strand=='+'
       blastsstart<-ifelse(strandispositive,bestblasthitsdf$sstart,bestblasthitsdf$send)
